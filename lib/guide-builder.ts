@@ -261,16 +261,16 @@ function itemCardHtml(item: GuideItem) {
   const qtyBadge = qtyLabel
     ? `<span class="absolute bottom-1.5 right-1.5 rounded-full bg-[#189b8e] px-2 py-0.5 text-[10px] font-extrabold leading-none text-white shadow-sm">×${escapeHtml(qtyLabel)}</span>`
     : "";
-  const inner = `<div class="relative flex h-[100px] items-center justify-center overflow-hidden bg-cover bg-center p-1.5" style="background-image:url(${bg})">
+  const inner = `<div class="relative flex h-[84px] items-center justify-center overflow-hidden bg-cover bg-center p-1.5" style="background-image:url(${bg})">
     ${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="h-full w-full object-contain" />` : `<span class="px-1 text-center text-[10px] font-bold text-muted-foreground">Нет иконки</span>`}
     ${qtyBadge}
   </div>
-  <p class="break-words bg-white px-2 py-2.5 text-center text-[12px] font-semibold leading-snug text-foreground" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</p>
+  <p class="break-words bg-white px-1.5 py-1.5 text-center text-[12px] font-semibold leading-snug text-foreground" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</p>
   ${item.note ? `<p class="line-clamp-1 px-1.5 pb-2 text-center text-[10px] font-bold text-[#189b8e]" title="${escapeHtml(item.note)}">${escapeHtml(item.note)}</p>` : ""}`;
   if (item.href) {
-    return `<a href="${escapeHtml(item.href)}" title="${escapeHtml(item.name)}" class="guide-item-link inline-block w-[120px] shrink-0 overflow-hidden rounded-[14px] bg-card shadow-panel ring-1 ring-black/[0.06] transition hover:opacity-95">${inner}</a>`;
+    return `<a href="${escapeHtml(item.href)}" title="${escapeHtml(item.name)}" class="guide-item-link inline-block w-[92px] shrink-0 overflow-hidden rounded-[12px] bg-card shadow-panel ring-1 ring-black/[0.06] transition hover:opacity-95">${inner}</a>`;
   }
-  return `<div class="inline-block w-[120px] shrink-0 overflow-hidden rounded-[14px] bg-card shadow-panel ring-1 ring-black/[0.06]" title="${escapeHtml(item.name)}">${inner}</div>`;
+  return `<div class="inline-block w-[92px] shrink-0 overflow-hidden rounded-[12px] bg-card shadow-panel ring-1 ring-black/[0.06]" title="${escapeHtml(item.name)}">${inner}</div>`;
 }
 
 function sectionHead(eyebrow: string, title: string, intro?: string) {

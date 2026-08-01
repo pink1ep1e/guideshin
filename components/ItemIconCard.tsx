@@ -25,15 +25,15 @@ const COMPACT_SIZES = {
 } as const;
 
 const CARD_WIDTHS = {
-  sm: "w-[100px]",
-  md: "w-[120px]",
-  lg: "w-[128px]",
+  sm: "w-[80px]",
+  md: "w-[92px]",
+  lg: "w-[100px]",
 } as const;
 
 const CARD_ICON_HEIGHTS = {
-  sm: "h-[88px]",
-  md: "h-[104px]",
-  lg: "h-[112px]",
+  sm: "h-[72px]",
+  md: "h-[84px]",
+  lg: "h-[92px]",
 } as const;
 
 /** Не показывать бейдж, если кол-во 0 / пусто. */
@@ -127,11 +127,11 @@ export default function ItemIconCard({
   // Полная карточка (скрин 3 с qty / скрин 4 без qty)
   const card = (
     <div
-      className={`overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06] ${CARD_WIDTHS[size]} ${className}`}
+      className={`overflow-hidden rounded-[12px] bg-card shadow-panel ring-1 ring-black/[0.06] ${CARD_WIDTHS[size]} ${className}`}
       title={name}
     >
       <div
-        className={`relative flex items-center justify-center overflow-hidden bg-cover bg-center p-2 ${CARD_ICON_HEIGHTS[size]} ${
+        className={`relative flex items-center justify-center overflow-hidden bg-cover bg-center p-1.5 ${CARD_ICON_HEIGHTS[size]} ${
           isNeutral ? "bg-[#f3f0ea]" : ""
         }`}
         style={isNeutral ? undefined : { backgroundImage: `url(${rarityBg(stars)})` }}
@@ -153,7 +153,7 @@ export default function ItemIconCard({
         ) : null}
       </div>
       <p
-        className={`break-words px-2 py-2.5 text-center text-[12px] font-semibold leading-snug text-foreground ${
+        className={`break-words px-1.5 py-1.5 text-center text-[12px] font-semibold leading-snug text-foreground ${
           isNeutral ? "bg-[#f3f0ea]" : "bg-white"
         }`}
         title={name}
