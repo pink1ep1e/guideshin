@@ -88,6 +88,15 @@ export type MaterialGuideData = {
   }[];
   alchemyUseIntro: string;
   alchemyUses: GuideMatRef[];
+  /** Предметы, создаваемые в кузнице из этого материала. */
+  forgingUseIntro: string;
+  forgingUses: {
+    id: string;
+    name: string;
+    image: string;
+    rarityStars: number;
+    href?: string;
+  }[];
   sourcesIntro: string;
   sources: {
     id: string;
@@ -148,6 +157,8 @@ export function emptyMaterialGuide(): MaterialGuideData {
     teapotItems: [],
     alchemyUseIntro: "",
     alchemyUses: [],
+    forgingUseIntro: "",
+    forgingUses: [],
     sourcesIntro: "",
     sources: [],
     alchemyCraftIntro: "",
@@ -240,6 +251,7 @@ export function parseMaterialGuide(raw: unknown): MaterialGuideData {
     weapons: Array.isArray(d.weapons) ? d.weapons : [],
     teapotItems: Array.isArray(d.teapotItems) ? d.teapotItems : [],
     alchemyUses: Array.isArray(d.alchemyUses) ? d.alchemyUses : [],
+    forgingUses: Array.isArray(d.forgingUses) ? d.forgingUses : [],
     sources: Array.isArray(d.sources) ? d.sources : [],
     alchemyCraft: Array.isArray(d.alchemyCraft) ? d.alchemyCraft : [],
     forgingDiagram: diagram,
@@ -320,6 +332,12 @@ export function buildMaterialWeaponsIntro(materialName: string): string {
 export function buildMaterialTeapotIntro(materialName: string): string {
   const mName = escapeHtml(materialName.trim() || "материал");
   return `Материал ${mName} может быть применён для создания следующих предметов`;
+}
+
+/** Текст «применение в ковке». */
+export function buildMaterialForgingUseIntro(materialName: string): string {
+  const mName = escapeHtml(materialName.trim() || "материал");
+  return `Материал ${mName} может быть использован в кузнице для создания следующих предметов`;
 }
 
 export function hasForgingRecipe(data: MaterialGuideData): boolean {

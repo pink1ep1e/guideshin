@@ -7,6 +7,7 @@ import { rarityBg } from "@/lib/genshin";
 import {
   buildMaterialCharactersIntro,
   buildMaterialForgingIntro,
+  buildMaterialForgingUseIntro,
   buildMaterialTeapotIntro,
   buildMaterialWeaponsIntro,
   hasForgingRecipe,
@@ -31,6 +32,8 @@ export default function MaterialGuideView({
     buildMaterialWeaponsIntro(materialName) || data.weaponsIntro;
   const teapotIntro =
     buildMaterialTeapotIntro(materialName) || data.teapotIntro;
+  const forgingUseIntro =
+    buildMaterialForgingUseIntro(materialName) || data.forgingUseIntro;
   const forgingIntro =
     buildMaterialForgingIntro(materialName, data.forgingDiagram) || data.forgingIntro;
 
@@ -171,6 +174,27 @@ export default function MaterialGuideView({
                   {m.name}
                 </span>
               </div>
+            ))}
+          </div>
+        </GuideSection>
+      )}
+
+      {data.forgingUses.length > 0 && (
+        <GuideSection
+          large
+          title="Применение в ковке"
+          intro={<p>{forgingUseIntro}</p>}
+        >
+          <div className="flex flex-wrap gap-2.5">
+            {data.forgingUses.map((item) => (
+              <ItemIconCard
+                key={item.id}
+                name={item.name}
+                image={item.image}
+                rarityStars={item.rarityStars}
+                href={item.href}
+                size="lg"
+              />
             ))}
           </div>
         </GuideSection>
