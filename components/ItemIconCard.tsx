@@ -9,13 +9,71 @@ type ItemIconCardProps = {
   href?: string | null;
   size?: "sm" | "md" | "lg";
   className?: string;
+  /**
+   * Карточка с подписью (как на скринах 2–3).
+   * Без подписи — только иконка (для таблиц).
+   */
+  showName?: boolean;
+  /** Нейтральный фон без редкости (враги / источники). */
+  variant?: "rarity" | "neutral";
 };
 
-const SIZES = {
+const ICON_SIZES = {
   sm: "h-14 w-14",
   md: "h-[72px] w-[72px]",
   lg: "h-[88px] w-[88px]",
 } as const;
+
+const CARD_WIDTHS = {
+  sm: "w-[88px]",
+  md: "w-[100px]",
+  lg: "w-[108px]",
+} as const;
+
+const CARD_ICON_HEIGHTS = {
+  sm: "h-[88px]",
+  md: "h-[100px]",
+  lg: "h-[108px]",
+} as const;
+
+/** Не показывать бейдж, если кол-во 0 / пусто. */
+export function hasVisibleQty(qty?: number | string | null): boolean {
+  if (qty === undefined || qty === null || qty === "") return false;
+  if (typeof qty === "number") return qty !== 0 && Number.isFinite(qty);
+  const raw = String(qty).trim().replace(/\s/g, "").replace(/^×/, "");
+  if (!raw || raw === "0") return false;
+  const n = Number(raw);
+  if (Number.isFinite(n) && n === 0) return false;
+  return true;
+}
+
+function formatQty(qty: number | string): string {
+  if (typeof qty === "number") return qty.toLocaleString("ru-RU");
+  const raw = String(qty).trim().replace(/^×/, "");
+  const n = Number(raw.replace(/\s/g, ""));
+  if (Number.isFinite(n)) return n.toLocaleString("ru-RU");
+  return raw;
+}
+
+function QtyBadge({
+  qty,
+  compact,
+}: {
+  qty: number | string;
+  compact?: boolean;
+}) {
+  return (
+    <span
+      className={
+        compact
+          ? "absolute bottom-1 right-1 rounded-full bg-[#189b8e] px-1.5 py-0.5 text-[10px] font-extrabold leading-none text-white shadow-sm"
+          : "absolute bottom-1.5 right-1.5 rounded-full bg-[#189b8e] px-2 py-0.5 text-[10px] font-extrabold leading-none text-white shadow-sm"
+      }
+    >
+      ×{formatQty(qty)}
+    </span>
+  );
+}
 
 export default function ItemIconCard({
   name,
@@ -25,11 +83,70 @@ export default function ItemIconCard({
   href,
   size = "md",
   className = "",
+  showName = false,
+  variant = "rarity",
 }: ItemIconCardProps) {
+  const showQty = hasVisibleQty(qty);
+  const stars = Math.min(5, Math.max(1, Math.round(rarityStars || 1)));
+  const isNeutral = variant === "neutral";
+
+  // Полная карточка: иконка + подпись (скрин 2 без qty / скрин 3 с qty)
+  if (showName) {
+    const card = (
+      <div
+        className={`overflow-hidden rounded-[14px] bg-card shadow-panel ring-1 ring-black/[0.06] ${CARD_WIDTHS[size]} ${className}`}
+        title={name}
+      >
+        <div
+          className={`relative flex items-center justify-center overflow-hidden bg-cover bg-center p-1.5 ${CARD_ICON_HEIGHTS[size]} ${
+            isNeutral ? "bg-[#f3f0ea]" : ""
+          }`}
+          style={isNeutral ? undefined : { backgroundImage: `url(${rarityBg(stars)})` }}
+        >
+          {image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={image}
+              alt={name}
+              className={`h-full w-full ${isNeutral ? "object-cover" : "object-contain"}`}
+            />
+          ) : (
+            <span className="px-1 text-center text-[10px] font-bold text-muted-foreground">
+              Нет иконки
+            </span>
+          )}
+          {showQty && qty !== undefined && qty !== null && qty !== "" ? (
+            <QtyBadge qty={qty} />
+          ) : null}
+        </div>
+        <p
+          className={`line-clamp-2 min-h-[2.5em] px-1.5 py-2 text-center text-[11px] font-semibold leading-snug text-foreground ${
+            isNeutral ? "bg-[#f3f0ea]" : "bg-white"
+          }`}
+          title={name}
+        >
+          {name}
+        </p>
+      </div>
+    );
+
+    if (href) {
+      return (
+        <Link href={href} className="inline-block shrink-0 transition hover:opacity-95">
+          {card}
+        </Link>
+      );
+    }
+    return <div className="inline-block shrink-0">{card}</div>;
+  }
+
+  // Компактная иконка (таблицы, инлайн)
   const box = (
     <div
-      className={`relative overflow-hidden rounded-[10px] bg-cover bg-center shadow-sm ring-1 ring-black/[0.06] ${SIZES[size]} ${className}`}
-      style={{ backgroundImage: `url(${rarityBg(rarityStars)})` }}
+      className={`relative overflow-hidden rounded-[10px] bg-cover bg-center shadow-sm ring-1 ring-black/[0.06] ${ICON_SIZES[size]} ${className} ${
+        isNeutral ? "bg-[#f3f0ea]" : ""
+      }`}
+      style={isNeutral ? undefined : { backgroundImage: `url(${rarityBg(stars)})` }}
       title={name}
     >
       {image ? (
@@ -40,11 +157,9 @@ export default function ItemIconCard({
           Нет иконки
         </span>
       )}
-      {qty !== undefined && qty !== "" && (
-        <span className="font-genshin absolute inset-x-0 bottom-0 bg-white/90 py-0.5 text-center text-[13px] leading-none tracking-wide tabular-nums text-foreground">
-          {typeof qty === "number" ? qty.toLocaleString("ru-RU") : qty}
-        </span>
-      )}
+      {showQty && qty !== undefined && qty !== null && qty !== "" ? (
+        <QtyBadge qty={qty} compact />
+      ) : null}
     </div>
   );
 

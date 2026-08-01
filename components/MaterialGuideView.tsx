@@ -103,7 +103,7 @@ export default function MaterialGuideView({
 
       {data.weapons.length > 0 && (
         <GuideSection title="Возвышаемое оружие" intro={<p>{weaponsIntro}</p>}>
-          <div className="flex flex-wrap gap-2.5">
+          <div className="flex flex-wrap gap-3">
             {data.weapons.map((w) => (
               <ItemIconCard
                 key={w.id}
@@ -112,6 +112,7 @@ export default function MaterialGuideView({
                 rarityStars={w.rarityStars}
                 href={w.href}
                 size="lg"
+                showName
               />
             ))}
           </div>
@@ -120,35 +121,19 @@ export default function MaterialGuideView({
 
       {data.teapotItems.length > 0 && (
         <GuideSection title="Создание материалов" intro={<p>{teapotIntro}</p>}>
-          <div className="flex flex-wrap gap-2.5">
-            {data.teapotItems.map((item) => {
-              const tile = (
-                <div
-                  className="flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-[10px] bg-[#8a8a8a] shadow-sm ring-1 ring-black/[0.08]"
-                  title={item.name}
-                >
-                  {item.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="h-full w-full object-contain p-1"
-                    />
-                  ) : (
-                    <span className="px-1 text-center text-[9px] font-bold text-white/80">
-                      {item.name || "?"}
-                    </span>
-                  )}
-                </div>
-              );
-              return item.href ? (
-                <a key={item.id} href={item.href} className="transition hover:opacity-95">
-                  {tile}
-                </a>
-              ) : (
-                <div key={item.id}>{tile}</div>
-              );
-            })}
+          <div className="flex flex-wrap gap-3">
+            {data.teapotItems.map((item) => (
+              <ItemIconCard
+                key={item.id}
+                name={item.name}
+                image={item.image}
+                rarityStars={item.rarityStars}
+                href={item.href}
+                size="md"
+                showName
+                variant="neutral"
+              />
+            ))}
           </div>
         </GuideSection>
       )}
@@ -161,19 +146,16 @@ export default function MaterialGuideView({
         >
           <div className="flex flex-wrap gap-3">
             {data.alchemyUses.map((m) => (
-              <div key={m.id} className="flex flex-col items-center gap-1.5">
-                <ItemIconCard
-                  name={m.name}
-                  image={m.image}
-                  rarityStars={m.rarityStars}
-                  qty={m.qty || undefined}
-                  href={m.href}
-                  size="lg"
-                />
-                <span className="font-genshin max-w-[96px] text-center text-[13px] leading-tight tracking-wide text-foreground">
-                  {m.name}
-                </span>
-              </div>
+              <ItemIconCard
+                key={m.id}
+                name={m.name}
+                image={m.image}
+                rarityStars={m.rarityStars}
+                qty={m.qty}
+                href={m.href}
+                size="lg"
+                showName
+              />
             ))}
           </div>
         </GuideSection>
@@ -185,7 +167,7 @@ export default function MaterialGuideView({
           title="Применение в ковке"
           intro={<p>{forgingUseIntro}</p>}
         >
-          <div className="flex flex-wrap gap-2.5">
+          <div className="flex flex-wrap gap-3">
             {data.forgingUses.map((item) => (
               <ItemIconCard
                 key={item.id}
@@ -194,6 +176,7 @@ export default function MaterialGuideView({
                 rarityStars={item.rarityStars}
                 href={item.href}
                 size="lg"
+                showName
               />
             ))}
           </div>
@@ -206,28 +189,18 @@ export default function MaterialGuideView({
           intro={<p>{data.sourcesIntro || `Источник материала «${materialName}»:`}</p>}
         >
           <div className="flex flex-wrap gap-3">
-            {data.sources.map((s) => {
-              const card = (
-                <div className="w-[100px] overflow-hidden rounded-[12px] bg-card shadow-sm ring-1 ring-black/[0.06]">
-                  <div className="flex h-[100px] items-center justify-center bg-[#f3f0ea]">
-                    {s.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={s.image} alt={s.name} className="h-full w-full object-cover" />
-                    ) : null}
-                  </div>
-                  <p className="bg-[#f3f0ea] px-1 py-1.5 text-center text-[11px] font-bold leading-tight">
-                    {s.name}
-                  </p>
-                </div>
-              );
-              return s.href ? (
-                <a key={s.id} href={s.href}>
-                  {card}
-                </a>
-              ) : (
-                <div key={s.id}>{card}</div>
-              );
-            })}
+            {data.sources.map((s) => (
+              <ItemIconCard
+                key={s.id}
+                name={s.name}
+                image={s.image}
+                rarityStars={1}
+                href={s.href}
+                size="md"
+                showName
+                variant="neutral"
+              />
+            ))}
           </div>
         </GuideSection>
       )}
@@ -245,19 +218,16 @@ export default function MaterialGuideView({
         >
           <div className="flex flex-wrap gap-3">
             {data.alchemyCraft.map((m) => (
-              <div key={m.id} className="flex flex-col items-center gap-1.5">
-                <ItemIconCard
-                  name={m.name}
-                  image={m.image}
-                  rarityStars={m.rarityStars}
-                  qty={m.qty}
-                  href={m.href}
-                  size="lg"
-                />
-                <span className="font-genshin max-w-[96px] text-center text-[13px] leading-tight tracking-wide text-foreground">
-                  {m.name}
-                </span>
-              </div>
+              <ItemIconCard
+                key={m.id}
+                name={m.name}
+                image={m.image}
+                rarityStars={m.rarityStars}
+                qty={m.qty}
+                href={m.href}
+                size="lg"
+                showName
+              />
             ))}
           </div>
         </GuideSection>
@@ -281,16 +251,17 @@ export default function MaterialGuideView({
             ) : null}
           </div>
           {data.forgingIngredients.length > 0 && (
-            <div className="mt-5 flex flex-wrap gap-2.5">
+            <div className="mt-5 flex flex-wrap gap-3">
               {data.forgingIngredients.map((m) => (
                 <ItemIconCard
                   key={m.id}
                   name={m.name}
                   image={m.image}
                   rarityStars={m.rarityStars}
-                  qty={m.qty || undefined}
+                  qty={m.qty}
                   href={m.href}
                   size="md"
+                  showName
                 />
               ))}
             </div>

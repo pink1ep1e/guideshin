@@ -36,7 +36,7 @@ export default function WeaponGuideView({
             </p>
 
             {data.materialsSummary.length > 0 && (
-              <div className="flex flex-wrap gap-2.5">
+              <div className="flex flex-wrap gap-3">
                 {data.materialsSummary.map((m) => (
                   <ItemIconCard
                     key={m.id}
@@ -46,6 +46,7 @@ export default function WeaponGuideView({
                     qty={m.qty}
                     href={m.href}
                     size="md"
+                    showName
                   />
                 ))}
               </div>
