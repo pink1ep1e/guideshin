@@ -14,3 +14,7 @@ scripts/_tmp*
 .vscode
 .cursor
 tsconfig.tsbuildinfo
+
+# Исходники арта (~250MB+) — в проде используются /images/home и /characters-splash
+public/genshin assets
+"public/genshin assets"
