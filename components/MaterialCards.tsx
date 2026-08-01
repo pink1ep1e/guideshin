@@ -1,12 +1,8 @@
+import ItemIconCard from "@/components/ItemIconCard";
 import {
   MATERIAL_CATEGORY_LABEL,
   type CharacterMaterial,
 } from "@/lib/character-materials";
-import { rarityBg } from "@/lib/genshin";
-
-function formatQty(n: number) {
-  return n.toLocaleString("ru-RU");
-}
 
 export default function MaterialCards({
   materials,
@@ -41,32 +37,15 @@ export default function MaterialCards({
             </p>
             <div className="flex flex-wrap gap-3">
               {rows.map((m) => (
-                <div
+                <ItemIconCard
                   key={m.id}
-                  className="w-[104px] overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06]"
-                >
-                  <div
-                    className="relative flex h-[104px] items-center justify-center bg-cover bg-center p-2"
-                    style={{ backgroundImage: `url(${rarityBg(m.rarityStars ?? 3)})` }}
-                  >
-                    {m.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={m.image}
-                        alt={m.name}
-                        className="h-full w-full object-contain"
-                      />
-                    ) : (
-                      <span className="text-[10px] font-bold text-muted-foreground">Нет иконки</span>
-                    )}
-                    <span className="absolute bottom-1.5 right-1.5 rounded-full bg-[#189b8e] px-2 py-0.5 text-[10px] font-extrabold text-white shadow-sm">
-                      ×{formatQty(m.qty)}
-                    </span>
-                  </div>
-                  <p className="px-1.5 py-2 text-center text-[11px] font-semibold leading-tight text-foreground">
-                    {m.name}
-                  </p>
-                </div>
+                  name={m.name}
+                  image={m.image}
+                  rarityStars={m.rarityStars ?? 3}
+                  qty={m.qty}
+                  size="md"
+                  showName
+                />
               ))}
             </div>
           </div>

@@ -64,7 +64,7 @@ export default function WikiItemCard({
           alt=""
           className="relative z-10 mb-1 h-3.5 w-auto drop-shadow"
         />
-        <p className="font-genshin mt-1 line-clamp-2 w-full text-center text-[13px] leading-tight tracking-wide text-foreground">
+        <p className="font-genshin mt-1 line-clamp-2 w-full overflow-hidden text-center text-[13px] leading-snug tracking-wide text-foreground">
           {name}
         </p>
         {note ? (

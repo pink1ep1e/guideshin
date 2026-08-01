@@ -8,6 +8,8 @@ export type GuideItem = {
   note: string;
   /** Where to find / quantity (for resource tables) */
   source?: string;
+  /** Quantity for material cards (hidden when 0 / empty) */
+  qty?: string;
   /** Public wiki link, e.g. /wiki/weapons/mistsplitter */
   href?: string;
 };
@@ -242,23 +244,33 @@ function escapeHtml(text: string) {
     .replaceAll('"', "&quot;");
 }
 
+function visibleQty(qty?: string | number | null): string | null {
+  if (qty === undefined || qty === null || qty === "") return null;
+  const raw = String(qty).trim().replace(/^×/, "");
+  if (!raw || raw === "0") return null;
+  const n = Number(raw.replace(/\s/g, ""));
+  if (Number.isFinite(n) && n === 0) return null;
+  if (Number.isFinite(n)) return n.toLocaleString("ru-RU");
+  return raw;
+}
+
 function itemCardHtml(item: GuideItem) {
   const stars = item.rarity >= 5 ? 5 : item.rarity >= 4 ? 4 : item.rarity;
   const bg = rarityBg(stars);
-  const starN = Math.min(5, Math.max(1, stars));
-  const inner = `<div class="relative aspect-square w-full overflow-hidden bg-cover bg-center" style="background-image:url(${bg})">
-    <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="relative z-0 h-full w-full object-contain p-2" />
-    <div class="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-10 bg-gradient-to-t from-black/20 via-black/5 to-transparent"></div>
+  const qtyLabel = visibleQty(item.qty);
+  const qtyBadge = qtyLabel
+    ? `<span class="absolute bottom-1.5 right-1.5 rounded-full bg-[#189b8e] px-2 py-0.5 text-[10px] font-extrabold leading-none text-white shadow-sm">×${escapeHtml(qtyLabel)}</span>`
+    : "";
+  const inner = `<div class="relative flex h-[100px] items-center justify-center overflow-hidden bg-cover bg-center p-1.5" style="background-image:url(${bg})">
+    ${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="h-full w-full object-contain" />` : `<span class="px-1 text-center text-[10px] font-bold text-muted-foreground">Нет иконки</span>`}
+    ${qtyBadge}
   </div>
-  <div class="relative z-10 -mt-4 flex flex-col items-center px-1.5 pb-1.5 pt-0">
-    <img src="/images/stars/Quality_star_${starN}.svg" alt="" class="relative z-10 mb-1 h-3.5 w-auto drop-shadow" />
-    <p class="font-genshin mt-1 line-clamp-2 w-full text-center text-[13px] leading-tight tracking-wide text-foreground" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</p>
-    ${item.note ? `<p class="mt-0.5 line-clamp-1 text-[10px] font-bold text-[#189b8e]" title="${escapeHtml(item.note)}">${escapeHtml(item.note)}</p>` : ""}
-  </div>`;
+  <p class="line-clamp-2 min-h-[2.5em] bg-white px-1.5 py-2 text-center text-[11px] font-semibold leading-snug text-foreground" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</p>
+  ${item.note ? `<p class="line-clamp-1 px-1.5 pb-2 text-center text-[10px] font-bold text-[#189b8e]" title="${escapeHtml(item.note)}">${escapeHtml(item.note)}</p>` : ""}`;
   if (item.href) {
-    return `<a href="${escapeHtml(item.href)}" title="${escapeHtml(item.name)}" class="guide-item-link group relative block w-[130px] shrink-0 overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)]">${inner}</a>`;
+    return `<a href="${escapeHtml(item.href)}" title="${escapeHtml(item.name)}" class="guide-item-link inline-block w-[100px] shrink-0 overflow-hidden rounded-[14px] bg-card shadow-panel ring-1 ring-black/[0.06] transition hover:opacity-95">${inner}</a>`;
   }
-  return `<div class="relative w-[130px] shrink-0 overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06]" title="${escapeHtml(item.name)}">${inner}</div>`;
+  return `<div class="inline-block w-[100px] shrink-0 overflow-hidden rounded-[14px] bg-card shadow-panel ring-1 ring-black/[0.06]" title="${escapeHtml(item.name)}">${inner}</div>`;
 }
 
 function sectionHead(eyebrow: string, title: string, intro?: string) {
@@ -446,7 +458,7 @@ function renderBlock(block: GuideBlock): string {
                 r.href
                   ? `<a href="${escapeHtml(r.href)}">${escapeHtml(r.name)}</a>`
                   : escapeHtml(r.name)
-              }${r.qty ? ` <span class="text-[#189b8e]">×${escapeHtml(r.qty)}</span>` : ""}</p>
+              }${visibleQty(r.qty) ? ` <span class="text-[#189b8e]">×${escapeHtml(visibleQty(r.qty)!)}</span>` : ""}</p>
             </div>
           </td>
           <td class="guide-td-desc">${escapeHtml(r.where)}</td>
