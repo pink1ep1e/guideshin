@@ -17,4 +17,7 @@ tsconfig.tsbuildinfo
 
 # Исходники арта (~250MB+) — в проде используются /images/home и /characters-splash
 public/genshin assets
-"public/genshin assets"
+
+# Загрузки монтируются volume'ом ./data/uploads
+public/uploads
+!public/uploads/.gitkeep
