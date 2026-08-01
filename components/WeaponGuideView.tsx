@@ -46,7 +46,6 @@ export default function WeaponGuideView({
                     qty={m.qty}
                     href={m.href}
                     size="md"
-                    showName
                   />
                 ))}
               </div>
@@ -118,6 +117,7 @@ export default function WeaponGuideView({
                                     qty={m.qty}
                                     href={m.href}
                                     size="md"
+                                    compact
                                   />
                                 </div>
                               ) : (

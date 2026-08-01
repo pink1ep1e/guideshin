@@ -44,7 +44,6 @@ export default function MaterialCards({
                   rarityStars={m.rarityStars ?? 3}
                   qty={m.qty}
                   size="md"
-                  showName
                 />
               ))}
             </div>
