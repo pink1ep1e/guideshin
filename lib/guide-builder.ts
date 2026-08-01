@@ -265,12 +265,12 @@ function itemCardHtml(item: GuideItem) {
     ${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="h-full w-full object-contain" />` : `<span class="px-1 text-center text-[10px] font-bold text-muted-foreground">Нет иконки</span>`}
     ${qtyBadge}
   </div>
-  <p class="line-clamp-2 min-h-[2.5em] bg-white px-1.5 py-2 text-center text-[11px] font-semibold leading-snug text-foreground" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</p>
+  <p class="line-clamp-3 min-h-[3.75em] break-words bg-white px-1.5 py-2 text-center text-[11px] font-semibold leading-snug text-foreground" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</p>
   ${item.note ? `<p class="line-clamp-1 px-1.5 pb-2 text-center text-[10px] font-bold text-[#189b8e]" title="${escapeHtml(item.note)}">${escapeHtml(item.note)}</p>` : ""}`;
   if (item.href) {
-    return `<a href="${escapeHtml(item.href)}" title="${escapeHtml(item.name)}" class="guide-item-link inline-block w-[100px] shrink-0 overflow-hidden rounded-[14px] bg-card shadow-panel ring-1 ring-black/[0.06] transition hover:opacity-95">${inner}</a>`;
+    return `<a href="${escapeHtml(item.href)}" title="${escapeHtml(item.name)}" class="guide-item-link inline-block w-[112px] shrink-0 overflow-hidden rounded-[14px] bg-card shadow-panel ring-1 ring-black/[0.06] transition hover:opacity-95">${inner}</a>`;
   }
-  return `<div class="inline-block w-[100px] shrink-0 overflow-hidden rounded-[14px] bg-card shadow-panel ring-1 ring-black/[0.06]" title="${escapeHtml(item.name)}">${inner}</div>`;
+  return `<div class="inline-block w-[112px] shrink-0 overflow-hidden rounded-[14px] bg-card shadow-panel ring-1 ring-black/[0.06]" title="${escapeHtml(item.name)}">${inner}</div>`;
 }
 
 function sectionHead(eyebrow: string, title: string, intro?: string) {

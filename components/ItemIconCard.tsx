@@ -25,9 +25,9 @@ const COMPACT_SIZES = {
 } as const;
 
 const CARD_WIDTHS = {
-  sm: "w-[88px]",
-  md: "w-[104px]",
-  lg: "w-[112px]",
+  sm: "w-[96px]",
+  md: "w-[112px]",
+  lg: "w-[120px]",
 } as const;
 
 const CARD_ICON_HEIGHTS = {
@@ -153,7 +153,7 @@ export default function ItemIconCard({
         ) : null}
       </div>
       <p
-        className={`line-clamp-2 min-h-[2.6em] px-1.5 py-2 text-center text-[12px] font-semibold leading-snug text-foreground ${
+        className={`line-clamp-3 min-h-[3.75em] break-words px-1.5 py-2 text-center text-[11px] font-semibold leading-snug text-foreground ${
           isNeutral ? "bg-[#f3f0ea]" : "bg-white"
         }`}
         title={name}
