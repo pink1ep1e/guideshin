@@ -8,6 +8,7 @@ import { CatalogPicker, useGuideCatalog } from "@/components/admin/CatalogPicker
 import {
   buildMaterialCharactersIntro,
   buildMaterialForgingIntro,
+  buildMaterialForgingUseIntro,
   buildMaterialTeapotIntro,
   buildMaterialWeaponsIntro,
   emptyForgingDiagram,
@@ -63,6 +64,13 @@ export default function MaterialGuideEditor({
     });
   }
 
+  function setForgingUses(forgingUses: MaterialGuideData["forgingUses"]) {
+    set({
+      forgingUses,
+      forgingUseIntro: buildMaterialForgingUseIntro(materialName),
+    });
+  }
+
   function setForging(
     patch: Partial<Pick<MaterialGuideData, "forgingDiagram" | "forgingIngredients">>,
   ) {
@@ -80,6 +88,7 @@ export default function MaterialGuideEditor({
     const nextChars = buildMaterialCharactersIntro(materialName, data.characters);
     const nextWeapons = buildMaterialWeaponsIntro(materialName);
     const nextTeapot = buildMaterialTeapotIntro(materialName);
+    const nextForgingUse = buildMaterialForgingUseIntro(materialName);
     const nextForge = buildMaterialForgingIntro(materialName, data.forgingDiagram);
     const patch: Partial<MaterialGuideData> = {};
     if (nextChars && nextChars !== data.charactersIntro) patch.charactersIntro = nextChars;
@@ -88,6 +97,9 @@ export default function MaterialGuideEditor({
     }
     if (data.teapotItems.length > 0 && nextTeapot !== data.teapotIntro) {
       patch.teapotIntro = nextTeapot;
+    }
+    if (data.forgingUses.length > 0 && nextForgingUse !== data.forgingUseIntro) {
+      patch.forgingUseIntro = nextForgingUse;
     }
     if (nextForge !== data.forgingIntro) patch.forgingIntro = nextForge;
     if (Object.keys(patch).length) onChange({ ...data, ...patch });
@@ -483,6 +495,113 @@ export default function MaterialGuideEditor({
         catalog={catalog}
         onChange={(alchemyUses) => set({ alchemyUses })}
       />
+
+      <div className="space-y-2">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.06em] text-muted-foreground">
+            Применение в ковке
+          </p>
+          <p className="mt-0.5 text-[11px] font-medium text-muted-foreground">
+            Предметы, создаваемые в кузнице. Текст собирается сам
+          </p>
+        </div>
+
+        {(data.forgingUseIntro || data.forgingUses.length > 0) && (
+          <div className="rounded-[12px] border border-black/[0.06] bg-white/90 px-3 py-2.5 text-sm font-medium leading-relaxed text-muted-foreground">
+            {data.forgingUseIntro || buildMaterialForgingUseIntro(materialName)}
+          </div>
+        )}
+
+        <div className="flex justify-between">
+          <p className="text-xs font-bold uppercase text-muted-foreground">Предметы</p>
+          <button
+            type="button"
+            className="text-xs font-bold text-[#189b8e]"
+            onClick={() =>
+              setForgingUses([
+                ...data.forgingUses,
+                { id: uid(), name: "", image: "", rarityStars: 4, href: "" },
+              ])
+            }
+          >
+            <Plus className="mr-1 inline h-3.5 w-3.5" />
+            Добавить
+          </button>
+        </div>
+        {data.forgingUses.map((item) => (
+          <div key={item.id} className="rounded-[12px] border border-black/[0.05] bg-white/80 p-2">
+            <CatalogPicker
+              label="Из базы"
+              kind="materials"
+              catalog={catalog}
+              onPick={(picked) =>
+                setForgingUses(
+                  data.forgingUses.map((x) =>
+                    x.id === item.id
+                      ? {
+                          ...x,
+                          name: picked.name,
+                          image: picked.image,
+                          rarityStars: picked.rarityStars ?? picked.rarity,
+                          href: picked.href,
+                        }
+                      : x,
+                  ),
+                )
+              }
+            />
+            <div className="mt-2 flex items-start gap-3">
+              <MediaUpload
+                label="Иконка"
+                value={item.image}
+                onChange={(image) =>
+                  setForgingUses(
+                    data.forgingUses.map((x) => (x.id === item.id ? { ...x, image } : x)),
+                  )
+                }
+                kind="material"
+                compact
+                className="w-[76px] shrink-0"
+              />
+              <div className="min-w-0 flex-1 space-y-2">
+                <input
+                  className={input}
+                  value={item.name}
+                  onChange={(e) =>
+                    setForgingUses(
+                      data.forgingUses.map((x) =>
+                        x.id === item.id ? { ...x, name: e.target.value } : x,
+                      ),
+                    )
+                  }
+                  placeholder="Геокомпас сокровищ"
+                />
+                <FancySelect
+                  value={String(item.rarityStars)}
+                  onChange={(v) =>
+                    setForgingUses(
+                      data.forgingUses.map((x) =>
+                        x.id === item.id ? { ...x, rarityStars: Number(v) } : x,
+                      ),
+                    )
+                  }
+                  options={[1, 2, 3, 4, 5].map((n) => ({ value: String(n), label: `${n}★` }))}
+                  size="sm"
+                />
+                <button
+                  type="button"
+                  className="text-xs font-bold text-destructive"
+                  onClick={() =>
+                    setForgingUses(data.forgingUses.filter((x) => x.id !== item.id))
+                  }
+                >
+                  Удалить
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       <div className="space-y-2">
         <label className={label}>Источники — текст</label>
