@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/wiki/materials" },
 };
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function MaterialsCatalogPage() {
   const materials = await withPrisma((prisma) =>
