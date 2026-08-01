@@ -15,11 +15,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# Prisma нужен POSTGRES_URL при generate; для generate достаточно dummy
-ENV POSTGRES_URL="postgresql://user:pass@localhost:5432/db?sslmode=require"
+
+# Реальный POSTGRES_URL передаётся из docker-compose build.args (.env)
+ARG POSTGRES_URL
+ENV POSTGRES_URL=${POSTGRES_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
+
 RUN npx prisma generate
-RUN npm run build
+# next build без повторного prisma generate (уже сделали выше)
+RUN npx next build
 
 FROM node:22-bookworm-slim AS runner
 WORKDIR /app

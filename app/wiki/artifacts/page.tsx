@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/wiki/artifacts" },
 };
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function ArtifactsPage() {
   const dbItems = await withPrisma((prisma) =>

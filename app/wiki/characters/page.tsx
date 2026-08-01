@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   keywords: ["персонажи Genshin", "гайды персонажей", "билды Genshin Impact", "Guideshin"],
 };
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function CharactersPage() {
   const characters = await withPrisma((prisma) =>
