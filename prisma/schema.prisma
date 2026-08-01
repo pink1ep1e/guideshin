@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+enum Rarity {
+  COMMON
+  RARE
+  EPIC
+  LEGEND
+}
+
+enum Element {
+  PYRO
+  HYDRO
+  ANEMO
+  ELECTRO
+  DENDRO
+  CRYO
+  GEO
+}
+
+enum ADMIN_ROLE {
+  ADMIN
+  EDITOR
+}
+
+model AdminUser {
+  id        Int        @id @default(autoincrement())
+  userName  String     @unique
+  password  String
+  role      ADMIN_ROLE @default(EDITOR)
+  createdAt DateTime   @default(now())
+}
+
+model Character {
+  id          Int      @id @default(autoincrement())
+
+  slug        String   @unique
+  name        String
+  image       String
+  splashImage String?
+
+  rarity      Rarity
+  element     Element
+  weaponType  String?
+  region      String?
+  sticker     String?
+
+  /// Материалы прокачки: [{ id, name, image, qty, category }]
+  levelMaterials Json?
+
+  shortDesc   String?
+  contentHtml String   @db.Text
+
+  published   Boolean  @default(true)
+  order       Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Weapon {
+  id          Int      @id @default(autoincrement())
+
+  slug        String   @unique
+  name        String
+  image       String
+  rarity      Rarity
+  weaponType  String
+  region      String?
+  sticker     String?
+
+  shortDesc   String?
+  contentHtml String   @db.Text @default("")
+  /// Структурированный гайд: материалы, фазы, кому подходит, как получить
+  guideData   Json?
+
+  published   Boolean  @default(true)
+  order       Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Artifact {
+  id          Int      @id @default(autoincrement())
+
+  slug        String   @unique
+  name        String
+  image       String
+  rarity      Rarity
+  region      String?
+  sticker     String?
+
+  shortDesc   String?
+  contentHtml String   @db.Text @default("")
+
+  published   Boolean  @default(true)
+  order       Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Material {
+  id          Int      @id @default(autoincrement())
+
+  slug        String   @unique
+  name        String
+  image       String
+  /// 1–5 звёзд материала
+  rarityStars Int      @default(4)
+  category    String   @default("other")
+  region      String?
+  sticker     String?
+
+  shortDesc   String?
+  contentHtml String   @db.Text @default("")
+  /// Структурированный гайд: описание, оружие, алхимия, источники
+  guideData   Json?
+
+  published   Boolean  @default(true)
+  order       Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Page {
+  id          Int      @id @default(autoincrement())
+
+  slug        String   @unique
+  title       String
+  contentHtml String   @db.Text
+  published   Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PromoCode {
+  id        Int       @id @default(autoincrement())
+  code      String
+  reward    String
+  expiresAt DateTime?
+  published Boolean   @default(true)
+  order     Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model DailyTip {
+  id        Int      @id @default(autoincrement())
+  title     String
+  body      String   @db.Text
+  published Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Слайд баннера на главной (половина молитвы + персонаж)
+model HomeBannerSlide {
+  id        Int      @id @default(autoincrement())
+  /// first = текущие молитвы, second = вторая половина
+  half      String
+  name      String
+  slug      String
+  role      String
+  /// pyro | hydro | anemo | electro | dendro | cryo | geo
+  element   String
+  rarity    Int      @default(5)
+  text      String   @db.Text
+  image     String
+  icon      String
+  published Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
