@@ -112,7 +112,6 @@ export default function MaterialGuideView({
                 rarityStars={w.rarityStars}
                 href={w.href}
                 size="lg"
-                showName
               />
             ))}
           </div>
@@ -130,7 +129,6 @@ export default function MaterialGuideView({
                 rarityStars={item.rarityStars}
                 href={item.href}
                 size="md"
-                showName
                 variant="neutral"
               />
             ))}
@@ -154,7 +152,6 @@ export default function MaterialGuideView({
                 qty={m.qty}
                 href={m.href}
                 size="lg"
-                showName
               />
             ))}
           </div>
@@ -176,7 +173,6 @@ export default function MaterialGuideView({
                 rarityStars={item.rarityStars}
                 href={item.href}
                 size="lg"
-                showName
               />
             ))}
           </div>
@@ -197,7 +193,6 @@ export default function MaterialGuideView({
                 rarityStars={1}
                 href={s.href}
                 size="md"
-                showName
                 variant="neutral"
               />
             ))}
@@ -226,7 +221,6 @@ export default function MaterialGuideView({
                 qty={m.qty}
                 href={m.href}
                 size="lg"
-                showName
               />
             ))}
           </div>
@@ -241,6 +235,7 @@ export default function MaterialGuideView({
               image={image}
               rarityStars={rarityStars}
               size="lg"
+              compact
               className="!h-[100px] !w-[100px] shrink-0"
             />
             {forgingIntro ? (
@@ -261,7 +256,6 @@ export default function MaterialGuideView({
                   qty={m.qty}
                   href={m.href}
                   size="md"
-                  showName
                 />
               ))}
             </div>

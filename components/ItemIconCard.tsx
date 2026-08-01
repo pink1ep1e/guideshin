@@ -10,15 +10,15 @@ type ItemIconCardProps = {
   size?: "sm" | "md" | "lg";
   className?: string;
   /**
-   * Карточка с подписью (как на скринах 2–3).
-   * Без подписи — только иконка (для таблиц).
+   * Только иконка (таблицы). По умолчанию — полная карточка
+   * как на скринах 3–4: картинка + имя, при qty>0 бирюзовый ×N.
    */
-  showName?: boolean;
-  /** Нейтральный фон без редкости (враги / источники). */
+  compact?: boolean;
+  /** Нейтральный фон (враги / источники), скрин 4. */
   variant?: "rarity" | "neutral";
 };
 
-const ICON_SIZES = {
+const COMPACT_SIZES = {
   sm: "h-14 w-14",
   md: "h-[72px] w-[72px]",
   lg: "h-[88px] w-[88px]",
@@ -26,14 +26,14 @@ const ICON_SIZES = {
 
 const CARD_WIDTHS = {
   sm: "w-[88px]",
-  md: "w-[100px]",
-  lg: "w-[108px]",
+  md: "w-[104px]",
+  lg: "w-[112px]",
 } as const;
 
 const CARD_ICON_HEIGHTS = {
   sm: "h-[88px]",
-  md: "h-[100px]",
-  lg: "h-[108px]",
+  md: "h-[104px]",
+  lg: "h-[112px]",
 } as const;
 
 /** Не показывать бейдж, если кол-во 0 / пусто. */
@@ -66,8 +66,8 @@ function QtyBadge({
     <span
       className={
         compact
-          ? "absolute bottom-1 right-1 rounded-full bg-[#189b8e] px-1.5 py-0.5 text-[10px] font-extrabold leading-none text-white shadow-sm"
-          : "absolute bottom-1.5 right-1.5 rounded-full bg-[#189b8e] px-2 py-0.5 text-[10px] font-extrabold leading-none text-white shadow-sm"
+          ? "absolute bottom-1 right-1 z-10 rounded-full bg-[#189b8e] px-1.5 py-0.5 text-[10px] font-extrabold leading-none text-white shadow-sm"
+          : "absolute bottom-1.5 right-1.5 z-10 rounded-full bg-[#189b8e] px-2 py-0.5 text-[11px] font-extrabold leading-none text-white shadow-sm"
       }
     >
       ×{formatQty(qty)}
@@ -83,92 +83,92 @@ export default function ItemIconCard({
   href,
   size = "md",
   className = "",
-  showName = false,
+  compact = false,
   variant = "rarity",
 }: ItemIconCardProps) {
   const showQty = hasVisibleQty(qty);
   const stars = Math.min(5, Math.max(1, Math.round(rarityStars || 1)));
   const isNeutral = variant === "neutral";
 
-  // Полная карточка: иконка + подпись (скрин 2 без qty / скрин 3 с qty)
-  if (showName) {
-    const card = (
+  // Компактная иконка — только для таблиц
+  if (compact) {
+    const box = (
       <div
-        className={`overflow-hidden rounded-[14px] bg-card shadow-panel ring-1 ring-black/[0.06] ${CARD_WIDTHS[size]} ${className}`}
+        className={`relative overflow-hidden rounded-[10px] bg-cover bg-center shadow-sm ring-1 ring-black/[0.06] ${COMPACT_SIZES[size]} ${className} ${
+          isNeutral ? "bg-[#f3f0ea]" : ""
+        }`}
+        style={isNeutral ? undefined : { backgroundImage: `url(${rarityBg(stars)})` }}
         title={name}
       >
-        <div
-          className={`relative flex items-center justify-center overflow-hidden bg-cover bg-center p-1.5 ${CARD_ICON_HEIGHTS[size]} ${
-            isNeutral ? "bg-[#f3f0ea]" : ""
-          }`}
-          style={isNeutral ? undefined : { backgroundImage: `url(${rarityBg(stars)})` }}
-        >
-          {image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={image}
-              alt={name}
-              className={`h-full w-full ${isNeutral ? "object-cover" : "object-contain"}`}
-            />
-          ) : (
-            <span className="px-1 text-center text-[10px] font-bold text-muted-foreground">
-              Нет иконки
-            </span>
-          )}
-          {showQty && qty !== undefined && qty !== null && qty !== "" ? (
-            <QtyBadge qty={qty} />
-          ) : null}
-        </div>
-        <p
-          className={`line-clamp-2 min-h-[2.5em] px-1.5 py-2 text-center text-[11px] font-semibold leading-snug text-foreground ${
-            isNeutral ? "bg-[#f3f0ea]" : "bg-white"
-          }`}
-          title={name}
-        >
-          {name}
-        </p>
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={image} alt={name} className="h-full w-full object-contain p-0.5" />
+        ) : (
+          <span className="flex h-full items-center justify-center px-1 text-center text-[9px] font-bold leading-tight text-muted-foreground">
+            Нет иконки
+          </span>
+        )}
+        {showQty && qty !== undefined && qty !== null && qty !== "" ? (
+          <QtyBadge qty={qty} compact />
+        ) : null}
       </div>
     );
 
     if (href) {
       return (
-        <Link href={href} className="inline-block shrink-0 transition hover:opacity-95">
-          {card}
+        <Link href={href} className="inline-block transition hover:opacity-95">
+          {box}
         </Link>
       );
     }
-    return <div className="inline-block shrink-0">{card}</div>;
+    return box;
   }
 
-  // Компактная иконка (таблицы, инлайн)
-  const box = (
+  // Полная карточка (скрин 3 с qty / скрин 4 без qty)
+  const card = (
     <div
-      className={`relative overflow-hidden rounded-[10px] bg-cover bg-center shadow-sm ring-1 ring-black/[0.06] ${ICON_SIZES[size]} ${className} ${
-        isNeutral ? "bg-[#f3f0ea]" : ""
-      }`}
-      style={isNeutral ? undefined : { backgroundImage: `url(${rarityBg(stars)})` }}
+      className={`overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06] ${CARD_WIDTHS[size]} ${className}`}
       title={name}
     >
-      {image ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={image} alt={name} className="h-full w-full object-contain p-0.5" />
-      ) : (
-        <span className="flex h-full items-center justify-center px-1 text-center text-[9px] font-bold leading-tight text-muted-foreground">
-          Нет иконки
-        </span>
-      )}
-      {showQty && qty !== undefined && qty !== null && qty !== "" ? (
-        <QtyBadge qty={qty} compact />
-      ) : null}
+      <div
+        className={`relative flex items-center justify-center overflow-hidden bg-cover bg-center p-2 ${CARD_ICON_HEIGHTS[size]} ${
+          isNeutral ? "bg-[#f3f0ea]" : ""
+        }`}
+        style={isNeutral ? undefined : { backgroundImage: `url(${rarityBg(stars)})` }}
+      >
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={image}
+            alt={name}
+            className={`h-full w-full ${isNeutral ? "object-cover" : "object-contain"}`}
+          />
+        ) : (
+          <span className="px-1 text-center text-[10px] font-bold text-muted-foreground">
+            Нет иконки
+          </span>
+        )}
+        {showQty && qty !== undefined && qty !== null && qty !== "" ? (
+          <QtyBadge qty={qty} />
+        ) : null}
+      </div>
+      <p
+        className={`line-clamp-2 min-h-[2.6em] px-1.5 py-2 text-center text-[12px] font-semibold leading-snug text-foreground ${
+          isNeutral ? "bg-[#f3f0ea]" : "bg-white"
+        }`}
+        title={name}
+      >
+        {name}
+      </p>
     </div>
   );
 
   if (href) {
     return (
-      <Link href={href} className="inline-block transition hover:opacity-95">
-        {box}
+      <Link href={href} className="inline-block shrink-0 transition hover:opacity-95">
+        {card}
       </Link>
     );
   }
-  return box;
+  return <div className="inline-block shrink-0">{card}</div>;
 }
