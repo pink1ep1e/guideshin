@@ -1,0 +1,29 @@
+services:
+  web:
+    build: .
+    container_name: guideshin
+    restart: unless-stopped
+    ports:
+      # Только localhost — nginx на этой же машине проксирует снаружи
+      - "127.0.0.1:3000:3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+    volumes:
+      # Загрузки из админки не пропадут при пересборке
+      - ./data/uploads:/app/public/uploads
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 40s

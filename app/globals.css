@@ -1,0 +1,230 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* VTB-like light palette */
+    --background: 220 25% 96%;
+    --foreground: 221 72% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 221 72% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 221 72% 15%;
+
+    --primary: 224 100% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 30% 94%;
+    --secondary-foreground: 221 50% 20%;
+
+    --muted: 220 24% 93%;
+    --muted-foreground: 218 18% 42%;
+
+    --accent: 220 40% 94%;
+    --accent-foreground: 224 80% 35%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 20% 88%;
+    --input: 220 20% 88%;
+    --ring: 224 100% 52%;
+
+    --radius: 1rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-page px-4 sm:px-6 lg:px-8;
+  }
+
+  .panel {
+    @apply rounded-3xl border border-border bg-card shadow-soft;
+  }
+
+  .glass-panel {
+    @apply rounded-[20px] border border-black/[0.05] bg-white/85 shadow-panel backdrop-blur-sm;
+  }
+
+  .ui-btn-primary {
+    @apply inline-flex items-center justify-center rounded-[16px] bg-[#189b8e] px-6 py-3.5 text-sm font-bold text-white transition duration-300 hover:bg-[#207970];
+  }
+
+  .ui-btn-secondary {
+    @apply inline-flex items-center justify-center rounded-[16px] border border-black/[0.08] bg-white/80 px-6 py-3.5 text-sm font-bold text-[#189b8e] transition duration-300 hover:bg-[#189b8e]/10;
+  }
+
+  .section-title {
+    @apply font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl;
+  }
+
+  .prose-guide {
+    @apply prose prose-neutral max-w-none prose-headings:font-genshin prose-a:text-primary prose-img:rounded-xl;
+  }
+
+  /* HTML-гайды из админки: Tailwind-классы работают, prose не ломает вёрстку */
+  .guide-html {
+    @apply max-w-none text-muted-foreground;
+  }
+
+  .guide-html h2 {
+    @apply font-genshin tracking-wide text-foreground;
+  }
+
+  .guide-html h3 {
+    @apply font-display font-bold text-foreground;
+  }
+
+  .guide-html a {
+    @apply font-semibold text-[#189b8e] underline-offset-2 hover:underline;
+  }
+
+  .guide-html img {
+    @apply max-w-full;
+  }
+
+  .guide-html strong {
+    @apply font-bold text-foreground;
+  }
+
+  .guide-html .guide-video {
+    @apply relative w-full overflow-hidden rounded-[20px] bg-black;
+    padding-top: 56.25%;
+  }
+
+  .guide-html .guide-video iframe {
+    @apply absolute inset-0 h-full w-full border-0;
+  }
+
+  .guide-html video {
+    @apply w-full rounded-[20px];
+  }
+
+  .guide-html .guide-table-wrap {
+    @apply -mx-1 overflow-x-auto rounded-[16px] border border-black/[0.08] bg-white shadow-soft;
+  }
+
+  .guide-html .guide-table {
+    @apply w-full min-w-[520px] border-collapse text-sm;
+  }
+
+  .guide-html .guide-table th {
+    @apply border-b border-black/[0.08] bg-[#0b1f44]/[0.04] px-3 py-3 text-center text-xs font-bold uppercase tracking-[0.04em] text-foreground;
+  }
+
+  .guide-html .guide-table td {
+    @apply border-b border-black/[0.05] px-3 py-3.5 align-middle text-muted-foreground;
+  }
+
+  .guide-html .guide-table tbody tr:nth-child(even) {
+    @apply bg-[#0b1f44]/[0.02];
+  }
+
+  .guide-html .guide-table tbody tr:hover {
+    @apply bg-[#189b8e]/[0.04];
+  }
+
+  .guide-html .guide-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .guide-html .guide-td-center {
+    @apply text-center;
+  }
+
+  .guide-html .guide-td-desc {
+    @apply text-left text-[13px] font-medium leading-relaxed;
+  }
+
+  .guide-html .guide-char-cell,
+  .guide-html .guide-icon-stack,
+  .guide-html .guide-resource-cell {
+    @apply flex flex-col items-center justify-center gap-1.5;
+  }
+
+  .guide-html .guide-char-icon {
+    @apply h-12 w-12 rounded-xl object-cover shadow-sm ring-1 ring-black/[0.06];
+  }
+
+  .guide-html .guide-char-name {
+    @apply font-semibold text-[#189b8e];
+  }
+
+  .guide-html .guide-el-icon {
+    @apply h-8 w-8 drop-shadow;
+  }
+
+  .guide-html .guide-weapon-icon {
+    @apply h-7 w-7 object-contain opacity-80;
+  }
+
+  .guide-html .guide-resource-icon {
+    @apply h-14 w-14 object-contain;
+  }
+
+  .guide-html .guide-table-stats td {
+    @apply font-medium tabular-nums;
+  }
+
+  .guide-html a.guide-item-link {
+    @apply no-underline;
+  }
+
+  .guide-html a.guide-item-link:hover {
+    @apply opacity-95;
+  }
+
+  .rarity-legend {
+    @apply bg-gradient-to-b from-legend/30 via-legend/10 to-transparent ring-1 ring-legend/40;
+  }
+
+  .rarity-epic {
+    @apply bg-gradient-to-b from-epic/30 via-epic/10 to-transparent ring-1 ring-epic/40;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-border;
+  }
+}
+
+/* Карта на весь экран: iframe под шапкой, футер скрыт */
+body:has(.map-page-root) {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+body:has(.map-page-root) footer {
+  display: none;
+}
+
+body:has(.map-page-root) main {
+  position: relative;
+  z-index: 0;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}

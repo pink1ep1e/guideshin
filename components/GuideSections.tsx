@@ -1,0 +1,153 @@
+import Link from "next/link";
+import type { ReactNode } from "react";
+import WikiItemCard from "@/components/WikiItemCard";
+import {
+  ELEMENT_SVG,
+  ELEMENT_THEME,
+  rarityBg,
+  type ElementKey,
+} from "@/lib/genshin";
+
+export type RelatedCharacter = {
+  name: string;
+  image: string;
+  element?: string;
+  rarityStars: number;
+  href?: string;
+};
+
+export type RelatedWeapon = {
+  name: string;
+  image: string;
+  rarityStars: number;
+  href?: string;
+};
+
+/** Карточка персонажа в гайдах — тот же стиль, что в каталоге. */
+export function CharacterPortraitCard({ item }: { item: RelatedCharacter }) {
+  const stars = Math.min(5, Math.max(1, Math.round(item.rarityStars || 4)));
+  const elKey = (item.element || "").toUpperCase() as ElementKey;
+  const elementIcon = elKey ? ELEMENT_SVG[elKey] : null;
+  const theme = elKey ? ELEMENT_THEME[elKey] : null;
+  const glow = theme?.glow ?? "rgba(24,155,142,0.45)";
+
+  const inner = (
+    <>
+      <div
+        className="relative aspect-square w-full overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: `url(${rarityBg(stars)})` }}
+      >
+        {item.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={item.image}
+            alt={item.name}
+            className="relative z-0 h-full w-full object-cover object-top"
+          />
+        ) : (
+          <span className="relative z-0 flex h-full items-center justify-center px-2 text-center text-[11px] font-bold text-muted-foreground">
+            {item.name}
+          </span>
+        )}
+
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-10 bg-gradient-to-t from-black/20 via-black/5 to-transparent" />
+
+        {elementIcon && (
+          <span className="absolute left-1.5 top-1.5 z-20 flex h-6 w-6 items-center justify-center">
+            <span
+              aria-hidden
+              className="absolute inset-[-2px] rounded-full blur-[8px]"
+              style={{ backgroundColor: glow, opacity: 0.7 }}
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={elementIcon}
+              alt=""
+              className="relative h-[22px] w-[22px]"
+              style={{
+                filter:
+                  "drop-shadow(0 0 1.5px rgba(0,0,0,0.45)) drop-shadow(0 1px 2px rgba(0,0,0,0.3))",
+              }}
+            />
+          </span>
+        )}
+      </div>
+
+      <div className="relative z-10 -mt-4 flex flex-col items-center px-1.5 pb-1.5 pt-0">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`/images/stars/Quality_star_${stars}.svg`}
+          alt=""
+          className="relative z-10 mb-1 h-3.5 w-auto drop-shadow"
+        />
+        <p
+          className="font-genshin mt-1 line-clamp-2 w-full text-center text-[13px] leading-tight tracking-wide text-foreground"
+          title={item.name}
+        >
+          {item.name}
+        </p>
+      </div>
+    </>
+  );
+
+  const shell =
+    "group relative block w-[108px] shrink-0 overflow-hidden rounded-[14px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)]";
+
+  return item.href ? (
+    <Link href={item.href} title={item.name} className={shell}>
+      {inner}
+    </Link>
+  ) : (
+    <div title={item.name} className={shell}>
+      {inner}
+    </div>
+  );
+}
+
+/** Плитка оружия — тот же стиль, что WikiItemCard. */
+export function WeaponTileCard({ item }: { item: RelatedWeapon }) {
+  return (
+    <WikiItemCard
+      name={item.name}
+      image={item.image}
+      href={item.href}
+      rarityStars={item.rarityStars}
+      fit="contain"
+    />
+  );
+}
+
+export function GuideSection({
+  title,
+  children,
+  intro,
+  large,
+}: {
+  title: string;
+  intro?: ReactNode;
+  children: ReactNode;
+  /** Крупнее заголовок и текст (алхимия и т.п.) */
+  large?: boolean;
+}) {
+  return (
+    <section className="rounded-[20px] border border-black/[0.06] bg-white/90 p-5 shadow-soft sm:p-6">
+      <h2
+        className={`font-genshin tracking-wide text-foreground ${
+          large ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl"
+        }`}
+      >
+        {title}
+      </h2>
+      {intro ? (
+        <div
+          className={`mt-2 font-medium leading-relaxed text-muted-foreground ${
+            large ? "text-base sm:text-[17px]" : "text-sm"
+          }`}
+        >
+          {intro}
+        </div>
+      ) : null}
+      <div className="mt-4">{children}</div>
+    </section>
+  );
+}

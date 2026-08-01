@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.gitignore
+*.md
+.env
+.env.*
+!.env.example
+data
+mats-page.html
+weapon-page.html
+tmp-*
+scripts/_tmp*
+.vscode
+.cursor
+tsconfig.tsbuildinfo
