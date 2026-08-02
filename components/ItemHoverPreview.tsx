@@ -57,11 +57,11 @@ export default function ItemHoverPreview({
   }, []);
 
   const place = useCallback((clientX: number, clientY: number) => {
-    const pad = 12;
-    const tipW = 200;
-    const tipH = loreText ? 230 : 170;
-    const x = clamp(clientX + 14, pad, window.innerWidth - tipW - pad);
-    const y = clamp(clientY + 14, pad, window.innerHeight - tipH - pad);
+    const pad = 10;
+    const tipW = 156;
+    const tipH = loreText ? 190 : 145;
+    const x = clamp(clientX + 12, pad, window.innerWidth - tipW - pad);
+    const y = clamp(clientY + 12, pad, window.innerHeight - tipH - pad);
     setState({ x, y, visible: true });
   }, [loreText]);
 
@@ -91,17 +91,17 @@ export default function ItemHoverPreview({
           <div
             id={tipId}
             role="tooltip"
-            className="pointer-events-none fixed z-[9999] w-[min(200px,calc(100vw-24px))]"
+            className="pointer-events-none fixed z-[9999] w-[min(156px,calc(100vw-20px))]"
             style={{
               left: state.x,
               top: state.y,
               opacity: shown ? 1 : 0,
-              transform: shown ? "translateY(0) scale(1)" : "translateY(4px) scale(0.97)",
+              transform: shown ? "translateY(0) scale(1)" : "translateY(3px) scale(0.97)",
               transition:
-                "opacity 160ms ease, transform 200ms cubic-bezier(0.22, 1, 0.36, 1)",
+                "opacity 140ms ease, transform 180ms cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           >
-            <div className="overflow-hidden rounded-[14px] border border-black/[0.06] bg-white/95 shadow-[0_14px_36px_-16px_rgba(11,31,68,0.42)] ring-1 ring-[#189b8e]/15 backdrop-blur-md">
+            <div className="overflow-hidden rounded-[12px] border border-black/[0.06] bg-white/95 shadow-[0_10px_28px_-14px_rgba(11,31,68,0.4)] ring-1 ring-[#189b8e]/15 backdrop-blur-md">
               <div
                 className="relative flex aspect-square items-center justify-center overflow-hidden bg-cover bg-center"
                 style={{ backgroundImage: `url(${rarityBg(stars)})` }}
@@ -114,26 +114,26 @@ export default function ItemHoverPreview({
                     className={
                       fit === "cover"
                         ? "h-full w-full object-cover object-top"
-                        : "h-[82%] w-[82%] object-contain drop-shadow-md"
+                        : "h-[78%] w-[78%] object-contain drop-shadow-sm"
                     }
                   />
                 ) : (
-                  <span className="text-[10px] font-bold text-muted-foreground">Нет иконки</span>
+                  <span className="text-[9px] font-bold text-muted-foreground">Нет иконки</span>
                 )}
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/25 to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/20 to-transparent" />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={`/images/stars/Quality_star_${stars}.svg`}
                   alt=""
-                  className="absolute bottom-1.5 left-1/2 h-3 w-auto -translate-x-1/2 drop-shadow"
+                  className="absolute bottom-1 left-1/2 h-2.5 w-auto -translate-x-1/2 drop-shadow"
                 />
               </div>
-              <div className="px-2.5 py-2">
-                <p className="font-genshin text-[12px] leading-snug tracking-wide text-[#1e1e1e]">
+              <div className="px-2 py-1.5">
+                <p className="font-genshin text-[11px] leading-snug tracking-wide text-[#1e1e1e]">
                   {name}
                 </p>
                 {loreText ? (
-                  <p className="mt-1 line-clamp-3 text-[10px] font-medium leading-relaxed text-muted-foreground">
+                  <p className="mt-0.5 line-clamp-2 text-[9px] font-medium leading-snug text-muted-foreground">
                     {loreText}
                   </p>
                 ) : null}
