@@ -71,8 +71,8 @@ export default function WikiItemCard({
         />
       </div>
 
-      <div className="flex min-h-[2.85em] flex-col items-center justify-end px-1.5 pb-2.5 pt-2">
-        <p className="font-genshin line-clamp-2 w-full overflow-hidden text-center text-[13px] leading-snug tracking-wide text-[#1e1e1e]">
+      <div className="shrink-0 px-1.5 py-1.5">
+        <p className="font-genshin line-clamp-2 w-full overflow-hidden text-center text-[13px] leading-tight tracking-wide text-[#1e1e1e]">
           {name}
         </p>
         {note ? (
