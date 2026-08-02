@@ -127,7 +127,7 @@ export default function ItemHoverPreview({
                 <img
                   src={`/images/stars/Quality_star_${stars}.svg`}
                   alt=""
-                  className="mt-1.5 h-3 w-auto drop-shadow"
+                  className="mt-1.5 h-3 w-auto"
                 />
               </div>
 

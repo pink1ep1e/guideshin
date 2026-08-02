@@ -12,7 +12,7 @@ type WeaponStatsCardProps = {
 function StatRow({ label, value }: { label: string; value: string }) {
   if (!value) return null;
   return (
-    <div className="grid grid-cols-[minmax(4.5rem,auto)_1fr] gap-x-2 text-[12px] sm:grid-cols-[6rem_1fr] sm:text-[13px]">
+    <div className="grid grid-cols-[minmax(5rem,auto)_1fr] gap-x-3 text-[13px] sm:grid-cols-[7rem_1fr] sm:text-[14px]">
       <span className="font-medium text-muted-foreground">{label}</span>
       <span className="font-semibold text-foreground">{value}</span>
     </div>
@@ -37,8 +37,8 @@ export default function WeaponStatsCard({
       : data.subStatMin || data.subStatMax || "";
 
   return (
-    <section className="max-w-2xl rounded-[16px] border border-black/[0.06] bg-white/90 p-3.5 shadow-soft sm:p-4">
-      <div className="flex items-start gap-3 sm:gap-3.5">
+    <section className="w-full rounded-[16px] border border-black/[0.06] bg-white/90 p-4 shadow-soft sm:p-5">
+      <div className="flex items-start gap-3.5 sm:gap-4">
         <div
           className="relative flex h-[108px] w-[108px] shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-cover bg-center shadow-sm ring-1 ring-black/[0.06] sm:h-[120px] sm:w-[120px]"
           style={{ backgroundImage: `url(${rarityBg(stars)})` }}
@@ -57,17 +57,17 @@ export default function WeaponStatsCard({
           )}
         </div>
 
-        <div className="min-w-0 flex-1 space-y-1.5">
-          <p className="font-genshin text-base tracking-wide text-foreground sm:text-lg">{name}</p>
+        <div className="min-w-0 flex-1 space-y-2">
+          <p className="font-genshin text-lg tracking-wide text-foreground sm:text-xl">{name}</p>
 
-          <div className="space-y-0.5">
-            <div className="grid grid-cols-[minmax(4.5rem,auto)_1fr] items-center gap-x-2 text-[12px] sm:grid-cols-[6rem_1fr] sm:text-[13px]">
+          <div className="space-y-1">
+            <div className="grid grid-cols-[minmax(5rem,auto)_1fr] items-center gap-x-3 text-[13px] sm:grid-cols-[7rem_1fr] sm:text-[14px]">
               <span className="font-medium text-muted-foreground">Редкость</span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`/images/stars/Quality_star_${stars}.svg`}
                 alt={`${stars}★`}
-                className="h-3 w-auto justify-self-start"
+                className="h-3.5 w-auto justify-self-start"
               />
             </div>
             <StatRow label="Тип" value={weaponType} />
@@ -81,7 +81,7 @@ export default function WeaponStatsCard({
       </div>
 
       {data.passive ? (
-        <div className="mt-3 border-t border-black/[0.06] pt-3 text-[13px] font-medium leading-relaxed text-foreground whitespace-pre-line">
+        <div className="mt-4 border-t border-black/[0.06] pt-4 text-[14px] font-medium leading-relaxed text-foreground whitespace-pre-line sm:text-[15px]">
           {data.passive}
         </div>
       ) : null}

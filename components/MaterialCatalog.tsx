@@ -184,6 +184,7 @@ export default function MaterialCatalog({ materials }: { materials: MaterialCata
                     fit="contain"
                     lore={m.lore}
                     fluid
+                    preview
                   />
                 ))}
               </div>
