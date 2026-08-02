@@ -6,6 +6,7 @@ import WikiItemCard from "@/components/WikiItemCard";
 import CatalogSectionHeader from "@/components/CatalogSectionHeader";
 import { rarityStarsFromEnum, sortByRarityDesc } from "@/lib/genshin";
 import { groupByWeaponType, WEAPON_TYPE_ORDER } from "@/lib/regions";
+import type { WeaponHoverMeta } from "@/lib/wiki-guide-data";
 
 export type WeaponCatalogItem = {
   id: number;
@@ -15,6 +16,7 @@ export type WeaponCatalogItem = {
   rarity: string;
   weaponType: string;
   lore?: string | null;
+  weaponMeta?: WeaponHoverMeta | null;
 };
 
 const WEAPON_TYPES = ["Все", ...WEAPON_TYPE_ORDER] as const;
@@ -174,9 +176,9 @@ export default function WeaponCatalog({ weapons }: { weapons: WeaponCatalogItem[
                     href={`/wiki/weapons/${w.slug}`}
                     rarityStars={rarityStarsFromEnum(w.rarity)}
                     fit="contain"
-                    badge={w.weaponType}
-                    lore={w.lore}
+                    weaponMeta={w.weaponMeta}
                     fluid
+                    preview
                   />
                 ))}
               </div>

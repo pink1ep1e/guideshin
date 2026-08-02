@@ -13,6 +13,7 @@ import {
   hasForgingRecipe,
   isAllowedMapEmbedUrl,
   type MaterialGuideData,
+  type WeaponHoverMeta,
 } from "@/lib/wiki-guide-data";
 
 export default function MaterialGuideView({
@@ -21,6 +22,7 @@ export default function MaterialGuideView({
   image,
   data,
   loreByName = {},
+  weaponMetaByName = {},
 }: {
   materialName: string;
   rarityStars: number;
@@ -28,9 +30,14 @@ export default function MaterialGuideView({
   data: MaterialGuideData;
   /** Короткий лор по имени предмета (lowercase) для hover-превью. */
   loreByName?: Record<string, string>;
+  /** Статы оружия по имени (lowercase) для hover-превью. */
+  weaponMetaByName?: Record<string, WeaponHoverMeta>;
 }) {
   function loreOf(name: string) {
     return loreByName[name.trim().toLowerCase()] || undefined;
+  }
+  function weaponMetaOf(name: string) {
+    return weaponMetaByName[name.trim().toLowerCase()] || undefined;
   }
   const characters = sortByRarityDesc(
     data.characters,
@@ -154,8 +161,10 @@ export default function MaterialGuideView({
                 rarityStars={w.rarityStars}
                 href={w.href}
                 lore={loreOf(w.name)}
+                weaponMeta={weaponMetaOf(w.name)}
                 size="lg"
                 fluid
+                preview
               />
             ))}
           </div>
@@ -223,8 +232,10 @@ export default function MaterialGuideView({
                 rarityStars={item.rarityStars}
                 href={item.href}
                 lore={loreOf(item.name)}
+                weaponMeta={weaponMetaOf(item.name)}
                 size="lg"
                 fluid
+                preview
               />
             ))}
           </div>
@@ -312,6 +323,7 @@ export default function MaterialGuideView({
                   qty={m.qty}
                   href={m.href}
                   lore={loreOf(m.name)}
+                  weaponMeta={weaponMetaOf(m.name)}
                   size="md"
                   fluid
                   preview

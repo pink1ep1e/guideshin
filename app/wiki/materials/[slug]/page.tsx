@@ -4,7 +4,13 @@ import Sidebar from "@/components/Sidebar";
 import MaterialGuideView from "@/components/MaterialGuideView";
 import { withPrisma } from "@/prisma/prisma-client";
 import { MATERIAL_CATEGORY_LABEL } from "@/lib/character-materials";
-import { parseMaterialGuide, plainLore } from "@/lib/wiki-guide-data";
+import {
+  parseMaterialGuide,
+  parseWeaponGuide,
+  plainLore,
+  weaponHoverFromGuide,
+  type WeaponHoverMeta,
+} from "@/lib/wiki-guide-data";
 import { SITE_NAME } from "@/lib/site";
 import type { Metadata } from "next";
 
@@ -59,15 +65,23 @@ export default async function MaterialDetailPage({ params }: Props) {
     .map((m) => m.name.trim())
     .filter(Boolean);
 
-  const loreRows =
-    relatedNames.length > 0
-      ? await withPrisma((prisma) =>
-          prisma.material.findMany({
-            where: { name: { in: [...new Set(relatedNames)] } },
-            select: { name: true, shortDesc: true, guideData: true },
-          }),
-        ).catch(() => [])
-      : [];
+  const uniqueNames = [...new Set(relatedNames)];
+
+  const [loreRows, weaponRows] =
+    uniqueNames.length > 0
+      ? await withPrisma(async (prisma) =>
+          Promise.all([
+            prisma.material.findMany({
+              where: { name: { in: uniqueNames } },
+              select: { name: true, shortDesc: true, guideData: true },
+            }),
+            prisma.weapon.findMany({
+              where: { name: { in: uniqueNames } },
+              select: { name: true, weaponType: true, guideData: true },
+            }),
+          ]),
+        ).catch(() => [[], []] as const)
+      : [[], []];
 
   const loreByName: Record<string, string> = {};
   for (const row of loreRows) {
@@ -77,6 +91,14 @@ export default async function MaterialDetailPage({ params }: Props) {
       row.shortDesc?.trim() ||
       plainLore(g.description);
     if (text) loreByName[row.name.trim().toLowerCase()] = text;
+  }
+
+  const weaponMetaByName: Record<string, WeaponHoverMeta> = {};
+  for (const row of weaponRows) {
+    const meta = weaponHoverFromGuide(row.weaponType, parseWeaponGuide(row.guideData));
+    if (meta.weaponType || meta.atk || meta.subStat) {
+      weaponMetaByName[row.name.trim().toLowerCase()] = meta;
+    }
   }
 
   return (
@@ -106,6 +128,7 @@ export default async function MaterialDetailPage({ params }: Props) {
             image={item.image}
             data={guide}
             loreByName={loreByName}
+            weaponMetaByName={weaponMetaByName}
           />
 
           {item.contentHtml && (

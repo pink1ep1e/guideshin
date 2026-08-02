@@ -10,6 +10,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { rarityBg } from "@/lib/genshin";
+import type { WeaponHoverMeta } from "@/lib/wiki-guide-data";
 
 type PreviewState = {
   x: number;
@@ -21,11 +22,27 @@ function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
 }
 
+function MetaRow({ label, value }: { label: string; value: string }) {
+  if (!value) return null;
+  return (
+    <div className="grid grid-cols-[auto_1fr] gap-x-2 text-[11px] leading-snug">
+      <span className="font-medium text-muted-foreground">{label}</span>
+      <span className="font-semibold text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function hasWeaponMeta(meta?: WeaponHoverMeta | null): boolean {
+  if (!meta) return false;
+  return Boolean(meta.weaponType || meta.atk || meta.subStat || meta.subStatLabel);
+}
+
 /** Красивое всплывающее превью при наведении на карточку. */
 export default function ItemHoverPreview({
   name,
   image,
   lore,
+  weaponMeta,
   rarityStars = 4,
   fit = "contain",
   children,
@@ -34,6 +51,8 @@ export default function ItemHoverPreview({
   name: string;
   image: string;
   lore?: string | null;
+  /** Для оружия: тип, сила атаки, доп. стат вместо лора. */
+  weaponMeta?: WeaponHoverMeta | null;
   rarityStars?: number;
   fit?: "cover" | "contain";
   children: ReactNode;
@@ -47,6 +66,7 @@ export default function ItemHoverPreview({
   const tipId = useId();
   const stars = Math.min(5, Math.max(1, Math.round(rarityStars || 1)));
   const loreText = lore?.trim() || "";
+  const showWeapon = hasWeaponMeta(weaponMeta);
 
   useEffect(() => {
     setMounted(true);
@@ -56,14 +76,17 @@ export default function ItemHoverPreview({
     };
   }, []);
 
-  const place = useCallback((clientX: number, clientY: number) => {
-    const pad = 12;
-    const tipW = 300;
-    const tipH = 118;
-    const x = clamp(clientX + 14, pad, window.innerWidth - tipW - pad);
-    const y = clamp(clientY + 14, pad, window.innerHeight - tipH - pad);
-    setState({ x, y, visible: true });
-  }, []);
+  const place = useCallback(
+    (clientX: number, clientY: number) => {
+      const pad = 12;
+      const tipW = 300;
+      const tipH = showWeapon ? 150 : 118;
+      const x = clamp(clientX + 14, pad, window.innerWidth - tipW - pad);
+      const y = clamp(clientY + 14, pad, window.innerHeight - tipH - pad);
+      setState({ x, y, visible: true });
+    },
+    [showWeapon],
+  );
 
   function onEnter(e: React.MouseEvent) {
     if (hideTimer.current) clearTimeout(hideTimer.current);
@@ -131,12 +154,21 @@ export default function ItemHoverPreview({
                 />
               </div>
 
-              {/* Справа: название + описание */}
+              {/* Справа: название + описание / статы оружия */}
               <div className="min-w-0 flex-1 border-l border-black/[0.05] bg-white/80 px-3 py-2.5">
                 <p className="font-genshin text-[13px] leading-snug tracking-wide text-[#1e1e1e]">
                   {name}
                 </p>
-                {loreText ? (
+                {showWeapon && weaponMeta ? (
+                  <div className="mt-1.5 space-y-1">
+                    <MetaRow label="Тип" value={weaponMeta.weaponType || ""} />
+                    <MetaRow label="Сила атаки" value={weaponMeta.atk || ""} />
+                    <MetaRow
+                      label={weaponMeta.subStatLabel || "Доп. стат"}
+                      value={weaponMeta.subStat || ""}
+                    />
+                  </div>
+                ) : loreText ? (
                   <p className="mt-1.5 line-clamp-4 text-[11px] font-medium leading-relaxed text-muted-foreground">
                     {loreText}
                   </p>

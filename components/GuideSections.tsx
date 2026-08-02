@@ -9,6 +9,7 @@ import {
   rarityBg,
   type ElementKey,
 } from "@/lib/genshin";
+import type { WeaponHoverMeta } from "@/lib/wiki-guide-data";
 
 export type RelatedCharacter = {
   name: string;
@@ -25,6 +26,7 @@ export type RelatedWeapon = {
   rarityStars: number;
   href?: string;
   lore?: string | null;
+  weaponMeta?: WeaponHoverMeta | null;
 };
 
 /** Карточка персонажа в гайдах — тот же стиль, что в каталоге. */
@@ -84,8 +86,8 @@ export function CharacterPortraitCard({ item }: { item: RelatedCharacter }) {
         )}
       </div>
 
-      <div className="shrink-0 px-1.5 py-1.5">
-        <p className="font-genshin line-clamp-2 w-full overflow-hidden text-center text-[13px] leading-tight tracking-wide text-[#1e1e1e]">
+      <div className="flex min-h-[2.75rem] shrink-0 items-center justify-center px-1.5 pb-2 pt-1.5">
+        <p className="font-genshin line-clamp-2 w-full text-center text-[12px] leading-snug tracking-wide text-[#1e1e1e] [overflow-wrap:anywhere]">
           {item.name}
         </p>
       </div>
@@ -106,7 +108,7 @@ export function CharacterPortraitCard({ item }: { item: RelatedCharacter }) {
   return <div className={shell}>{inner}</div>;
 }
 
-/** Плитка оружия — тот же стиль, что WikiItemCard (без hover-превью). */
+/** Плитка оружия — тот же стиль, что WikiItemCard. */
 export function WeaponTileCard({ item }: { item: RelatedWeapon }) {
   return (
     <WikiItemCard
@@ -116,7 +118,8 @@ export function WeaponTileCard({ item }: { item: RelatedWeapon }) {
       rarityStars={item.rarityStars}
       fit="contain"
       lore={item.lore}
-      preview={false}
+      weaponMeta={item.weaponMeta}
+      preview
     />
   );
 }
