@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function WeaponsCatalogPage() {
-  const weapons = await withPrisma((prisma) =>
+  const weaponsRaw = await withPrisma((prisma) =>
     prisma.weapon.findMany({
       where: { published: true },
       orderBy: [{ rarity: "desc" }, { name: "asc" }],
@@ -26,9 +26,20 @@ export default async function WeaponsCatalogPage() {
         image: true,
         rarity: true,
         weaponType: true,
+        shortDesc: true,
       },
     }),
   );
+
+  const weapons = weaponsRaw.map((w) => ({
+    id: w.id,
+    slug: w.slug,
+    name: w.name,
+    image: w.image,
+    rarity: w.rarity,
+    weaponType: w.weaponType,
+    lore: w.shortDesc,
+  }));
 
   return (
     <div className="pb-8">

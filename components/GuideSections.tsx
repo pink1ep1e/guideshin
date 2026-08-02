@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type { ReactNode } from "react";
+import ItemHoverPreview from "@/components/ItemHoverPreview";
 import WikiItemCard from "@/components/WikiItemCard";
 import {
   ELEMENT_SVG,
@@ -14,6 +17,7 @@ export type RelatedCharacter = {
   element?: string;
   rarityStars: number;
   href?: string;
+  lore?: string | null;
 };
 
 export type RelatedWeapon = {
@@ -21,6 +25,7 @@ export type RelatedWeapon = {
   image: string;
   rarityStars: number;
   href?: string;
+  lore?: string | null;
 };
 
 /** Карточка персонажа в гайдах — тот же стиль, что в каталоге. */
@@ -73,17 +78,14 @@ export function CharacterPortraitCard({ item }: { item: RelatedCharacter }) {
         )}
       </div>
 
-      <div className="relative z-10 -mt-4 flex flex-col items-center px-1.5 pb-1.5 pt-0">
+      <div className="relative z-10 -mt-4 flex min-h-[3.75em] flex-col items-center px-1.5 pb-2 pt-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`/images/stars/Quality_star_${stars}.svg`}
           alt=""
           className="relative z-10 mb-1 h-3.5 w-auto drop-shadow"
         />
-        <p
-          className="font-genshin mt-1 line-clamp-2 w-full overflow-hidden text-center text-[13px] leading-snug tracking-wide text-[#1e1e1e]"
-          title={item.name}
-        >
+        <p className="font-genshin line-clamp-2 w-full overflow-hidden text-center text-[13px] leading-snug tracking-wide text-[#1e1e1e]">
           {item.name}
         </p>
       </div>
@@ -91,16 +93,27 @@ export function CharacterPortraitCard({ item }: { item: RelatedCharacter }) {
   );
 
   const shell =
-    "group relative block w-[108px] shrink-0 overflow-hidden rounded-[14px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)]";
+    "group relative flex h-full w-[108px] shrink-0 flex-col overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)]";
 
-  return item.href ? (
-    <Link href={item.href} title={item.name} className={shell}>
+  const card = item.href ? (
+    <Link href={item.href} className={shell}>
       {inner}
     </Link>
   ) : (
-    <div title={item.name} className={shell}>
-      {inner}
-    </div>
+    <div className={shell}>{inner}</div>
+  );
+
+  return (
+    <ItemHoverPreview
+      name={item.name}
+      image={item.image}
+      lore={item.lore}
+      rarityStars={stars}
+      fit="cover"
+      className="inline-block h-full shrink-0"
+    >
+      {card}
+    </ItemHoverPreview>
   );
 }
 
@@ -113,6 +126,7 @@ export function WeaponTileCard({ item }: { item: RelatedWeapon }) {
       href={item.href}
       rarityStars={item.rarityStars}
       fit="contain"
+      lore={item.lore}
     />
   );
 }

@@ -350,3 +350,19 @@ export function hasForgingRecipe(data: MaterialGuideData): boolean {
 export function uid() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
+
+/** Убрать HTML из описания для короткого лора в превью. */
+export function plainLore(htmlOrText?: string | null, maxLen = 220): string {
+  if (!htmlOrText?.trim()) return "";
+  const text = htmlOrText
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, " ")
+    .trim();
+  if (text.length <= maxLen) return text;
+  return `${text.slice(0, maxLen).trim()}…`;
+}

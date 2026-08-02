@@ -5,6 +5,7 @@ type ArtifactCardProps = {
   img: string;
   href: string;
   rarity?: 4 | 5;
+  lore?: string | null;
 };
 
 export default function ArtifactCard({
@@ -12,6 +13,7 @@ export default function ArtifactCard({
   img,
   href,
   rarity = 5,
+  lore,
 }: ArtifactCardProps) {
   const image = img.startsWith("/") || img.startsWith("http")
     ? img
@@ -24,6 +26,7 @@ export default function ArtifactCard({
       href={href}
       rarityStars={rarity}
       fit="cover"
+      lore={lore}
       fluid
     />
   );

@@ -4,7 +4,7 @@ import Sidebar from "@/components/Sidebar";
 import MaterialGuideView from "@/components/MaterialGuideView";
 import { withPrisma } from "@/prisma/prisma-client";
 import { MATERIAL_CATEGORY_LABEL } from "@/lib/character-materials";
-import { parseMaterialGuide } from "@/lib/wiki-guide-data";
+import { parseMaterialGuide, plainLore } from "@/lib/wiki-guide-data";
 import { SITE_NAME } from "@/lib/site";
 import type { Metadata } from "next";
 
@@ -48,6 +48,37 @@ export default async function MaterialDetailPage({ params }: Props) {
   if (!item || !item.published) notFound();
   const guide = parseMaterialGuide(item.guideData);
 
+  const relatedNames = [
+    ...guide.alchemyUses,
+    ...guide.alchemyCraft,
+    ...guide.forgingUses,
+    ...guide.forgingIngredients,
+    ...guide.teapotItems,
+    ...guide.weapons,
+  ]
+    .map((m) => m.name.trim())
+    .filter(Boolean);
+
+  const loreRows =
+    relatedNames.length > 0
+      ? await withPrisma((prisma) =>
+          prisma.material.findMany({
+            where: { name: { in: [...new Set(relatedNames)] } },
+            select: { name: true, shortDesc: true, guideData: true },
+          }),
+        ).catch(() => [])
+      : [];
+
+  const loreByName: Record<string, string> = {};
+  for (const row of loreRows) {
+    const g = parseMaterialGuide(row.guideData);
+    const text =
+      g.lore?.trim() ||
+      row.shortDesc?.trim() ||
+      plainLore(g.description);
+    if (text) loreByName[row.name.trim().toLowerCase()] = text;
+  }
+
   return (
     <div className="container-page py-7 sm:py-9">
       <div className="mb-5">
@@ -74,6 +105,7 @@ export default async function MaterialDetailPage({ params }: Props) {
             rarityStars={item.rarityStars}
             image={item.image}
             data={guide}
+            loreByName={loreByName}
           />
 
           {item.contentHtml && (

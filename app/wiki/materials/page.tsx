@@ -3,6 +3,7 @@ import Sidebar from "@/components/Sidebar";
 import MaterialCatalog from "@/components/MaterialCatalog";
 import { withPrisma } from "@/prisma/prisma-client";
 import { HOME_ASSETS } from "@/lib/home-content";
+import { parseMaterialGuide, plainLore } from "@/lib/wiki-guide-data";
 import { SITE_NAME } from "@/lib/site";
 import type { Metadata } from "next";
 
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function MaterialsCatalogPage() {
-  const materials = await withPrisma((prisma) =>
+  const materialsRaw = await withPrisma((prisma) =>
     prisma.material.findMany({
       where: { published: true },
       orderBy: [{ rarityStars: "desc" }, { name: "asc" }],
@@ -27,9 +28,26 @@ export default async function MaterialsCatalogPage() {
         rarityStars: true,
         category: true,
         region: true,
+        shortDesc: true,
+        guideData: true,
       },
     }),
   );
+
+  const materials = materialsRaw.map((m) => {
+    const g = parseMaterialGuide(m.guideData);
+    const lore = g.lore?.trim() || m.shortDesc?.trim() || plainLore(g.description) || null;
+    return {
+      id: m.id,
+      slug: m.slug,
+      name: m.name,
+      image: m.image,
+      rarityStars: m.rarityStars,
+      category: m.category,
+      region: m.region,
+      lore,
+    };
+  });
 
   return (
     <div className="pb-8">

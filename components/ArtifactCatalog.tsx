@@ -13,6 +13,7 @@ export type ArtifactItem = {
   href: string;
   rarity?: 4 | 5;
   region?: string | null;
+  lore?: string | null;
 };
 
 type RarityFilter = "ALL" | 4 | 5;
@@ -141,6 +142,7 @@ export default function ArtifactCatalog({ artifacts }: { artifacts: ArtifactItem
                     img={a.img}
                     href={a.href}
                     rarity={a.rarity ?? 5}
+                    lore={a.lore}
                   />
                 ))}
               </div>

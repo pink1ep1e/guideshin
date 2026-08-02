@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import ItemHoverPreview from "@/components/ItemHoverPreview";
 import StickerBadge from "@/components/StickerBadge";
 import {
   ELEMENT_SVG,
@@ -16,6 +19,7 @@ export type CharacterCardData = {
   element: string;
   region?: string | null;
   sticker?: string | null;
+  shortDesc?: string | null;
 };
 
 export default function CharacterCard({ character }: { character: CharacterCardData }) {
@@ -25,11 +29,10 @@ export default function CharacterCard({ character }: { character: CharacterCardD
   const theme = ELEMENT_THEME[elKey];
   const glow = theme?.glow ?? "rgba(24,155,142,0.45)";
 
-  return (
+  const card = (
     <Link
       href={`/wiki/characters/${character.slug}`}
-      title={character.name}
-      className="group relative block w-full overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)]"
+      className="group relative flex h-full w-full flex-col overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)]"
     >
       <div
         className="relative aspect-square w-full overflow-hidden bg-cover bg-center"
@@ -74,17 +77,30 @@ export default function CharacterCard({ character }: { character: CharacterCardD
         )}
       </div>
 
-      <div className="relative z-10 -mt-4 flex flex-col items-center px-1.5 pb-1.5 pt-0">
+      <div className="relative z-10 -mt-4 flex min-h-[3.75em] flex-col items-center px-1.5 pb-2 pt-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`/images/stars/Quality_star_${stars}.svg`}
           alt=""
           className="relative z-10 mb-1 h-3.5 w-auto drop-shadow"
         />
-        <p className="font-genshin mt-1 line-clamp-2 w-full overflow-hidden text-center text-[13px] leading-snug tracking-wide text-[#1e1e1e]">
+        <p className="font-genshin line-clamp-2 w-full overflow-hidden text-center text-[13px] leading-snug tracking-wide text-[#1e1e1e]">
           {character.name}
         </p>
       </div>
     </Link>
+  );
+
+  return (
+    <ItemHoverPreview
+      name={character.name}
+      image={character.image}
+      lore={character.shortDesc}
+      rarityStars={stars}
+      fit="cover"
+      className="h-full w-full"
+    >
+      {card}
+    </ItemHoverPreview>
   );
 }

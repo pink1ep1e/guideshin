@@ -14,6 +14,7 @@ export type WeaponCatalogItem = {
   image: string;
   rarity: string;
   weaponType: string;
+  lore?: string | null;
 };
 
 const WEAPON_TYPES = ["Все", ...WEAPON_TYPE_ORDER] as const;
@@ -174,6 +175,7 @@ export default function WeaponCatalog({ weapons }: { weapons: WeaponCatalogItem[
                     rarityStars={rarityStarsFromEnum(w.rarity)}
                     fit="contain"
                     badge={w.weaponType}
+                    lore={w.lore}
                     fluid
                   />
                 ))}
