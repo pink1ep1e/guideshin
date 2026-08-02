@@ -351,6 +351,20 @@ export function uid() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
+/** Короткий текст для hover-превью материала. */
+export function materialPreviewLore(row: {
+  shortDesc?: string | null;
+  guideData?: unknown;
+}): string {
+  const g = parseMaterialGuide(row.guideData);
+  return (
+    g.lore?.trim() ||
+    row.shortDesc?.trim() ||
+    plainLore(g.description) ||
+    ""
+  );
+}
+
 /** Убрать HTML из описания для короткого лора в превью. */
 export function plainLore(htmlOrText?: string | null, maxLen = 220): string {
   if (!htmlOrText?.trim()) return "";

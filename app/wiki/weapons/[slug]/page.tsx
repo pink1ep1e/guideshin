@@ -7,6 +7,7 @@ import { withPrisma } from "@/prisma/prisma-client";
 import { rarityStarsFromEnum } from "@/lib/genshin";
 import {
   enrichWeaponGuideMaterials,
+  materialPreviewLore,
   parseWeaponGuide,
 } from "@/lib/wiki-guide-data";
 import { SITE_NAME } from "@/lib/site";
@@ -56,13 +57,34 @@ export default async function WeaponPage({ params }: Props) {
   const catalog = await withPrisma((prisma) =>
     prisma.material.findMany({
       where: { published: true },
-      select: { name: true, slug: true, image: true, rarityStars: true },
+      select: {
+        name: true,
+        slug: true,
+        image: true,
+        rarityStars: true,
+        shortDesc: true,
+        guideData: true,
+      },
     }),
   ).catch(
-    () => [] as { name: string; slug: string; image: string; rarityStars: number }[],
+    () =>
+      [] as {
+        name: string;
+        slug: string;
+        image: string;
+        rarityStars: number;
+        shortDesc: string | null;
+        guideData: unknown;
+      }[],
   );
 
   const guide = enrichWeaponGuideMaterials(rawGuide, catalog);
+
+  const loreByName: Record<string, string> = {};
+  for (const row of catalog) {
+    const text = materialPreviewLore(row);
+    if (text) loreByName[row.name.trim().toLowerCase()] = text;
+  }
 
   return (
     <div className="container-page py-7 sm:py-9">
@@ -89,7 +111,7 @@ export default async function WeaponPage({ params }: Props) {
             </section>
           )}
 
-          <WeaponGuideView weaponName={item.name} data={guide} />
+          <WeaponGuideView weaponName={item.name} data={guide} loreByName={loreByName} />
 
           {item.contentHtml && (
             <section className="panel p-6 sm:p-7">
