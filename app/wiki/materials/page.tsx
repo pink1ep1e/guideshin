@@ -18,7 +18,7 @@ export default async function MaterialsCatalogPage() {
   const materials = await withPrisma((prisma) =>
     prisma.material.findMany({
       where: { published: true },
-      orderBy: [{ order: "asc" }, { name: "asc" }],
+      orderBy: [{ rarityStars: "desc" }, { name: "asc" }],
       select: {
         id: true,
         slug: true,

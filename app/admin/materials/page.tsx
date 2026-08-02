@@ -13,7 +13,7 @@ export default async function AdminMaterialsPage() {
   if (!session) redirect("/admin/login");
 
   const items = await withPrisma((prisma) =>
-    prisma.material.findMany({ orderBy: [{ order: "asc" }, { createdAt: "desc" }] }),
+    prisma.material.findMany({ orderBy: [{ rarityStars: "desc" }, { name: "asc" }] }),
   );
 
   return (

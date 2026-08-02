@@ -19,7 +19,7 @@ export default async function ArtifactsPage() {
   const dbItems = await withPrisma((prisma) =>
     prisma.artifact.findMany({
       where: { published: true },
-      orderBy: [{ order: "asc" }, { name: "asc" }],
+      orderBy: [{ rarity: "desc" }, { name: "asc" }],
       select: {
         slug: true,
         name: true,

@@ -1,8 +1,10 @@
 import ItemIconCard from "@/components/ItemIconCard";
 import {
   MATERIAL_CATEGORY_LABEL,
+  MATERIAL_CATEGORY_ORDER,
   type CharacterMaterial,
 } from "@/lib/character-materials";
+import { sortByRarityDesc } from "@/lib/genshin";
 
 export default function MaterialCards({
   materials,
@@ -13,10 +15,23 @@ export default function MaterialCards({
 }) {
   if (materials.length === 0) return null;
 
-  const grouped = materials.reduce<Record<string, CharacterMaterial[]>>((acc, m) => {
+  const sorted = sortByRarityDesc(
+    materials,
+    (m) => m.rarityStars ?? 0,
+    (m) => m.name,
+  );
+
+  const grouped = sorted.reduce<Record<string, CharacterMaterial[]>>((acc, m) => {
     (acc[m.category] ??= []).push(m);
     return acc;
   }, {});
+
+  const categories = [
+    ...MATERIAL_CATEGORY_ORDER.filter((c) => grouped[c]?.length),
+    ...Object.keys(grouped).filter(
+      (c) => !MATERIAL_CATEGORY_ORDER.includes(c as (typeof MATERIAL_CATEGORY_ORDER)[number]),
+    ),
+  ];
 
   return (
     <section className="glass-panel relative overflow-hidden p-5 sm:p-6">
@@ -29,14 +44,14 @@ export default function MaterialCards({
       </h2>
 
       <div className="space-y-6">
-        {Object.entries(grouped).map(([category, rows]) => (
+        {categories.map((category) => (
           <div key={category}>
             <p className="mb-3 text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
               {MATERIAL_CATEGORY_LABEL[category as keyof typeof MATERIAL_CATEGORY_LABEL] ??
                 category}
             </p>
             <div className="flex flex-wrap gap-3">
-              {rows.map((m) => (
+              {grouped[category].map((m) => (
                 <ItemIconCard
                   key={m.id}
                   name={m.name}

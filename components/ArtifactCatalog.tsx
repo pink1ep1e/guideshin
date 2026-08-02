@@ -4,6 +4,7 @@ import { useDeferredValue, useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import ArtifactCard from "@/components/ArtifactCard";
 import CatalogSectionHeader from "@/components/CatalogSectionHeader";
+import { sortByRarityDesc } from "@/lib/genshin";
 import { groupByRegion, regionSectionTitle } from "@/lib/regions";
 
 export type ArtifactItem = {
@@ -22,12 +23,13 @@ export default function ArtifactCatalog({ artifacts }: { artifacts: ArtifactItem
   const deferredQuery = useDeferredValue(query.trim().toLowerCase());
 
   const filtered = useMemo(() => {
-    return artifacts.filter((a) => {
+    const list = artifacts.filter((a) => {
       const itemRarity = a.rarity ?? 5;
       if (rarity !== "ALL" && itemRarity !== rarity) return false;
       if (!deferredQuery) return true;
       return a.name.toLowerCase().includes(deferredQuery);
     });
+    return sortByRarityDesc(list, (a) => a.rarity ?? 5, (a) => a.name);
   }, [artifacts, deferredQuery, rarity]);
 
   const groups = useMemo(

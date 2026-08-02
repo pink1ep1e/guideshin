@@ -265,7 +265,7 @@ function itemCardHtml(item: GuideItem) {
     ${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="h-full w-full object-contain" />` : `<span class="px-1 text-center text-[10px] font-bold text-muted-foreground">Нет иконки</span>`}
     ${qtyBadge}
   </div>
-  <p class="break-words bg-white px-1.5 py-1.5 text-center text-[12px] font-semibold leading-snug text-foreground" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</p>
+  <p class="font-genshin break-words bg-white px-1.5 py-1.5 text-center text-[12px] leading-snug tracking-wide text-[#1e1e1e]" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</p>
   ${item.note ? `<p class="line-clamp-1 px-1.5 pb-2 text-center text-[10px] font-bold text-[#189b8e]" title="${escapeHtml(item.note)}">${escapeHtml(item.note)}</p>` : ""}`;
   if (item.href) {
     return `<a href="${escapeHtml(item.href)}" title="${escapeHtml(item.name)}" class="guide-item-link inline-block w-[92px] shrink-0 overflow-hidden rounded-[12px] bg-card shadow-panel ring-1 ring-black/[0.06] transition hover:opacity-95">${inner}</a>`;
@@ -329,7 +329,7 @@ function renderBlock(block: GuideBlock): string {
         const bg = m.rarity === 5 ? "/images/legend-bg.jpg" : "/images/epic-bg.jpg";
         const nameHtml = m.href
           ? `<a href="${escapeHtml(m.href)}" class="font-genshin text-center text-[13px] text-[#189b8e] hover:underline">${escapeHtml(m.name)}</a>`
-          : `<p class="font-genshin text-center text-[13px] text-foreground">${escapeHtml(m.name)}</p>`;
+          : `<p class="font-genshin text-center text-[13px] tracking-wide text-[#1e1e1e]">${escapeHtml(m.name)}</p>`;
         const avatar = `<div class="relative h-16 w-16 overflow-hidden rounded-full bg-cover bg-center ring-2 ring-white shadow-md" style="background-image:url(${bg})">
         <img src="${escapeHtml(m.image)}" alt="${escapeHtml(m.name)}" class="h-full w-full object-cover" />
         ${m.elementIcon ? `<img src="${escapeHtml(m.elementIcon)}" alt="" class="absolute -right-0.5 -top-0.5 h-5 w-5 drop-shadow" />` : ""}

@@ -153,7 +153,7 @@ export default function ItemIconCard({
         ) : null}
       </div>
       <p
-        className={`break-words px-1.5 py-1.5 text-center text-[12px] font-semibold leading-snug text-foreground ${
+        className={`font-genshin break-words px-1.5 py-1.5 text-center text-[12px] font-normal leading-snug tracking-wide text-[#1e1e1e] ${
           isNeutral ? "bg-[#f3f0ea]" : "bg-white"
         }`}
         title={name}

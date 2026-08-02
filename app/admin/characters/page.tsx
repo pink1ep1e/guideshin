@@ -14,7 +14,7 @@ export default async function AdminCharactersPage() {
   if (!session) redirect("/admin/login");
 
   const characters = await withPrisma((prisma) =>
-    prisma.character.findMany({ orderBy: [{ order: "asc" }, { createdAt: "desc" }] }),
+    prisma.character.findMany({ orderBy: [{ rarity: "desc" }, { name: "asc" }] }),
   );
 
   return (

@@ -64,6 +64,32 @@ export function rarityStarsFromEnum(rarity: string): number {
   return RARITY_STARS[rarity] ?? 4;
 }
 
+/** Сравнение: сначала легендарные (5★), потом ниже по редкости. */
+export function compareRarityDesc(
+  a: number | string | null | undefined,
+  b: number | string | null | undefined,
+): number {
+  const starsA =
+    typeof a === "number" ? a : typeof a === "string" ? rarityStarsFromEnum(a) : 0;
+  const starsB =
+    typeof b === "number" ? b : typeof b === "string" ? rarityStarsFromEnum(b) : 0;
+  return starsB - starsA;
+}
+
+/** Сортировка массива по редкости (легендарные → обычные), затем по имени. */
+export function sortByRarityDesc<T>(
+  items: T[],
+  getRarity: (item: T) => number | string | null | undefined,
+  getName?: (item: T) => string,
+): T[] {
+  return [...items].sort((a, b) => {
+    const byRarity = compareRarityDesc(getRarity(a), getRarity(b));
+    if (byRarity !== 0) return byRarity;
+    if (getName) return getName(a).localeCompare(getName(b), "ru");
+    return 0;
+  });
+}
+
 export type ElementTheme = {
   solid: string;
   hover: string;
