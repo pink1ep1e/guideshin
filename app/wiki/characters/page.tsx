@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function CharactersPage() {
-  const characters = await withPrisma((prisma) =>
+  const charactersRaw = await withPrisma((prisma) =>
     prisma.character.findMany({
       where: { published: true },
       orderBy: [{ rarity: "desc" }, { name: "asc" }],
@@ -29,9 +29,21 @@ export default async function CharactersPage() {
         element: true,
         region: true,
         sticker: true,
+        shortDesc: true,
       },
     }),
   ).catch(() => []);
+
+  const characters = charactersRaw.map((c) => ({
+    slug: c.slug,
+    name: c.name,
+    image: c.image,
+    rarity: c.rarity,
+    element: c.element,
+    region: c.region,
+    sticker: c.sticker,
+    shortDesc: c.shortDesc,
+  }));
 
   return (
     <div className="pb-8">

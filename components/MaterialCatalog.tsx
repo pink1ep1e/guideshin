@@ -20,6 +20,7 @@ export type MaterialCatalogItem = {
   rarityStars: number;
   category: string;
   region?: string | null;
+  lore?: string | null;
 };
 
 const CATEGORIES: Array<MaterialCategory | "ALL"> = [
@@ -181,6 +182,7 @@ export default function MaterialCatalog({ materials }: { materials: MaterialCata
                     href={`/wiki/materials/${m.slug}`}
                     rarityStars={m.rarityStars}
                     fit="contain"
+                    lore={m.lore}
                     fluid
                   />
                 ))}

@@ -26,6 +26,7 @@ export default async function ArtifactsPage() {
         image: true,
         rarity: true,
         region: true,
+        shortDesc: true,
       },
     }),
   );
@@ -36,6 +37,7 @@ export default async function ArtifactsPage() {
     href: `/wiki/artifacts/${a.slug}`,
     rarity: (RARITY_STARS[a.rarity] ?? 5) >= 5 ? 5 : 4,
     region: a.region,
+    lore: a.shortDesc,
   }));
 
   return (

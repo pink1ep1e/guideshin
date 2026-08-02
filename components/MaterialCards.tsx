@@ -50,7 +50,7 @@ export default function MaterialCards({
               {MATERIAL_CATEGORY_LABEL[category as keyof typeof MATERIAL_CATEGORY_LABEL] ??
                 category}
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
               {grouped[category].map((m) => (
                 <ItemIconCard
                   key={m.id}
@@ -59,6 +59,7 @@ export default function MaterialCards({
                   rarityStars={m.rarityStars ?? 3}
                   qty={m.qty}
                   size="md"
+                  fluid
                 />
               ))}
             </div>
