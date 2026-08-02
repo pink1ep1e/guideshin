@@ -57,11 +57,11 @@ export default function ItemHoverPreview({
   }, []);
 
   const place = useCallback((clientX: number, clientY: number) => {
-    const pad = 16;
-    const tipW = 280;
-    const tipH = loreText ? 320 : 240;
-    const x = clamp(clientX + 18, pad, window.innerWidth - tipW - pad);
-    const y = clamp(clientY + 18, pad, window.innerHeight - tipH - pad);
+    const pad = 12;
+    const tipW = 200;
+    const tipH = loreText ? 230 : 170;
+    const x = clamp(clientX + 14, pad, window.innerWidth - tipW - pad);
+    const y = clamp(clientY + 14, pad, window.innerHeight - tipH - pad);
     setState({ x, y, visible: true });
   }, [loreText]);
 
@@ -91,19 +91,19 @@ export default function ItemHoverPreview({
           <div
             id={tipId}
             role="tooltip"
-            className="pointer-events-none fixed z-[9999] w-[min(280px,calc(100vw-32px))]"
+            className="pointer-events-none fixed z-[9999] w-[min(200px,calc(100vw-24px))]"
             style={{
               left: state.x,
               top: state.y,
               opacity: shown ? 1 : 0,
-              transform: shown ? "translateY(0) scale(1)" : "translateY(6px) scale(0.96)",
+              transform: shown ? "translateY(0) scale(1)" : "translateY(4px) scale(0.97)",
               transition:
-                "opacity 180ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1)",
+                "opacity 160ms ease, transform 200ms cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           >
-            <div className="overflow-hidden rounded-[18px] border border-black/[0.06] bg-white/95 shadow-[0_20px_50px_-20px_rgba(11,31,68,0.45)] ring-1 ring-[#189b8e]/15 backdrop-blur-md">
+            <div className="overflow-hidden rounded-[14px] border border-black/[0.06] bg-white/95 shadow-[0_14px_36px_-16px_rgba(11,31,68,0.42)] ring-1 ring-[#189b8e]/15 backdrop-blur-md">
               <div
-                className="relative flex aspect-[5/4] items-center justify-center overflow-hidden bg-cover bg-center"
+                className="relative flex aspect-square items-center justify-center overflow-hidden bg-cover bg-center"
                 style={{ backgroundImage: `url(${rarityBg(stars)})` }}
               >
                 {image ? (
@@ -114,26 +114,26 @@ export default function ItemHoverPreview({
                     className={
                       fit === "cover"
                         ? "h-full w-full object-cover object-top"
-                        : "h-[88%] w-[88%] object-contain drop-shadow-md"
+                        : "h-[82%] w-[82%] object-contain drop-shadow-md"
                     }
                   />
                 ) : (
-                  <span className="text-xs font-bold text-muted-foreground">Нет иконки</span>
+                  <span className="text-[10px] font-bold text-muted-foreground">Нет иконки</span>
                 )}
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/25 to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/25 to-transparent" />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={`/images/stars/Quality_star_${stars}.svg`}
                   alt=""
-                  className="absolute bottom-2 left-1/2 h-4 w-auto -translate-x-1/2 drop-shadow"
+                  className="absolute bottom-1.5 left-1/2 h-3 w-auto -translate-x-1/2 drop-shadow"
                 />
               </div>
-              <div className="px-3.5 py-3">
-                <p className="font-genshin text-[15px] leading-snug tracking-wide text-[#1e1e1e]">
+              <div className="px-2.5 py-2">
+                <p className="font-genshin text-[12px] leading-snug tracking-wide text-[#1e1e1e]">
                   {name}
                 </p>
                 {loreText ? (
-                  <p className="mt-2 line-clamp-5 text-[12px] font-medium leading-relaxed text-muted-foreground">
+                  <p className="mt-1 line-clamp-3 text-[10px] font-medium leading-relaxed text-muted-foreground">
                     {loreText}
                   </p>
                 ) : null}
