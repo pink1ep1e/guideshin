@@ -86,7 +86,7 @@ export function CharacterPortraitCard({ item }: { item: RelatedCharacter }) {
         )}
       </div>
 
-      <div className="flex min-h-[2.75rem] shrink-0 items-center justify-center px-1.5 pb-2 pt-1.5">
+      <div className="flex min-h-[2.1rem] shrink-0 items-center justify-center px-1.5 py-1">
         <p className="font-genshin line-clamp-2 w-full text-center text-[12px] leading-snug tracking-wide text-[#1e1e1e] [overflow-wrap:anywhere]">
           {item.name}
         </p>

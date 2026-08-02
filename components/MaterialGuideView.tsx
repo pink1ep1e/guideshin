@@ -152,7 +152,7 @@ export default function MaterialGuideView({
 
       {weapons.length > 0 && (
         <GuideSection title="Возвышаемое оружие" intro={<p>{weaponsIntro}</p>}>
-          <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
+          <div className="flex flex-wrap gap-2.5">
             {weapons.map((w) => (
               <ItemIconCard
                 key={w.id}
@@ -162,8 +162,7 @@ export default function MaterialGuideView({
                 href={w.href}
                 lore={loreOf(w.name)}
                 weaponMeta={weaponMetaOf(w.name)}
-                size="lg"
-                fluid
+                size="md"
                 preview
               />
             ))}
@@ -173,7 +172,7 @@ export default function MaterialGuideView({
 
       {teapotItems.length > 0 && (
         <GuideSection title="Создание материалов" intro={<p>{teapotIntro}</p>}>
-          <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
+          <div className="flex flex-wrap gap-2.5">
             {teapotItems.map((item) => (
               <ItemIconCard
                 key={item.id}
@@ -184,7 +183,6 @@ export default function MaterialGuideView({
                 lore={loreOf(item.name)}
                 size="md"
                 variant="neutral"
-                fluid
                 preview
               />
             ))}
@@ -198,7 +196,7 @@ export default function MaterialGuideView({
           title="Применение в алхимии"
           intro={<p>{data.alchemyUseIntro || `«${materialName}» используется в алхимии:`}</p>}
         >
-          <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
+          <div className="flex flex-wrap gap-2.5">
             {alchemyUses.map((m) => (
               <ItemIconCard
                 key={m.id}
@@ -208,8 +206,7 @@ export default function MaterialGuideView({
                 qty={m.qty}
                 href={m.href}
                 lore={loreOf(m.name)}
-                size="lg"
-                fluid
+                size="md"
                 preview
               />
             ))}
@@ -223,7 +220,7 @@ export default function MaterialGuideView({
           title="Применение в ковке"
           intro={<p>{forgingUseIntro}</p>}
         >
-          <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
+          <div className="flex flex-wrap gap-2.5">
             {forgingUses.map((item) => (
               <ItemIconCard
                 key={item.id}
@@ -233,8 +230,7 @@ export default function MaterialGuideView({
                 href={item.href}
                 lore={loreOf(item.name)}
                 weaponMeta={weaponMetaOf(item.name)}
-                size="lg"
-                fluid
+                size="md"
                 preview
               />
             ))}
@@ -247,7 +243,7 @@ export default function MaterialGuideView({
           title="Обычные и элитные враги"
           intro={<p>{data.sourcesIntro || `Источник материала «${materialName}»:`}</p>}
         >
-          <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
+          <div className="flex flex-wrap gap-2.5">
             {data.sources.map((s) => (
               <ItemIconCard
                 key={s.id}
@@ -255,9 +251,8 @@ export default function MaterialGuideView({
                 image={s.image}
                 rarityStars={4}
                 href={s.href}
-                size="lg"
+                size="md"
                 variant="neutral"
-                fluid
               />
             ))}
           </div>
@@ -275,7 +270,7 @@ export default function MaterialGuideView({
             </p>
           }
         >
-          <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
+          <div className="flex flex-wrap gap-2.5">
             {alchemyCraft.map((m) => (
               <ItemIconCard
                 key={m.id}
@@ -285,8 +280,7 @@ export default function MaterialGuideView({
                 qty={m.qty}
                 href={m.href}
                 lore={loreOf(m.name)}
-                size="lg"
-                fluid
+                size="md"
                 preview
               />
             ))}
@@ -313,7 +307,7 @@ export default function MaterialGuideView({
             ) : null}
           </div>
           {forgingIngredients.length > 0 && (
-            <div className="mt-5 grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
+            <div className="mt-5 flex flex-wrap gap-2.5">
               {forgingIngredients.map((m) => (
                 <ItemIconCard
                   key={m.id}
@@ -325,7 +319,6 @@ export default function MaterialGuideView({
                   lore={loreOf(m.name)}
                   weaponMeta={weaponMetaOf(m.name)}
                   size="md"
-                  fluid
                   preview
                 />
               ))}
