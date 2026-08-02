@@ -4,32 +4,28 @@ import { useMemo, useState, type ReactNode } from "react";
 import { ArrowRight, Calculator } from "lucide-react";
 import FancySelect from "@/components/ui/FancySelect";
 
-/** Approximate Genshin XP book / mora costs for practical planning. */
-const HERO_WIT_BY_RANGE: Record<string, number> = {
-  "1-20": 6,
-  "20-40": 28,
-  "40-50": 29,
-  "50-60": 42,
-  "60-70": 59,
-  "70-80": 80,
-  "80-90": 171,
+/** Cumulative Character EXP required to reach each ascension milestone. */
+const CUMULATIVE_XP: Record<number, number> = {
+  1: 0,
+  20: 120_175,
+  40: 698_500,
+  50: 1_277_600,
+  60: 2_131_725,
+  70: 3_327_650,
+  80: 4_939_525,
+  90: 8_362_650,
 };
 
-const MORA_LEVEL_BY_RANGE: Record<string, number> = {
-  "1-20": 24000,
-  "20-40": 116000,
-  "40-50": 116000,
-  "50-60": 171000,
-  "60-70": 239000,
-  "70-80": 322000,
-  "80-90": 684000,
-};
+const BOOK_XP = { wit: 20_000, adventurer: 5_000, wanderer: 1_000 } as const;
 
-const ASCENSION_MORA = [0, 20000, 40000, 60000, 80000, 100000, 120000];
+/** Ascension mora at gates 20 / 40 / 50 / 60 / 70 / 80. */
+const ASCENSION_MORA = [20_000, 40_000, 60_000, 80_000, 100_000, 120_000] as const;
+const ASCENSION_GATES = [20, 40, 50, 60, 70, 80] as const;
 
-const TALENT_BOOKS = [0, 0, 3, 2, 4, 6, 9, 4, 6, 12];
+/** Talent books by destination level (index = talent level after upgrade). */
+const TALENT_BOOKS = [0, 0, 3, 2, 4, 6, 9, 4, 6, 12, 16];
 const TALENT_MORA = [
-  0, 0, 12500, 17500, 25000, 30000, 37500, 120000, 260000, 450000,
+  0, 0, 12_500, 17_500, 25_000, 30_000, 37_500, 120_000, 260_000, 450_000, 700_000,
 ];
 
 const LEVEL_OPTIONS = [1, 20, 40, 50, 60, 70, 80, 90] as const;
@@ -37,23 +33,33 @@ const TALENT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 const CALC_ICONS = {
   heroWit: "/opit-geroya.png",
+  adventurer: "/opit-iskatelya.png",
+  wanderer: "/sovet-strannika.png",
   talentBooks: "/knigi-talantov.webp",
   mora: "/mora.png",
 } as const;
 
-function sumRange(
-  map: Record<string, number>,
-  from: number,
-  to: number,
-  points: readonly number[],
-) {
-  let total = 0;
-  for (let i = 0; i < points.length - 1; i++) {
-    const a = points[i];
-    const b = points[i + 1];
-    if (a >= from && b <= to) total += map[`${a}-${b}`] ?? 0;
-  }
-  return total;
+type ExpBooks = { wit: number; adventurer: number; wanderer: number; mora: number; xp: number };
+
+/** Pack XP into books with minimal overshoot (smallest book = 1 000). */
+function booksForXp(xpNeeded: number): ExpBooks {
+  if (xpNeeded <= 0) return { wit: 0, adventurer: 0, wanderer: 0, mora: 0, xp: 0 };
+
+  const provided = Math.ceil(xpNeeded / BOOK_XP.wanderer) * BOOK_XP.wanderer;
+  let rem = provided;
+  const wit = Math.floor(rem / BOOK_XP.wit);
+  rem %= BOOK_XP.wit;
+  const adventurer = Math.floor(rem / BOOK_XP.adventurer);
+  rem %= BOOK_XP.adventurer;
+  const wanderer = rem / BOOK_XP.wanderer;
+
+  return {
+    wit,
+    adventurer,
+    wanderer,
+    mora: provided / 5,
+    xp: xpNeeded,
+  };
 }
 
 function formatNum(n: number) {
@@ -69,18 +75,38 @@ export default function GuideCalculators({ characterName }: { characterName: str
   const levelResult = useMemo(() => {
     const start = Math.min(Number(fromLvl), Number(toLvl));
     const end = Math.max(Number(fromLvl), Number(toLvl));
-    if (start === end) return { books: 0, mora: 0, ascensionMora: 0 };
+    if (start === end) {
+      return { wit: 0, adventurer: 0, wanderer: 0, mora: 0, xp: 0, ascensionMora: 0 };
+    }
 
-    const books = sumRange(HERO_WIT_BY_RANGE, start, end, LEVEL_OPTIONS);
-    const mora = sumRange(MORA_LEVEL_BY_RANGE, start, end, LEVEL_OPTIONS);
+    // XP overflow is wasted at each ascension cap — pack books per segment.
+    let wit = 0;
+    let adventurer = 0;
+    let wanderer = 0;
+    let mora = 0;
+    let xp = 0;
+    for (let i = 0; i < LEVEL_OPTIONS.length - 1; i++) {
+      const a = LEVEL_OPTIONS[i];
+      const b = LEVEL_OPTIONS[i + 1];
+      if (a >= start && b <= end) {
+        const seg = booksForXp((CUMULATIVE_XP[b] ?? 0) - (CUMULATIVE_XP[a] ?? 0));
+        wit += seg.wit;
+        adventurer += seg.adventurer;
+        wanderer += seg.wanderer;
+        mora += seg.mora;
+        xp += seg.xp;
+      }
+    }
 
     let ascensionMora = 0;
-    const ascensionAt = [20, 40, 50, 60, 70, 80];
-    ascensionAt.forEach((lvl, idx) => {
-      if (lvl > start && lvl <= end) ascensionMora += ASCENSION_MORA[idx + 1] ?? 0;
+    ASCENSION_GATES.forEach((gate, idx) => {
+      // Need the gate only when leveling past it (end > gate), not merely reaching it.
+      if (start < gate && end > gate) {
+        ascensionMora += ASCENSION_MORA[idx] ?? 0;
+      }
     });
 
-    return { books, mora, ascensionMora };
+    return { wit, adventurer, wanderer, mora, xp, ascensionMora };
   }, [fromLvl, toLvl]);
 
   const talentResult = useMemo(() => {
@@ -105,6 +131,11 @@ export default function GuideCalculators({ characterName }: { characterName: str
   }));
 
   const moraTotal = levelResult.mora + levelResult.ascensionMora;
+  const bookItems = [
+    { icon: CALC_ICONS.heroWit, label: "Опыт героя", qty: levelResult.wit },
+    { icon: CALC_ICONS.adventurer, label: "Опыт искателя", qty: levelResult.adventurer },
+    { icon: CALC_ICONS.wanderer, label: "Совет странника", qty: levelResult.wanderer },
+  ].filter((b) => b.qty > 0);
 
   return (
     <section className="glass-panel relative overflow-hidden p-5 sm:p-6">
@@ -132,12 +163,24 @@ export default function GuideCalculators({ characterName }: { characterName: str
             onTo={setToLvl}
             options={levelOpts}
           />
+
+          <div className="mb-3">
+            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+              Книги опыта
+            </p>
+            {bookItems.length > 0 ? (
+              <div className="flex flex-wrap gap-2.5">
+                {bookItems.map((item) => (
+                  <ItemChip key={item.label} icon={item.icon} label={item.label} qty={item.qty} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm font-medium text-muted-foreground">—</p>
+            )}
+          </div>
+
           <ResultList>
-            <ResultRow
-              icon={CALC_ICONS.heroWit}
-              label="Опыт героя"
-              value={`×${formatNum(levelResult.books)}`}
-            />
+            <ResultRow label="Опыта всего" value={formatNum(levelResult.xp)} />
             <ResultRow
               icon={CALC_ICONS.mora}
               label="Мора за уровни"
@@ -189,9 +232,9 @@ export default function GuideCalculators({ characterName }: { characterName: str
 
 function CalcCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-[18px] border border-black/[0.06] bg-white/90 p-4 shadow-soft sm:p-5">
-      <div className="mb-4 flex items-center gap-2">
-        <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-[#189b8e]/12 text-[#189b8e]">
+    <div className="rounded-[18px] border border-black/[0.06] bg-gradient-to-b from-white to-[#f7f9fb] p-4 shadow-soft sm:p-5">
+      <div className="mb-4 flex items-center gap-2.5">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-[#189b8e]/12 text-[#189b8e] ring-1 ring-[#189b8e]/15">
           <Calculator className="h-4 w-4" />
         </span>
         <h3 className="font-display text-[15px] font-bold text-foreground sm:text-base">
@@ -227,9 +270,26 @@ function LevelRange({
   );
 }
 
+function ItemChip({ icon, label, qty }: { icon: string; label: string; qty: number }) {
+  return (
+    <div
+      className="group relative w-[52px] overflow-hidden rounded-[12px] bg-[#0b1f44]/[0.04] ring-1 ring-black/[0.06] sm:w-[56px]"
+      title={`${label} ×${qty}`}
+    >
+      <div className="flex aspect-square items-center justify-center p-1.5">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={icon} alt={label} className="h-full w-full object-contain" />
+      </div>
+      <span className="absolute inset-x-0 bottom-0 bg-white/95 py-0.5 text-center font-display text-[11px] font-bold tabular-nums text-foreground shadow-[0_-4px_8px_rgba(255,255,255,0.7)]">
+        ×{formatNum(qty)}
+      </span>
+    </div>
+  );
+}
+
 function ResultList({ children }: { children: ReactNode }) {
   return (
-    <ul className="overflow-hidden rounded-[14px] border border-black/[0.05] bg-[#f7f8fa]">
+    <ul className="overflow-hidden rounded-[14px] border border-black/[0.05] bg-white/80">
       {children}
     </ul>
   );
@@ -241,7 +301,7 @@ function ResultRow({
   value,
   emphasize = false,
 }: {
-  icon: string;
+  icon?: string;
   label: string;
   value: string;
   emphasize?: boolean;
@@ -249,12 +309,18 @@ function ResultRow({
   return (
     <li
       className={`flex items-center gap-3 border-b border-black/[0.05] px-3 py-2.5 last:border-b-0 sm:px-3.5 ${
-        emphasize ? "bg-[#189b8e]/[0.07]" : ""
+        emphasize ? "bg-[#189b8e]/[0.08]" : ""
       }`}
     >
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-black/[0.05]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={icon} alt="" className="h-7 w-7 object-contain" />
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f7f8fa] ring-1 ring-black/[0.04]">
+        {icon ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={icon} alt="" className="h-6 w-6 object-contain" />
+        ) : (
+          <span className="font-display text-[10px] font-bold uppercase tracking-wide text-[#189b8e]">
+            XP
+          </span>
+        )}
       </span>
       <span className="min-w-0 flex-1 text-[13px] font-semibold text-foreground/80">
         {label}
