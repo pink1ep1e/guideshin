@@ -3,6 +3,7 @@
 import Link from "next/link";
 import ItemHoverPreview from "@/components/ItemHoverPreview";
 import { rarityBg } from "@/lib/genshin";
+import type { WeaponHoverMeta } from "@/lib/wiki-guide-data";
 
 type WikiItemCardProps = {
   name: string;
@@ -11,12 +12,12 @@ type WikiItemCardProps = {
   rarityStars: number;
   /** object-contain for materials/weapons, cover for artifacts */
   fit?: "cover" | "contain";
-  badge?: string;
   note?: string;
   lore?: string | null;
+  weaponMeta?: WeaponHoverMeta | null;
   /** Растянуть на ширину ячейки сетки (каталоги). */
   fluid?: boolean;
-  /** Hover-превью — только для материалов. */
+  /** Hover-превью (материалы / оружие). */
   preview?: boolean;
 };
 
@@ -27,9 +28,9 @@ export default function WikiItemCard({
   href,
   rarityStars,
   fit = "cover",
-  badge,
   note,
   lore,
+  weaponMeta,
   fluid = false,
   preview = false,
 }: WikiItemCardProps) {
@@ -41,11 +42,6 @@ export default function WikiItemCard({
         className="relative aspect-square w-full overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: `url(${rarityBg(stars)})` }}
       >
-        {badge && (
-          <span className="absolute left-1.5 top-1.5 z-20 max-w-[75%] truncate rounded-md bg-black/40 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-sm">
-            {badge}
-          </span>
-        )}
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -71,16 +67,16 @@ export default function WikiItemCard({
         />
       </div>
 
-      <div className="shrink-0 px-1.5 py-1.5">
-        <p className="font-genshin line-clamp-2 w-full overflow-hidden text-center text-[13px] leading-tight tracking-wide text-[#1e1e1e]">
+      <div className="flex min-h-[2.75rem] shrink-0 items-center justify-center px-1.5 pb-2 pt-1.5">
+        <p className="font-genshin line-clamp-2 w-full text-center text-[12px] leading-snug tracking-wide text-[#1e1e1e] [overflow-wrap:anywhere]">
           {name}
         </p>
-        {note ? (
-          <p className="mt-0.5 line-clamp-1 text-[10px] font-bold text-[#189b8e]" title={note}>
-            {note}
-          </p>
-        ) : null}
       </div>
+      {note ? (
+        <p className="mb-1.5 line-clamp-1 px-1.5 text-[10px] font-bold text-[#189b8e]" title={note}>
+          {note}
+        </p>
+      ) : null}
     </>
   );
 
@@ -105,6 +101,7 @@ export default function WikiItemCard({
       name={name}
       image={image}
       lore={lore}
+      weaponMeta={weaponMeta}
       rarityStars={stars}
       fit={fit}
       className={fluid ? "h-full w-full" : "inline-block h-full shrink-0"}

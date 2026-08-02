@@ -91,35 +91,59 @@ type Picked = {
   rarityStars?: number;
 };
 
+export type CatalogPickerKind =
+  | "weapons"
+  | "artifacts"
+  | "materials"
+  | "characters"
+  /** Материалы и оружие (ковка). */
+  | "materialsAndWeapons";
+
 type PickerProps = {
   label: string;
-  kind: "weapons" | "artifacts" | "materials" | "characters";
+  kind: CatalogPickerKind;
   catalog: GuideCatalog;
   onPick: (item: Picked) => void;
 };
 
-type ListItem = { id: number; slug: string; name: string; image: string };
+type ListItem = {
+  key: string;
+  slug: string;
+  name: string;
+  image: string;
+  source: "weapons" | "artifacts" | "materials" | "characters";
+  rawId: number;
+};
 
-function pickFromItem(
-  kind: PickerProps["kind"],
-  catalog: GuideCatalog,
-  id: string,
-): Picked | null {
-  if (kind === "weapons") {
-    const w = catalog.weapons.find((x) => String(x.id) === id);
-    if (!w) return null;
-    const stars =
-      w.rarity === "LEGEND" ? 5 : w.rarity === "EPIC" ? 4 : w.rarity === "RARE" ? 3 : 2;
-    return {
-      name: w.name,
-      image: w.image,
-      rarity: (stars >= 5 ? 5 : 4) as 4 | 5,
-      rarityStars: stars,
-      href: `/wiki/weapons/${w.slug}`,
-    };
+function pickWeapon(w: CatalogWeapon): Picked {
+  const stars =
+    w.rarity === "LEGEND" ? 5 : w.rarity === "EPIC" ? 4 : w.rarity === "RARE" ? 3 : 2;
+  return {
+    name: w.name,
+    image: w.image,
+    rarity: (stars >= 5 ? 5 : 4) as 4 | 5,
+    rarityStars: stars,
+    href: `/wiki/weapons/${w.slug}`,
+  };
+}
+
+function pickMaterial(m: CatalogMaterial): Picked {
+  return {
+    name: m.name,
+    image: m.image,
+    rarity: Math.min(5, Math.max(4, m.rarityStars || 4)) as 4 | 5,
+    href: `/wiki/materials/${m.slug}`,
+    rarityStars: m.rarityStars,
+  };
+}
+
+function pickFromItem(catalog: GuideCatalog, item: ListItem): Picked | null {
+  if (item.source === "weapons") {
+    const w = catalog.weapons.find((x) => x.id === item.rawId);
+    return w ? pickWeapon(w) : null;
   }
-  if (kind === "artifacts") {
-    const a = catalog.artifacts.find((x) => String(x.id) === id);
+  if (item.source === "artifacts") {
+    const a = catalog.artifacts.find((x) => x.id === item.rawId);
     if (!a) return null;
     const stars =
       a.rarity === "LEGEND" ? 5 : a.rarity === "EPIC" ? 4 : a.rarity === "RARE" ? 3 : 2;
@@ -131,18 +155,11 @@ function pickFromItem(
       href: `/wiki/artifacts/${a.slug}`,
     };
   }
-  if (kind === "materials") {
-    const m = catalog.materials.find((x) => String(x.id) === id);
-    if (!m) return null;
-    return {
-      name: m.name,
-      image: m.image,
-      rarity: Math.min(5, Math.max(4, m.rarityStars || 4)) as 4 | 5,
-      href: `/wiki/materials/${m.slug}`,
-      rarityStars: m.rarityStars,
-    };
+  if (item.source === "materials") {
+    const m = catalog.materials.find((x) => x.id === item.rawId);
+    return m ? pickMaterial(m) : null;
   }
-  const c = catalog.characters.find((x) => String(x.id) === id);
+  const c = catalog.characters.find((x) => x.id === item.rawId);
   if (!c) return null;
   return {
     name: c.name,
@@ -155,16 +172,71 @@ function pickFromItem(
   };
 }
 
+function buildList(kind: CatalogPickerKind, catalog: GuideCatalog): ListItem[] {
+  if (kind === "weapons") {
+    return catalog.weapons.map((w) => ({
+      key: `w-${w.id}`,
+      slug: w.slug,
+      name: w.name,
+      image: w.image,
+      source: "weapons" as const,
+      rawId: w.id,
+    }));
+  }
+  if (kind === "artifacts") {
+    return catalog.artifacts.map((a) => ({
+      key: `a-${a.id}`,
+      slug: a.slug,
+      name: a.name,
+      image: a.image,
+      source: "artifacts" as const,
+      rawId: a.id,
+    }));
+  }
+  if (kind === "materials") {
+    return catalog.materials.map((m) => ({
+      key: `m-${m.id}`,
+      slug: m.slug,
+      name: m.name,
+      image: m.image,
+      source: "materials" as const,
+      rawId: m.id,
+    }));
+  }
+  if (kind === "characters") {
+    return catalog.characters.map((c) => ({
+      key: `c-${c.id}`,
+      slug: c.slug,
+      name: c.name,
+      image: c.image,
+      source: "characters" as const,
+      rawId: c.id,
+    }));
+  }
+  const materials = catalog.materials.map((m) => ({
+    key: `m-${m.id}`,
+    slug: m.slug,
+    name: m.name,
+    image: m.image,
+    source: "materials" as const,
+    rawId: m.id,
+  }));
+  const weapons = catalog.weapons.map((w) => ({
+    key: `w-${w.id}`,
+    slug: w.slug,
+    name: w.name,
+    image: w.image,
+    source: "weapons" as const,
+    rawId: w.id,
+  }));
+  return [...materials, ...weapons].sort((a, b) =>
+    a.name.localeCompare(b.name, "ru", { sensitivity: "base" }),
+  );
+}
+
 /** Поиск по базе с вводом имени. */
 export function CatalogPicker({ label, kind, catalog, onPick }: PickerProps) {
-  const list: ListItem[] =
-    kind === "weapons"
-      ? catalog.weapons
-      : kind === "artifacts"
-        ? catalog.artifacts
-        : kind === "materials"
-          ? catalog.materials
-          : catalog.characters;
+  const list = useMemo(() => buildList(kind, catalog), [kind, catalog]);
 
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -265,11 +337,11 @@ export function CatalogPicker({ label, kind, catalog, onPick }: PickerProps) {
             ) : (
               filtered.map((item) => (
                 <button
-                  key={item.id}
+                  key={item.key}
                   type="button"
                   role="option"
                   onClick={() => {
-                    const picked = pickFromItem(kind, catalog, String(item.id));
+                    const picked = pickFromItem(catalog, item);
                     if (picked) onPick(picked);
                     setQuery("");
                     setOpen(false);
@@ -285,7 +357,13 @@ export function CatalogPicker({ label, kind, catalog, onPick }: PickerProps) {
                     </span>
                   )}
                   <span className="min-w-0 flex-1 truncate">{item.name}</span>
-                  <Check className="h-3.5 w-3.5 shrink-0 opacity-0" />
+                  {kind === "materialsAndWeapons" ? (
+                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                      {item.source === "weapons" ? "оружие" : "мат."}
+                    </span>
+                  ) : (
+                    <Check className="h-3.5 w-3.5 shrink-0 opacity-0" />
+                  )}
                 </button>
               ))
             )}

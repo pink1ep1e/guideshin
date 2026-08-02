@@ -532,7 +532,7 @@ export default function MaterialGuideEditor({
           <div key={item.id} className="rounded-[12px] border border-black/[0.05] bg-white/80 p-2">
             <CatalogPicker
               label="Из базы"
-              kind="materials"
+              kind="materialsAndWeapons"
               catalog={catalog}
               onPick={(picked) =>
                 setForgingUses(
@@ -691,7 +691,7 @@ export default function MaterialGuideEditor({
           <p className="mb-2 text-[11px] font-bold uppercase text-muted-foreground">Диаграмма</p>
           <CatalogPicker
             label="Из базы"
-            kind="materials"
+            kind="materialsAndWeapons"
             catalog={catalog}
             onPick={(picked) =>
               setForging({
@@ -756,6 +756,7 @@ export default function MaterialGuideEditor({
           intro=""
           onIntro={() => {}}
           hideIntro
+          kind="materialsAndWeapons"
           items={data.forgingIngredients}
           catalog={catalog}
           onChange={(forgingIngredients) => setForging({ forgingIngredients })}
@@ -777,6 +778,7 @@ function MatBlock({
   catalog,
   onChange,
   hideIntro,
+  kind = "materials",
 }: {
   title: string;
   intro: string;
@@ -785,6 +787,7 @@ function MatBlock({
   catalog: ReturnType<typeof useGuideCatalog>["catalog"];
   onChange: (items: GuideMatRef[]) => void;
   hideIntro?: boolean;
+  kind?: "materials" | "materialsAndWeapons";
 }) {
   return (
     <div className="space-y-2">
@@ -803,7 +806,7 @@ function MatBlock({
         <div key={m.id} className="rounded-[12px] border border-black/[0.05] bg-white/70 p-2">
           <CatalogPicker
             label="Из базы"
-            kind="materials"
+            kind={kind}
             catalog={catalog}
             onPick={(picked) =>
               onChange(

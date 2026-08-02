@@ -366,3 +366,37 @@ export function plainLore(htmlOrText?: string | null, maxLen = 220): string {
   if (text.length <= maxLen) return text;
   return `${text.slice(0, maxLen).trim()}…`;
 }
+
+export function formatWeaponAtkRange(
+  data: Pick<WeaponGuideData, "atkMin" | "atkMax">,
+): string {
+  if (data.atkMin && data.atkMax) return `${data.atkMin}~${data.atkMax}`;
+  return data.atkMin || data.atkMax || "";
+}
+
+export function formatWeaponSubStatRange(
+  data: Pick<WeaponGuideData, "subStatMin" | "subStatMax">,
+): string {
+  if (data.subStatMin && data.subStatMax) return `${data.subStatMin}~${data.subStatMax}`;
+  return data.subStatMin || data.subStatMax || "";
+}
+
+/** Метаданные для hover-превью оружия. */
+export type WeaponHoverMeta = {
+  weaponType?: string;
+  atk?: string;
+  subStatLabel?: string;
+  subStat?: string;
+};
+
+export function weaponHoverFromGuide(
+  weaponType: string,
+  guide: WeaponGuideData,
+): WeaponHoverMeta {
+  return {
+    weaponType: weaponType.trim() || undefined,
+    atk: formatWeaponAtkRange(guide) || undefined,
+    subStatLabel: guide.subStatLabel.trim() || undefined,
+    subStat: formatWeaponSubStatRange(guide) || undefined,
+  };
+}

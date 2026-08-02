@@ -3,6 +3,7 @@
 import Link from "next/link";
 import ItemHoverPreview from "@/components/ItemHoverPreview";
 import { rarityBg } from "@/lib/genshin";
+import type { WeaponHoverMeta } from "@/lib/wiki-guide-data";
 
 type ItemIconCardProps = {
   name: string;
@@ -22,7 +23,9 @@ type ItemIconCardProps = {
   fluid?: boolean;
   /** Короткий лор для hover-превью. */
   lore?: string | null;
-  /** Показывать hover-превью (только для материалов). */
+  /** Статы оружия для hover (вместо лора). */
+  weaponMeta?: WeaponHoverMeta | null;
+  /** Показывать hover-превью. */
   preview?: boolean;
 };
 
@@ -89,6 +92,7 @@ export default function ItemIconCard({
   variant = "rarity",
   fluid = false,
   lore,
+  weaponMeta,
   preview = false,
 }: ItemIconCardProps) {
   const showQty = hasVisibleQty(qty);
@@ -172,8 +176,8 @@ export default function ItemIconCard({
         ) : null}
       </div>
 
-      <div className="relative z-10 shrink-0 px-1.5 py-1.5">
-        <p className="font-genshin line-clamp-2 w-full overflow-hidden text-center text-[12px] leading-tight tracking-wide text-[#1e1e1e]">
+      <div className="relative z-10 flex min-h-[2.75rem] shrink-0 items-center justify-center px-1.5 pb-2 pt-1.5">
+        <p className="font-genshin line-clamp-2 w-full text-center text-[12px] leading-snug tracking-wide text-[#1e1e1e] [overflow-wrap:anywhere]">
           {name}
         </p>
       </div>
@@ -185,6 +189,7 @@ export default function ItemIconCard({
       name={name}
       image={image}
       lore={lore}
+      weaponMeta={weaponMeta}
       rarityStars={stars}
       fit={fit}
       className={fluid ? "block h-full w-full" : "inline-block h-full shrink-0"}

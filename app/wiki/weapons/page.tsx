@@ -4,6 +4,7 @@ import WeaponCatalog from "@/components/WeaponCatalog";
 import { withPrisma } from "@/prisma/prisma-client";
 import { HOME_ASSETS } from "@/lib/home-content";
 import { SITE_NAME } from "@/lib/site";
+import { parseWeaponGuide, weaponHoverFromGuide } from "@/lib/wiki-guide-data";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default async function WeaponsCatalogPage() {
         rarity: true,
         weaponType: true,
         shortDesc: true,
+        guideData: true,
       },
     }),
   );
@@ -39,6 +41,7 @@ export default async function WeaponsCatalogPage() {
     rarity: w.rarity,
     weaponType: w.weaponType,
     lore: w.shortDesc,
+    weaponMeta: weaponHoverFromGuide(w.weaponType, parseWeaponGuide(w.guideData)),
   }));
 
   return (
