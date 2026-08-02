@@ -12,7 +12,7 @@ export async function GET() {
   const session = await requireAdmin();
   if (!session) return unauthorized();
   const items = await withPrisma((prisma) =>
-    prisma.artifact.findMany({ orderBy: [{ rarity: "desc" }, { name: "asc" }] }),
+    prisma.artifact.findMany({ orderBy: { createdAt: "desc" } }),
   );
   return NextResponse.json(items);
 }

@@ -14,7 +14,7 @@ export async function GET() {
   if (!session) return unauthorized();
   try {
     const items = await withPrisma((prisma) =>
-      prisma.material.findMany({ orderBy: [{ rarityStars: "desc" }, { name: "asc" }] }),
+      prisma.material.findMany({ orderBy: { createdAt: "desc" } }),
     );
     return NextResponse.json(items);
   } catch (error) {
