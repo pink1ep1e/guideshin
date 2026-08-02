@@ -22,7 +22,7 @@ type ItemIconCardProps = {
   fluid?: boolean;
   /** Короткий лор для hover-превью. */
   lore?: string | null;
-  /** Показывать hover-превью (по умолчанию да для полных карточек). */
+  /** Показывать hover-превью (только для материалов). */
   preview?: boolean;
 };
 
@@ -89,7 +89,7 @@ export default function ItemIconCard({
   variant = "rarity",
   fluid = false,
   lore,
-  preview = true,
+  preview = false,
 }: ItemIconCardProps) {
   const showQty = hasVisibleQty(qty);
   const stars = Math.min(5, Math.max(1, Math.round(rarityStars || 1)));
@@ -158,23 +158,21 @@ export default function ItemIconCard({
             Нет иконки
           </span>
         )}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-10 bg-gradient-to-t from-black/20 via-black/5 to-transparent" />
-        {showQty && qty !== undefined && qty !== null && qty !== "" ? (
-          <QtyBadge qty={qty} />
-        ) : null}
-      </div>
-
-      <div className="relative z-10 -mt-4 flex min-h-[3.6em] flex-col items-center px-1.5 pb-2 pt-0">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
         {!isNeutral ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={`/images/stars/Quality_star_${stars}.svg`}
             alt=""
-            className="relative z-10 mb-1 h-3.5 w-auto drop-shadow"
+            className="absolute bottom-1.5 left-1/2 z-20 h-3.5 w-auto -translate-x-1/2"
           />
-        ) : (
-          <span className="mb-1 h-3.5" />
-        )}
+        ) : null}
+        {showQty && qty !== undefined && qty !== null && qty !== "" ? (
+          <QtyBadge qty={qty} />
+        ) : null}
+      </div>
+
+      <div className="relative z-10 flex min-h-[2.85em] flex-col items-center justify-end px-1.5 pb-2.5 pt-2">
         <p className="font-genshin line-clamp-2 w-full overflow-hidden text-center text-[12px] leading-snug tracking-wide text-[#1e1e1e]">
           {name}
         </p>

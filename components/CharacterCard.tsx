@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import ItemHoverPreview from "@/components/ItemHoverPreview";
 import StickerBadge from "@/components/StickerBadge";
 import {
   ELEMENT_SVG,
@@ -29,7 +28,7 @@ export default function CharacterCard({ character }: { character: CharacterCardD
   const theme = ELEMENT_THEME[elKey];
   const glow = theme?.glow ?? "rgba(24,155,142,0.45)";
 
-  const card = (
+  return (
     <Link
       href={`/wiki/characters/${character.slug}`}
       className="group relative flex h-full w-full flex-col overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)]"
@@ -45,7 +44,14 @@ export default function CharacterCard({ character }: { character: CharacterCardD
           className="relative z-0 h-full w-full object-cover object-top"
         />
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-10 bg-gradient-to-t from-black/20 via-black/5 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`/images/stars/Quality_star_${stars}.svg`}
+          alt=""
+          className="absolute bottom-1.5 left-1/2 z-20 h-3.5 w-auto -translate-x-1/2"
+        />
 
         {elementIcon && (
           <span className="absolute left-1.5 top-1.5 z-20 flex h-7 w-7 items-center justify-center">
@@ -77,30 +83,11 @@ export default function CharacterCard({ character }: { character: CharacterCardD
         )}
       </div>
 
-      <div className="relative z-10 -mt-4 flex min-h-[3.75em] flex-col items-center px-1.5 pb-2 pt-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={`/images/stars/Quality_star_${stars}.svg`}
-          alt=""
-          className="relative z-10 mb-1 h-3.5 w-auto drop-shadow"
-        />
+      <div className="flex min-h-[2.85em] flex-col items-center justify-end px-1.5 pb-2.5 pt-2">
         <p className="font-genshin line-clamp-2 w-full overflow-hidden text-center text-[13px] leading-snug tracking-wide text-[#1e1e1e]">
           {character.name}
         </p>
       </div>
     </Link>
-  );
-
-  return (
-    <ItemHoverPreview
-      name={character.name}
-      image={character.image}
-      lore={character.shortDesc}
-      rarityStars={stars}
-      fit="cover"
-      className="h-full w-full"
-    >
-      {card}
-    </ItemHoverPreview>
   );
 }

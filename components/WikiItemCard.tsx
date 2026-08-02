@@ -16,6 +16,7 @@ type WikiItemCardProps = {
   lore?: string | null;
   /** Растянуть на ширину ячейки сетки (каталоги). */
   fluid?: boolean;
+  /** Hover-превью — только для материалов. */
   preview?: boolean;
 };
 
@@ -30,7 +31,7 @@ export default function WikiItemCard({
   note,
   lore,
   fluid = false,
-  preview = true,
+  preview = false,
 }: WikiItemCardProps) {
   const stars = Math.min(5, Math.max(1, Math.round(rarityStars)));
 
@@ -61,16 +62,16 @@ export default function WikiItemCard({
             Нет иконки
           </span>
         )}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-10 bg-gradient-to-t from-black/20 via-black/5 to-transparent" />
-      </div>
-
-      <div className="relative z-10 -mt-4 flex min-h-[3.75em] flex-col items-center px-1.5 pb-2 pt-0">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`/images/stars/Quality_star_${stars}.svg`}
           alt=""
-          className="relative z-10 mb-1 h-3.5 w-auto drop-shadow"
+          className="absolute bottom-1.5 left-1/2 z-20 h-3.5 w-auto -translate-x-1/2"
         />
+      </div>
+
+      <div className="flex min-h-[2.85em] flex-col items-center justify-end px-1.5 pb-2.5 pt-2">
         <p className="font-genshin line-clamp-2 w-full overflow-hidden text-center text-[13px] leading-snug tracking-wide text-[#1e1e1e]">
           {name}
         </p>

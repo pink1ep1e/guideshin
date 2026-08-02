@@ -60,6 +60,7 @@ export default function MaterialCards({
                   qty={m.qty}
                   size="md"
                   fluid
+                  preview
                 />
               ))}
             </div>

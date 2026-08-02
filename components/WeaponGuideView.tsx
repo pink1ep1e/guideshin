@@ -58,6 +58,7 @@ export default function WeaponGuideView({
                     href={m.href}
                     size="md"
                     fluid
+                    preview
                   />
                 ))}
               </div>
@@ -130,6 +131,7 @@ export default function WeaponGuideView({
                                     href={m.href}
                                     size="md"
                                     compact
+                                    preview
                                   />
                                 </div>
                               ) : (

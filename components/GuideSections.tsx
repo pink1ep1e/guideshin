@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import ItemHoverPreview from "@/components/ItemHoverPreview";
 import WikiItemCard from "@/components/WikiItemCard";
 import {
   ELEMENT_SVG,
@@ -55,7 +54,14 @@ export function CharacterPortraitCard({ item }: { item: RelatedCharacter }) {
           </span>
         )}
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-10 bg-gradient-to-t from-black/20 via-black/5 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`/images/stars/Quality_star_${stars}.svg`}
+          alt=""
+          className="absolute bottom-1.5 left-1/2 z-20 h-3.5 w-auto -translate-x-1/2"
+        />
 
         {elementIcon && (
           <span className="absolute left-1.5 top-1.5 z-20 flex h-6 w-6 items-center justify-center">
@@ -78,13 +84,7 @@ export function CharacterPortraitCard({ item }: { item: RelatedCharacter }) {
         )}
       </div>
 
-      <div className="relative z-10 -mt-4 flex min-h-[3.75em] flex-col items-center px-1.5 pb-2 pt-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={`/images/stars/Quality_star_${stars}.svg`}
-          alt=""
-          className="relative z-10 mb-1 h-3.5 w-auto drop-shadow"
-        />
+      <div className="flex min-h-[2.85em] flex-col items-center justify-end px-1.5 pb-2.5 pt-2">
         <p className="font-genshin line-clamp-2 w-full overflow-hidden text-center text-[13px] leading-snug tracking-wide text-[#1e1e1e]">
           {item.name}
         </p>
@@ -95,29 +95,18 @@ export function CharacterPortraitCard({ item }: { item: RelatedCharacter }) {
   const shell =
     "group relative flex h-full w-[108px] shrink-0 flex-col overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)]";
 
-  const card = item.href ? (
-    <Link href={item.href} className={shell}>
-      {inner}
-    </Link>
-  ) : (
-    <div className={shell}>{inner}</div>
-  );
+  if (item.href) {
+    return (
+      <Link href={item.href} className={shell}>
+        {inner}
+      </Link>
+    );
+  }
 
-  return (
-    <ItemHoverPreview
-      name={item.name}
-      image={item.image}
-      lore={item.lore}
-      rarityStars={stars}
-      fit="cover"
-      className="inline-block h-full shrink-0"
-    >
-      {card}
-    </ItemHoverPreview>
-  );
+  return <div className={shell}>{inner}</div>;
 }
 
-/** Плитка оружия — тот же стиль, что WikiItemCard. */
+/** Плитка оружия — тот же стиль, что WikiItemCard (без hover-превью). */
 export function WeaponTileCard({ item }: { item: RelatedWeapon }) {
   return (
     <WikiItemCard
@@ -127,6 +116,7 @@ export function WeaponTileCard({ item }: { item: RelatedWeapon }) {
       rarityStars={item.rarityStars}
       fit="contain"
       lore={item.lore}
+      preview={false}
     />
   );
 }
@@ -154,14 +144,14 @@ export function GuideSection({
       </h2>
       {intro ? (
         <div
-          className={`mt-2 font-medium leading-relaxed text-muted-foreground ${
-            large ? "text-base sm:text-[17px]" : "text-sm"
+          className={`mt-2 text-muted-foreground ${
+            large ? "text-[15px] leading-relaxed sm:text-base" : "text-sm leading-relaxed"
           }`}
         >
           {intro}
         </div>
       ) : null}
-      <div className="mt-4">{children}</div>
+      <div className={intro ? "mt-4" : "mt-3"}>{children}</div>
     </section>
   );
 }

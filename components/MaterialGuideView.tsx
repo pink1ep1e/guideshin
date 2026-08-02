@@ -176,6 +176,7 @@ export default function MaterialGuideView({
                 size="md"
                 variant="neutral"
                 fluid
+                preview
               />
             ))}
           </div>
@@ -200,6 +201,7 @@ export default function MaterialGuideView({
                 lore={loreOf(m.name)}
                 size="lg"
                 fluid
+                preview
               />
             ))}
           </div>
@@ -274,6 +276,7 @@ export default function MaterialGuideView({
                 lore={loreOf(m.name)}
                 size="lg"
                 fluid
+                preview
               />
             ))}
           </div>
@@ -311,6 +314,7 @@ export default function MaterialGuideView({
                   lore={loreOf(m.name)}
                   size="md"
                   fluid
+                  preview
                 />
               ))}
             </div>
