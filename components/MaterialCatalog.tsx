@@ -10,6 +10,7 @@ import {
   MATERIAL_CATEGORY_ORDER,
   type MaterialCategory,
 } from "@/lib/character-materials";
+import { sortByRarityDesc } from "@/lib/genshin";
 
 export type MaterialCatalogItem = {
   id: number;
@@ -35,7 +36,7 @@ export default function MaterialCatalog({ materials }: { materials: MaterialCata
   const deferredQuery = useDeferredValue(query.trim().toLowerCase());
 
   const filtered = useMemo(() => {
-    return materials.filter((m) => {
+    const list = materials.filter((m) => {
       if (rarity !== "ALL" && m.rarityStars !== rarity) return false;
       if (category !== "ALL" && m.category !== category) return false;
       if (!deferredQuery) return true;
@@ -44,6 +45,7 @@ export default function MaterialCatalog({ materials }: { materials: MaterialCata
         m.slug.toLowerCase().includes(deferredQuery)
       );
     });
+    return sortByRarityDesc(list, (m) => m.rarityStars, (m) => m.name);
   }, [materials, deferredQuery, rarity, category]);
 
   const groups = useMemo(

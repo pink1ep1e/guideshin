@@ -18,7 +18,7 @@ export default async function WeaponsCatalogPage() {
   const weapons = await withPrisma((prisma) =>
     prisma.weapon.findMany({
       where: { published: true },
-      orderBy: [{ order: "asc" }, { name: "asc" }],
+      orderBy: [{ rarity: "desc" }, { name: "asc" }],
       select: {
         id: true,
         slug: true,

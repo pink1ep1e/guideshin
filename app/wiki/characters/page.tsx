@@ -20,7 +20,7 @@ export default async function CharactersPage() {
   const characters = await withPrisma((prisma) =>
     prisma.character.findMany({
       where: { published: true },
-      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+      orderBy: [{ rarity: "desc" }, { name: "asc" }],
       select: {
         slug: true,
         name: true,

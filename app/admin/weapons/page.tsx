@@ -13,7 +13,7 @@ export default async function AdminWeaponsPage() {
   if (!session) redirect("/admin/login");
 
   const items = await withPrisma((prisma) =>
-    prisma.weapon.findMany({ orderBy: [{ order: "asc" }, { createdAt: "desc" }] }),
+    prisma.weapon.findMany({ orderBy: [{ rarity: "desc" }, { name: "asc" }] }),
   );
 
   return (

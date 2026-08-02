@@ -69,7 +69,7 @@ export function buildGuideTemplate(name = "Персонаж"): string {
           <div class="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/40 to-transparent"></div>
           <img src="/images/stars/Quality_star_5.svg" alt="" class="absolute bottom-1.5 left-1/2 h-4 w-auto -translate-x-1/2" />
         </div>
-        <p class="font-genshin line-clamp-2 min-h-[2.5em] px-1.5 py-2.5 text-center text-[12px] leading-snug tracking-wide text-foreground">Золотая труппа</p>
+        <p class="font-genshin line-clamp-2 min-h-[2.5em] px-1.5 py-2.5 text-center text-[12px] leading-snug tracking-wide text-[#1e1e1e]">Золотая труппа</p>
       </div>
       <div class="w-[122px] overflow-hidden rounded-[18px] bg-card shadow-panel ring-1 ring-black/[0.06]">
         <div class="relative h-[122px] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
@@ -77,7 +77,7 @@ export function buildGuideTemplate(name = "Персонаж"): string {
           <div class="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/40 to-transparent"></div>
           <img src="/images/stars/Quality_star_5.svg" alt="" class="absolute bottom-1.5 left-1/2 h-4 w-auto -translate-x-1/2" />
         </div>
-        <p class="font-genshin line-clamp-2 min-h-[2.5em] px-1.5 py-2.5 text-center text-[12px] leading-snug tracking-wide text-foreground">Охотник</p>
+        <p class="font-genshin line-clamp-2 min-h-[2.5em] px-1.5 py-2.5 text-center text-[12px] leading-snug tracking-wide text-[#1e1e1e]">Охотник</p>
       </div>
     </div>
     <div class="mt-4 rounded-[16px] bg-[#189b8e]/8 p-4 text-sm font-medium text-foreground/80">
@@ -101,28 +101,28 @@ export function buildGuideTemplate(name = "Персонаж"): string {
             <img src="/images/mini-characters/Furina.webp" alt="Фурина" class="h-full w-full object-cover" />
             <img src="/images/default-elements/Hydro.svg" alt="" class="absolute left-1 top-1 h-5 w-5 drop-shadow" />
           </div>
-          <p class="font-genshin px-1 py-1.5 text-center text-[11px] text-foreground">Фурина</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Фурина</p>
         </div>
         <div class="w-[100px] overflow-hidden rounded-[14px] bg-card ring-1 ring-black/[0.06]">
           <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
             <img src="/images/mini-characters/neuvillette.webp" alt="Нёвиллет" class="h-full w-full object-cover" />
             <img src="/images/default-elements/Hydro.svg" alt="" class="absolute left-1 top-1 h-5 w-5 drop-shadow" />
           </div>
-          <p class="font-genshin px-1 py-1.5 text-center text-[11px] text-foreground">Нёвиллет</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Нёвиллет</p>
         </div>
         <div class="w-[100px] overflow-hidden rounded-[14px] bg-card ring-1 ring-black/[0.06]">
           <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
             <img src="/images/mini-characters/kazuha.webp" alt="Кадзуха" class="h-full w-full object-cover" />
             <img src="/images/default-elements/Anemo.svg" alt="" class="absolute left-1 top-1 h-5 w-5 drop-shadow" />
           </div>
-          <p class="font-genshin px-1 py-1.5 text-center text-[11px] text-foreground">Кадзуха</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Кадзуха</p>
         </div>
         <div class="w-[100px] overflow-hidden rounded-[14px] bg-card ring-1 ring-black/[0.06]">
           <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/epic-bg.jpg)">
             <img src="/images/mini-characters/bennett.webp" alt="Беннет" class="h-full w-full object-cover" />
             <img src="/images/default-elements/Pyro.svg" alt="" class="absolute left-1 top-1 h-5 w-5 drop-shadow" />
           </div>
-          <p class="font-genshin px-1 py-1.5 text-center text-[11px] text-foreground">Беннет</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Беннет</p>
         </div>
       </div>
       <p class="mt-3 text-sm font-medium text-muted-foreground">
@@ -140,25 +140,25 @@ export function buildGuideTemplate(name = "Персонаж"): string {
           <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
             <img src="/images/mini-characters/Furina.webp" alt="Фурина" class="h-full w-full object-cover" />
           </div>
-          <p class="font-genshin px-1 py-1.5 text-center text-[11px] text-foreground">Фурина</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Фурина</p>
         </div>
         <div class="w-[100px] overflow-hidden rounded-[14px] bg-card ring-1 ring-black/[0.06]">
           <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/epic-bg.jpg)">
             <img src="/images/mini-characters/xingqiu.webp" alt="Син Цю" class="h-full w-full object-cover" />
           </div>
-          <p class="font-genshin px-1 py-1.5 text-center text-[11px] text-foreground">Син Цю</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Син Цю</p>
         </div>
         <div class="w-[100px] overflow-hidden rounded-[14px] bg-card ring-1 ring-black/[0.06]">
           <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/epic-bg.jpg)">
             <img src="/images/mini-characters/sucrose.webp" alt="Сахароза" class="h-full w-full object-cover" />
           </div>
-          <p class="font-genshin px-1 py-1.5 text-center text-[11px] text-foreground">Сахароза</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Сахароза</p>
         </div>
         <div class="w-[100px] overflow-hidden rounded-[14px] bg-card ring-1 ring-black/[0.06]">
           <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/epic-bg.jpg)">
             <img src="/images/mini-characters/bennett.webp" alt="Беннет" class="h-full w-full object-cover" />
           </div>
-          <p class="font-genshin px-1 py-1.5 text-center text-[11px] text-foreground">Беннет</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Беннет</p>
         </div>
       </div>
     </div>
@@ -184,7 +184,7 @@ export const GUIDE_SNIPPETS = {
     <div class="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/40 to-transparent"></div>
     <img src="/images/stars/Quality_star_5.svg" alt="" class="absolute bottom-1.5 left-1/2 h-4 w-auto -translate-x-1/2" />
   </div>
-  <p class="font-genshin px-1.5 py-2.5 text-center text-[13px] leading-tight text-foreground">Название</p>
+  <p class="font-genshin px-1.5 py-2.5 text-center text-[13px] leading-tight tracking-wide text-[#1e1e1e]">Название</p>
 </div>`,
 
   teamMember: `<!-- Слот в отряде -->
@@ -193,7 +193,7 @@ export const GUIDE_SNIPPETS = {
     <img src="/images/mini-characters/Furina.webp" alt="Имя" class="h-full w-full object-cover" />
     <img src="/images/default-elements/Hydro.svg" alt="" class="absolute left-1 top-1 h-5 w-5 drop-shadow" />
   </div>
-  <p class="font-genshin px-1 py-1.5 text-center text-[11px] text-foreground">Имя</p>
+  <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Имя</p>
 </div>`,
 
   section: `<!-- Секция -->

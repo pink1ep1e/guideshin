@@ -22,15 +22,15 @@ export async function GET() {
           rarity: true,
           element: true,
         },
-        orderBy: { name: "asc" },
+        orderBy: [{ rarity: "desc" }, { name: "asc" }],
       }),
       prisma.weapon.findMany({
         select: { id: true, slug: true, name: true, image: true, rarity: true, weaponType: true },
-        orderBy: { name: "asc" },
+        orderBy: [{ rarity: "desc" }, { name: "asc" }],
       }),
       prisma.artifact.findMany({
         select: { id: true, slug: true, name: true, image: true, rarity: true },
-        orderBy: { name: "asc" },
+        orderBy: [{ rarity: "desc" }, { name: "asc" }],
       }),
       prisma.material.findMany({
         select: {
@@ -41,7 +41,7 @@ export async function GET() {
           rarityStars: true,
           category: true,
         },
-        orderBy: { name: "asc" },
+        orderBy: [{ rarityStars: "desc" }, { name: "asc" }],
       }),
     ]);
     return { characters, weapons, artifacts, materials };

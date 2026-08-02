@@ -4,7 +4,7 @@ import { useDeferredValue, useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import WikiItemCard from "@/components/WikiItemCard";
 import CatalogSectionHeader from "@/components/CatalogSectionHeader";
-import { rarityStarsFromEnum } from "@/lib/genshin";
+import { rarityStarsFromEnum, sortByRarityDesc } from "@/lib/genshin";
 import { groupByWeaponType, WEAPON_TYPE_ORDER } from "@/lib/regions";
 
 export type WeaponCatalogItem = {
@@ -27,7 +27,7 @@ export default function WeaponCatalog({ weapons }: { weapons: WeaponCatalogItem[
   const deferredQuery = useDeferredValue(query.trim().toLowerCase());
 
   const filtered = useMemo(() => {
-    return weapons.filter((w) => {
+    const list = weapons.filter((w) => {
       const stars = rarityStarsFromEnum(w.rarity);
       if (rarity !== "ALL" && stars !== rarity && !(rarity === 2 && stars <= 2)) return false;
       if (type !== "Все" && w.weaponType !== type) return false;
@@ -38,6 +38,7 @@ export default function WeaponCatalog({ weapons }: { weapons: WeaponCatalogItem[
         w.weaponType.toLowerCase().includes(deferredQuery)
       );
     });
+    return sortByRarityDesc(list, (w) => w.rarity, (w) => w.name);
   }, [weapons, deferredQuery, rarity, type]);
 
   const groups = useMemo(

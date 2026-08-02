@@ -3,7 +3,7 @@ import {
   CharacterPortraitCard,
   GuideSection,
 } from "@/components/GuideSections";
-import { rarityBg } from "@/lib/genshin";
+import { rarityBg, sortByRarityDesc } from "@/lib/genshin";
 import {
   buildMaterialCharactersIntro,
   buildMaterialForgingIntro,
@@ -26,8 +26,44 @@ export default function MaterialGuideView({
   image: string;
   data: MaterialGuideData;
 }) {
+  const characters = sortByRarityDesc(
+    data.characters,
+    (c) => c.rarityStars,
+    (c) => c.name,
+  );
+  const weapons = sortByRarityDesc(
+    data.weapons,
+    (w) => w.rarityStars,
+    (w) => w.name,
+  );
+  const teapotItems = sortByRarityDesc(
+    data.teapotItems,
+    (m) => m.rarityStars,
+    (m) => m.name,
+  );
+  const alchemyUses = sortByRarityDesc(
+    data.alchemyUses,
+    (m) => m.rarityStars,
+    (m) => m.name,
+  );
+  const forgingUses = sortByRarityDesc(
+    data.forgingUses,
+    (m) => m.rarityStars,
+    (m) => m.name,
+  );
+  const alchemyCraft = sortByRarityDesc(
+    data.alchemyCraft,
+    (m) => m.rarityStars,
+    (m) => m.name,
+  );
+  const forgingIngredients = sortByRarityDesc(
+    data.forgingIngredients,
+    (m) => m.rarityStars,
+    (m) => m.name,
+  );
+
   const charactersIntro =
-    buildMaterialCharactersIntro(materialName, data.characters) || data.charactersIntro;
+    buildMaterialCharactersIntro(materialName, characters) || data.charactersIntro;
   const weaponsIntro =
     buildMaterialWeaponsIntro(materialName) || data.weaponsIntro;
   const teapotIntro =
@@ -72,7 +108,7 @@ export default function MaterialGuideView({
         </div>
       </section>
 
-      {data.characters.length > 0 && (
+      {characters.length > 0 && (
         <GuideSection
           title="Улучшаемые персонажи"
           intro={
@@ -85,7 +121,7 @@ export default function MaterialGuideView({
           }
         >
           <div className="flex flex-wrap gap-2.5">
-            {data.characters.map((c) => (
+            {characters.map((c) => (
               <CharacterPortraitCard
                 key={c.id}
                 item={{
@@ -101,10 +137,10 @@ export default function MaterialGuideView({
         </GuideSection>
       )}
 
-      {data.weapons.length > 0 && (
+      {weapons.length > 0 && (
         <GuideSection title="Возвышаемое оружие" intro={<p>{weaponsIntro}</p>}>
           <div className="flex flex-wrap gap-3">
-            {data.weapons.map((w) => (
+            {weapons.map((w) => (
               <ItemIconCard
                 key={w.id}
                 name={w.name}
@@ -118,10 +154,10 @@ export default function MaterialGuideView({
         </GuideSection>
       )}
 
-      {data.teapotItems.length > 0 && (
+      {teapotItems.length > 0 && (
         <GuideSection title="Создание материалов" intro={<p>{teapotIntro}</p>}>
           <div className="flex flex-wrap gap-3">
-            {data.teapotItems.map((item) => (
+            {teapotItems.map((item) => (
               <ItemIconCard
                 key={item.id}
                 name={item.name}
@@ -136,14 +172,14 @@ export default function MaterialGuideView({
         </GuideSection>
       )}
 
-      {data.alchemyUses.length > 0 && (
+      {alchemyUses.length > 0 && (
         <GuideSection
           large
           title="Применение в алхимии"
           intro={<p>{data.alchemyUseIntro || `«${materialName}» используется в алхимии:`}</p>}
         >
           <div className="flex flex-wrap gap-3">
-            {data.alchemyUses.map((m) => (
+            {alchemyUses.map((m) => (
               <ItemIconCard
                 key={m.id}
                 name={m.name}
@@ -158,14 +194,14 @@ export default function MaterialGuideView({
         </GuideSection>
       )}
 
-      {data.forgingUses.length > 0 && (
+      {forgingUses.length > 0 && (
         <GuideSection
           large
           title="Применение в ковке"
           intro={<p>{forgingUseIntro}</p>}
         >
           <div className="flex flex-wrap gap-3">
-            {data.forgingUses.map((item) => (
+            {forgingUses.map((item) => (
               <ItemIconCard
                 key={item.id}
                 name={item.name}
@@ -200,7 +236,7 @@ export default function MaterialGuideView({
         </GuideSection>
       )}
 
-      {data.alchemyCraft.length > 0 && (
+      {alchemyCraft.length > 0 && (
         <GuideSection
           large
           title="Алхимия"
@@ -212,7 +248,7 @@ export default function MaterialGuideView({
           }
         >
           <div className="flex flex-wrap gap-3">
-            {data.alchemyCraft.map((m) => (
+            {alchemyCraft.map((m) => (
               <ItemIconCard
                 key={m.id}
                 name={m.name}
@@ -245,9 +281,9 @@ export default function MaterialGuideView({
               />
             ) : null}
           </div>
-          {data.forgingIngredients.length > 0 && (
+          {forgingIngredients.length > 0 && (
             <div className="mt-5 flex flex-wrap gap-3">
-              {data.forgingIngredients.map((m) => (
+              {forgingIngredients.map((m) => (
                 <ItemIconCard
                   key={m.id}
                   name={m.name}

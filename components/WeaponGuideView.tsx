@@ -3,6 +3,7 @@ import {
   CharacterPortraitCard,
   GuideSection,
 } from "@/components/GuideSections";
+import { sortByRarityDesc } from "@/lib/genshin";
 import type { WeaponGuideData } from "@/lib/wiki-guide-data";
 
 export default function WeaponGuideView({
@@ -12,8 +13,18 @@ export default function WeaponGuideView({
   weaponName: string;
   data: WeaponGuideData;
 }) {
-  const hasMats = data.materialsSummary.length > 0 || data.phases.length > 0;
-  const hasRec = data.recommended.length > 0;
+  const materialsSummary = sortByRarityDesc(
+    data.materialsSummary,
+    (m) => m.rarityStars,
+    (m) => m.name,
+  );
+  const recommended = sortByRarityDesc(
+    data.recommended,
+    (c) => c.rarityStars,
+    (c) => c.name,
+  );
+  const hasMats = materialsSummary.length > 0 || data.phases.length > 0;
+  const hasRec = recommended.length > 0;
   const hasGet = data.banners.length > 0 || data.howToGetIntro;
   const hasLevel = Boolean(data.levelUpNote);
 
@@ -35,9 +46,9 @@ export default function WeaponGuideView({
                 `Для полного возвышения оружия «${weaponName}» понадобятся следующие материалы:`}
             </p>
 
-            {data.materialsSummary.length > 0 && (
+            {materialsSummary.length > 0 && (
               <div className="flex flex-wrap gap-3">
-                {data.materialsSummary.map((m) => (
+                {materialsSummary.map((m) => (
                   <ItemIconCard
                     key={m.id}
                     name={m.name}
@@ -157,7 +168,7 @@ export default function WeaponGuideView({
           }
         >
           <div className="flex flex-wrap gap-2.5">
-            {data.recommended.map((c) => (
+            {recommended.map((c) => (
               <CharacterPortraitCard
                 key={c.id}
                 item={{
@@ -183,7 +194,7 @@ export default function WeaponGuideView({
           }
         >
           {data.banners.length > 0 && (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-4">
               {data.banners.map((b) => {
                 const tone =
                   b.typeTone === "blue"
@@ -192,32 +203,31 @@ export default function WeaponGuideView({
                       ? "bg-[#8b6bc9] text-white"
                       : "bg-[#e8913a] text-white";
                 const card = (
-                  <div className="relative min-h-[140px] overflow-hidden rounded-[16px] bg-[#0b1f44]/[0.06]">
+                  <div className="overflow-hidden rounded-[16px] ring-1 ring-black/[0.06]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={b.image}
                       alt={b.name}
-                      className="absolute inset-0 h-full w-full object-cover"
+                      className="block w-full object-cover object-center"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-transparent" />
-                    <div className="relative z-10 flex h-full min-h-[140px] flex-col justify-between p-4">
-                      <div>
-                        <h3 className="font-display text-lg font-bold text-white">{b.name}</h3>
-                        <p className="mt-0.5 text-xs font-medium text-white/75">
-                          {b.status || "Доступна Молитва"}
+                    <div className="flex flex-wrap items-center gap-2 border-t border-black/[0.06] bg-white px-3 py-2.5">
+                      <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold ${tone}`}>
+                        + {b.typeLabel}
+                      </span>
+                      <p className="text-sm font-semibold text-foreground">{b.name}</p>
+                      {b.status ? (
+                        <p className="text-xs font-medium text-muted-foreground">{b.status}</p>
+                      ) : null}
+                      {b.featured ? (
+                        <p className="w-full text-xs font-medium text-muted-foreground">
+                          {b.featured}
                         </p>
-                        <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold ${tone}`}>
-                          + {b.typeLabel}
-                        </span>
-                      </div>
-                      {b.featured && (
-                        <p className="text-sm font-bold text-white drop-shadow">{b.featured}</p>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 );
                 return b.href ? (
-                  <a key={b.id} href={b.href} className="block">
+                  <a key={b.id} href={b.href} className="block transition hover:opacity-95">
                     {card}
                   </a>
                 ) : (

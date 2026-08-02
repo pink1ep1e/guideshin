@@ -8,6 +8,7 @@ import {
   ELEMENT_LABEL,
   ELEMENT_SVG,
   ELEMENT_THEME,
+  sortByRarityDesc,
   type ElementKey,
 } from "@/lib/genshin";
 import { groupByRegion, regionSectionTitle } from "@/lib/regions";
@@ -35,7 +36,7 @@ export default function CharacterCatalog({
   const deferredQuery = useDeferredValue(query.trim().toLowerCase());
 
   const filtered = useMemo(() => {
-    return characters.filter((c) => {
+    const list = characters.filter((c) => {
       if (element !== "ALL" && c.element.toUpperCase() !== element) return false;
       if (rarity !== "ALL" && c.rarity !== rarity) return false;
       if (!deferredQuery) return true;
@@ -44,6 +45,7 @@ export default function CharacterCatalog({
         c.slug.toLowerCase().includes(deferredQuery)
       );
     });
+    return sortByRarityDesc(list, (c) => c.rarity, (c) => c.name);
   }, [characters, deferredQuery, element, rarity]);
 
   const groups = useMemo(
