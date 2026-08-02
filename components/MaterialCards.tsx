@@ -9,9 +9,12 @@ import { sortByRarityDesc } from "@/lib/genshin";
 export default function MaterialCards({
   materials,
   title = "Материалы для прокачки",
+  loreByName = {},
 }: {
   materials: CharacterMaterial[];
   title?: string;
+  /** Короткий лор по имени (lowercase) для hover-превью. */
+  loreByName?: Record<string, string>;
 }) {
   if (materials.length === 0) return null;
 
@@ -32,6 +35,10 @@ export default function MaterialCards({
       (c) => !MATERIAL_CATEGORY_ORDER.includes(c as (typeof MATERIAL_CATEGORY_ORDER)[number]),
     ),
   ];
+
+  function loreOf(name: string) {
+    return loreByName[name.trim().toLowerCase()] || undefined;
+  }
 
   return (
     <section className="glass-panel relative overflow-hidden p-5 sm:p-6">
@@ -60,6 +67,7 @@ export default function MaterialCards({
                   qty={m.qty}
                   size="md"
                   fluid
+                  lore={loreOf(m.name)}
                   preview
                 />
               ))}

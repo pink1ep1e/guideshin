@@ -6,6 +6,8 @@ import MaterialCards from "@/components/MaterialCards";
 import { parseMaterials } from "@/lib/character-materials";
 import { getCharacterBySlug } from "@/lib/character-data";
 import { ELEMENT_LABEL } from "@/lib/genshin";
+import { materialPreviewLore } from "@/lib/wiki-guide-data";
+import { withPrisma } from "@/prisma/prisma-client";
 import { absoluteUrl, SITE_NAME, SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
 
@@ -75,6 +77,25 @@ export default async function CharacterPage({ params }: Props) {
     character.shortDesc?.trim() ||
     `Гайд на ${character.name} в Genshin Impact: билд, оружие, артефакты и материалы.`;
 
+  const materialNames = [
+    ...new Set(materials.map((m) => m.name.trim()).filter(Boolean)),
+  ];
+  const loreRows =
+    materialNames.length > 0
+      ? await withPrisma((prisma) =>
+          prisma.material.findMany({
+            where: { name: { in: materialNames } },
+            select: { name: true, shortDesc: true, guideData: true },
+          }),
+        ).catch(() => [])
+      : [];
+
+  const loreByName: Record<string, string> = {};
+  for (const row of loreRows) {
+    const text = materialPreviewLore(row);
+    if (text) loreByName[row.name.trim().toLowerCase()] = text;
+  }
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -122,7 +143,7 @@ export default async function CharacterPage({ params }: Props) {
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="space-y-5">
           <GuideCalculators characterName={character.name} />
-          <MaterialCards materials={materials} />
+          <MaterialCards materials={materials} loreByName={loreByName} />
 
           <section className="panel p-6 sm:p-7">
             <div

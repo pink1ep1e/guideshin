@@ -35,6 +35,12 @@ const TALENT_MORA = [
 const LEVEL_OPTIONS = [1, 20, 40, 50, 60, 70, 80, 90] as const;
 const TALENT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
+const CALC_ICONS = {
+  heroWit: "/opit-geroya.png",
+  talentBooks: "/knigi-talantov.webp",
+  mora: "/mora.png",
+} as const;
+
 function sumRange(
   map: Record<string, number>,
   from: number,
@@ -141,9 +147,18 @@ export default function GuideCalculators({ characterName }: { characterName: str
             />
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            <StatChip label="Опыт героя" value={`×${formatNum(levelResult.books)}`} />
-            <StatChip label="Мора (уровни)" value={formatNum(levelResult.mora)} />
             <StatChip
+              icon={CALC_ICONS.heroWit}
+              label="Опыт героя"
+              value={`×${formatNum(levelResult.books)}`}
+            />
+            <StatChip
+              icon={CALC_ICONS.mora}
+              label="Мора (уровни)"
+              value={formatNum(levelResult.mora)}
+            />
+            <StatChip
+              icon={CALC_ICONS.mora}
               label="Мора (возвышение)"
               value={formatNum(levelResult.ascensionMora)}
             />
@@ -172,8 +187,16 @@ export default function GuideCalculators({ characterName }: { characterName: str
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <StatChip label="Книги талантов" value={`×${formatNum(talentResult.books)}`} />
-            <StatChip label="Мора" value={formatNum(talentResult.mora)} />
+            <StatChip
+              icon={CALC_ICONS.talentBooks}
+              label="Книги талантов"
+              value={`×${formatNum(talentResult.books)}`}
+            />
+            <StatChip
+              icon={CALC_ICONS.mora}
+              label="Мора"
+              value={formatNum(talentResult.mora)}
+            />
           </div>
           <p className="mt-3 text-xs font-medium text-muted-foreground">
             Для трёх талантов умножьте результат на 3 (без учёта корон и материалов боссов).
@@ -184,13 +207,33 @@ export default function GuideCalculators({ characterName }: { characterName: str
   );
 }
 
-function StatChip({ label, value }: { label: string; value: string }) {
+function StatChip({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string;
+  icon?: string;
+}) {
   return (
-    <div className="rounded-2xl bg-[#189b8e]/8 px-3 py-3">
-      <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
-        {label}
-      </p>
-      <p className="mt-1 font-display text-lg font-bold text-foreground">{value}</p>
+    <div className="flex items-center gap-2.5 rounded-2xl bg-[#189b8e]/8 px-3 py-2.5">
+      {icon ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={icon}
+          alt=""
+          className="h-9 w-9 shrink-0 object-contain drop-shadow-sm"
+        />
+      ) : null}
+      <div className="min-w-0">
+        <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+          {label}
+        </p>
+        <p className="mt-0.5 font-display text-lg font-bold leading-tight text-foreground">
+          {value}
+        </p>
+      </div>
     </div>
   );
 }

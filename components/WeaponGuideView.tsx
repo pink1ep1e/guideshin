@@ -9,10 +9,15 @@ import type { WeaponGuideData } from "@/lib/wiki-guide-data";
 export default function WeaponGuideView({
   weaponName,
   data,
+  loreByName = {},
 }: {
   weaponName: string;
   data: WeaponGuideData;
+  loreByName?: Record<string, string>;
 }) {
+  function loreOf(name: string) {
+    return loreByName[name.trim().toLowerCase()] || undefined;
+  }
   const materialsSummary = sortByRarityDesc(
     data.materialsSummary,
     (m) => m.rarityStars,
@@ -56,6 +61,7 @@ export default function WeaponGuideView({
                     rarityStars={m.rarityStars}
                     qty={m.qty}
                     href={m.href}
+                    lore={loreOf(m.name)}
                     size="md"
                     fluid
                     preview
@@ -129,6 +135,7 @@ export default function WeaponGuideView({
                                     rarityStars={m.rarityStars}
                                     qty={m.qty}
                                     href={m.href}
+                                    lore={loreOf(m.name)}
                                     size="md"
                                     compact
                                     preview

@@ -7,7 +7,7 @@ import { MATERIAL_CATEGORY_LABEL } from "@/lib/character-materials";
 import {
   parseMaterialGuide,
   parseWeaponGuide,
-  plainLore,
+  materialPreviewLore,
   weaponHoverFromGuide,
   type WeaponHoverMeta,
 } from "@/lib/wiki-guide-data";
@@ -85,11 +85,7 @@ export default async function MaterialDetailPage({ params }: Props) {
 
   const loreByName: Record<string, string> = {};
   for (const row of loreRows) {
-    const g = parseMaterialGuide(row.guideData);
-    const text =
-      g.lore?.trim() ||
-      row.shortDesc?.trim() ||
-      plainLore(g.description);
+    const text = materialPreviewLore(row);
     if (text) loreByName[row.name.trim().toLowerCase()] = text;
   }
 

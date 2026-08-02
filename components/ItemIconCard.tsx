@@ -124,14 +124,29 @@ export default function ItemIconCard({
       </div>
     );
 
-    if (href) {
-      return (
-        <Link href={href} className="inline-block transition hover:opacity-95">
-          {box}
-        </Link>
-      );
-    }
-    return box;
+    const linked = href ? (
+      <Link href={href} className="inline-block transition hover:opacity-95">
+        {box}
+      </Link>
+    ) : (
+      box
+    );
+
+    if (!preview) return linked;
+
+    return (
+      <ItemHoverPreview
+        name={name}
+        image={image}
+        lore={lore}
+        weaponMeta={weaponMeta}
+        rarityStars={stars}
+        fit={fit}
+        className="inline-block"
+      >
+        {linked}
+      </ItemHoverPreview>
+    );
   }
 
   // Карточка в стиле персонажей: квадрат + звёзды + фиксированная подпись
