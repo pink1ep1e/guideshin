@@ -15,7 +15,7 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const characters = await withPrisma((prisma) =>
-    prisma.character.findMany({ orderBy: [{ rarity: "desc" }, { name: "asc" }] }),
+    prisma.character.findMany({ orderBy: { createdAt: "desc" } }),
   );
   return NextResponse.json(characters);
 }
