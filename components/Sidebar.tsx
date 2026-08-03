@@ -39,7 +39,10 @@ export default async function Sidebar() {
           </p>
         </div>
         <div className="p-5">
-          <TelegramLink className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#229ED9] px-3.5 py-3 text-[15px] font-bold text-white shadow-sm transition hover:bg-[#1b8bc0]" />
+          <TelegramLink
+            placement="sidebar"
+            className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#229ED9] px-3.5 py-3 text-[15px] font-bold text-white shadow-sm transition hover:bg-[#1b8bc0]"
+          />
           <div className="grid gap-1.5">
             {links.map((link) => (
               <Link

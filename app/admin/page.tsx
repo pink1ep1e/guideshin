@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import {
   ArrowUpRight,
+  BarChart3,
   Image as ImageIcon,
   Layers,
   Lightbulb,
@@ -18,6 +19,16 @@ import AdminSignOutButton from "@/components/admin/SignOutButton";
 import { AdminNavTabs } from "@/components/admin/AdminNavTabs";
 
 const SECTIONS = [
+  {
+    href: "/admin/analytics",
+    createHref: "/admin/analytics",
+    key: "analytics" as const,
+    title: "Аналитика",
+    desc: "Визиты, IP, страны, Telegram",
+    icon: BarChart3,
+    accent: "from-[#189b8e] to-[#0b1f44]",
+    hideCreate: true,
+  },
   {
     href: "/admin/characters",
     createHref: "/admin/characters/new",
@@ -88,6 +99,7 @@ export default async function AdminDashboard() {
   if (!session) redirect("/admin/login");
 
   const stats = await withPrisma(async (prisma) => {
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const [
       characters,
       charactersPublished,
@@ -97,6 +109,7 @@ export default async function AdminDashboard() {
       banners,
       promos,
       tips,
+      analyticsWeek,
     ] = await Promise.all([
       prisma.character.count(),
       prisma.character.count({ where: { published: true } }),
@@ -106,6 +119,11 @@ export default async function AdminDashboard() {
       prisma.homeBannerSlide.count(),
       prisma.promoCode.count(),
       prisma.dailyTip.count(),
+      prisma.analyticsEvent
+        .count({
+          where: { createdAt: { gte: weekAgo }, type: "pageview" },
+        })
+        .catch(() => 0),
     ]);
     return {
       characters,
@@ -116,10 +134,12 @@ export default async function AdminDashboard() {
       banners,
       promos,
       tips,
+      analyticsWeek,
     };
   });
 
   const counts: Record<(typeof SECTIONS)[number]["key"], number> = {
+    analytics: stats.analyticsWeek,
     characters: stats.characters,
     weapons: stats.weapons,
     artifacts: stats.artifacts,
@@ -240,12 +260,14 @@ export default async function AdminDashboard() {
                       Открыть
                       <ArrowUpRight className="h-3.5 w-3.5" />
                     </Link>
-                    <Link
-                      href={section.createHref}
-                      className="inline-flex items-center justify-center rounded-[14px] border border-black/[0.08] bg-white px-3 py-2.5 text-xs font-bold text-[#189b8e] transition hover:bg-[#189b8e]/10"
-                    >
-                      + Добавить
-                    </Link>
+                    {"hideCreate" in section && section.hideCreate ? null : (
+                      <Link
+                        href={section.createHref}
+                        className="inline-flex items-center justify-center rounded-[14px] border border-black/[0.08] bg-white px-3 py-2.5 text-xs font-bold text-[#189b8e] transition hover:bg-[#189b8e]/10"
+                      >
+                        + Добавить
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>

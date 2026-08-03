@@ -336,6 +336,7 @@ export default function Navbar() {
 
             <div className="flex items-center gap-2 lg:justify-self-end">
               <TelegramLink
+                placement="navbar"
                 showLabel={false}
                 className="ui-btn-secondary h-auto px-4 py-3.5 lg:px-5"
               />
