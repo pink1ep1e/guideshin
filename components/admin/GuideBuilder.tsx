@@ -179,6 +179,7 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
       artifacts: "Артефакты",
       materials: "Материалы / цветы / расходники",
       team: "Отряд",
+      teamGroup: "Отряды (варианты)",
       roleTable: "Таблица ролей",
       statsTable: "Таблица характеристик",
       resourceTable: "Таблица ресурсов",
@@ -1475,6 +1476,63 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                       </div>
                     ))}
                   </div>
+                </>
+              )}
+
+              {block.type === "teamGroup" && (
+                <>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className={label}>Eyebrow</label>
+                      <input
+                        className={input}
+                        value={block.eyebrow}
+                        onChange={(e) => updateBlock(block.id, { eyebrow: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className={label}>Заголовок</label>
+                      <input
+                        className={input}
+                        value={block.title}
+                        onChange={(e) => updateBlock(block.id, { title: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className={label}>Вступление</label>
+                    <textarea
+                      className={`${input} min-h-[64px]`}
+                      value={block.intro}
+                      onChange={(e) => updateBlock(block.id, { intro: e.target.value })}
+                    />
+                  </div>
+                  {block.variants.map((v, idx) => (
+                    <div
+                      key={v.id}
+                      className="rounded-[14px] border border-black/[0.05] bg-[#0b1f44]/[0.02] p-3"
+                    >
+                      <p className="mb-2 text-xs font-bold text-muted-foreground">
+                        Вариант {idx + 1}
+                        {v.badge ? ` · ${v.badge}` : ""}
+                      </p>
+                      <label className={label}>Особенности</label>
+                      <textarea
+                        className={`${input} min-h-[72px]`}
+                        value={v.features}
+                        onChange={(e) =>
+                          updateBlock(block.id, {
+                            variants: block.variants.map((x) =>
+                              x.id === v.id ? { ...x, features: e.target.value } : x,
+                            ),
+                          })
+                        }
+                      />
+                      <p className="mt-2 text-[12px] text-muted-foreground">
+                        {v.members.map((m) => m.name).join(" / ")}
+                      </p>
+                    </div>
+                  ))}
                 </>
               )}
             </div>
