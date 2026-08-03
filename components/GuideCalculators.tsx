@@ -3,6 +3,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { ArrowRight, Calculator } from "lucide-react";
 import FancySelect from "@/components/ui/FancySelect";
+import ItemIconCard from "@/components/ItemIconCard";
 
 /** Cumulative Character EXP required to reach each ascension milestone. */
 const CUMULATIVE_XP: Record<number, number> = {
@@ -132,9 +133,24 @@ export default function GuideCalculators({ characterName }: { characterName: str
 
   const moraTotal = levelResult.mora + levelResult.ascensionMora;
   const bookItems = [
-    { icon: CALC_ICONS.heroWit, label: "Опыт героя", qty: levelResult.wit },
-    { icon: CALC_ICONS.adventurer, label: "Опыт искателя", qty: levelResult.adventurer },
-    { icon: CALC_ICONS.wanderer, label: "Совет странника", qty: levelResult.wanderer },
+    {
+      icon: CALC_ICONS.heroWit,
+      label: "Опыт героя",
+      qty: levelResult.wit,
+      rarity: 4,
+    },
+    {
+      icon: CALC_ICONS.adventurer,
+      label: "Опыт искателя",
+      qty: levelResult.adventurer,
+      rarity: 3,
+    },
+    {
+      icon: CALC_ICONS.wanderer,
+      label: "Совет странника",
+      qty: levelResult.wanderer,
+      rarity: 2,
+    },
   ].filter((b) => b.qty > 0);
 
   return (
@@ -164,14 +180,23 @@ export default function GuideCalculators({ characterName }: { characterName: str
             options={levelOpts}
           />
 
-          <div className="mb-3">
-            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+          <div className="mb-3 overflow-hidden rounded-[14px] border border-black/[0.05] bg-white/80 p-3">
+            <p className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
               Книги опыта
             </p>
             {bookItems.length > 0 ? (
               <div className="flex flex-wrap gap-2.5">
                 {bookItems.map((item) => (
-                  <ItemChip key={item.label} icon={item.icon} label={item.label} qty={item.qty} />
+                  <ItemIconCard
+                    key={item.label}
+                    name={item.label}
+                    image={item.icon}
+                    rarityStars={item.rarity}
+                    qty={item.qty}
+                    size="md"
+                    compact
+                    preview
+                  />
                 ))}
               </div>
             ) : (
@@ -266,23 +291,6 @@ function LevelRange({
         <ArrowRight className="h-3.5 w-3.5" />
       </span>
       <FancySelect label="До уровня" value={to} onChange={onTo} options={options} size="sm" />
-    </div>
-  );
-}
-
-function ItemChip({ icon, label, qty }: { icon: string; label: string; qty: number }) {
-  return (
-    <div
-      className="group relative w-[52px] overflow-hidden rounded-[12px] bg-[#0b1f44]/[0.04] ring-1 ring-black/[0.06] sm:w-[56px]"
-      title={`${label} ×${qty}`}
-    >
-      <div className="flex aspect-square items-center justify-center p-1.5">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={icon} alt={label} className="h-full w-full object-contain" />
-      </div>
-      <span className="absolute inset-x-0 bottom-0 bg-white/95 py-0.5 text-center font-display text-[11px] font-bold tabular-nums text-foreground shadow-[0_-4px_8px_rgba(255,255,255,0.7)]">
-        ×{formatNum(qty)}
-      </span>
     </div>
   );
 }

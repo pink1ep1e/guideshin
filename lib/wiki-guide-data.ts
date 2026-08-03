@@ -340,6 +340,33 @@ export function buildMaterialForgingUseIntro(materialName: string): string {
   return `Материал ${mName} может быть использован в кузнице для создания следующих предметов`;
 }
 
+/** Текст «источники / враги» со ссылками из списка. */
+export function buildMaterialSourcesIntro(
+  materialName: string,
+  sources: { name: string; href?: string }[],
+): string {
+  const mName = escapeHtml(materialName.trim() || "материал");
+  const links = formatLinkedList(sources);
+  if (!links) {
+    return materialName.trim()
+      ? `Материал ${mName} можно получить в качестве лута только с врагов типа`
+      : "";
+  }
+  return `Материал ${mName} можно получить в качестве лута только с врагов типа ${links}`;
+}
+
+/** Текст «алхимия — рецепт получения». */
+export function buildMaterialAlchemyCraftIntro(materialName: string): string {
+  const mName = escapeHtml(materialName.trim() || "материал");
+  return `Материал ${mName} можно получить в процессе алхимии используя рецепт, материалы для создания приведены ниже`;
+}
+
+/** Текст «применение в алхимии». */
+export function buildMaterialAlchemyUseIntro(materialName: string): string {
+  const mName = escapeHtml(materialName.trim() || "материал");
+  return `Материал ${mName} используется в алхимии:`;
+}
+
 export function hasForgingRecipe(data: MaterialGuideData): boolean {
   return (
     Boolean(data.forgingDiagram?.name?.trim()) ||

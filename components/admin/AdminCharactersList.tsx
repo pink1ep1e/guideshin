@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
 import AdminListToolbar from "@/components/admin/AdminListToolbar";
+import { useAdminDelete } from "@/components/admin/AdminDeleteContext";
 import DeleteCharacterButton from "@/components/admin/DeleteCharacterButton";
 import { DuplicateEntityButton } from "@/components/admin/DuplicateEntityButton";
 import {
@@ -33,6 +34,7 @@ const ELEMENTS: ElementKey[] = [
 ];
 
 export default function AdminCharactersList({ items }: { items: AdminCharacterRow[] }) {
+  const { pendingKeys } = useAdminDelete();
   const [query, setQuery] = useState("");
   const [rarity, setRarity] = useState("ALL");
   const [element, setElement] = useState("ALL");
@@ -41,6 +43,7 @@ export default function AdminCharactersList({ items }: { items: AdminCharacterRo
 
   const filtered = useMemo(() => {
     return items.filter((c) => {
+      if (pendingKeys.has(`character:${c.id}`)) return false;
       if (rarity !== "ALL" && c.rarity !== rarity) return false;
       if (element !== "ALL" && c.element !== element) return false;
       if (status === "published" && !c.published) return false;
@@ -51,7 +54,7 @@ export default function AdminCharactersList({ items }: { items: AdminCharacterRo
         c.slug.toLowerCase().includes(deferred)
       );
     });
-  }, [items, deferred, rarity, element, status]);
+  }, [items, deferred, rarity, element, status, pendingKeys]);
 
   return (
     <div className="glass-panel overflow-hidden">

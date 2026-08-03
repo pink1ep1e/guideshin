@@ -2,17 +2,27 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAdminDelete } from "@/components/admin/AdminDeleteContext";
 
 export default function DeleteCharacterButton({ id, name }: { id: number; name: string }) {
   const router = useRouter();
+  const { requestDelete } = useAdminDelete();
   const [loading, setLoading] = useState(false);
 
-  async function handleDelete() {
-    if (!confirm(`Удалить персонажа «${name}»?`)) return;
-    setLoading(true);
-    await fetch(`/api/admin/characters/${id}`, { method: "DELETE" });
-    setLoading(false);
-    router.refresh();
+  function handleDelete() {
+    requestDelete({
+      key: `character:${id}`,
+      name,
+      execute: async () => {
+        setLoading(true);
+        try {
+          await fetch(`/api/admin/characters/${id}`, { method: "DELETE" });
+          router.refresh();
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   }
 
   return (

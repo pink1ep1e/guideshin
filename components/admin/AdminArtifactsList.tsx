@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
 import AdminListToolbar from "@/components/admin/AdminListToolbar";
+import { useAdminDelete } from "@/components/admin/AdminDeleteContext";
 import DeleteEntityButton from "@/components/admin/AdminNavTabs";
 import { DuplicateEntityButton } from "@/components/admin/DuplicateEntityButton";
 import { RARITY_LABEL } from "@/lib/genshin";
@@ -17,6 +18,7 @@ export type AdminArtifactRow = {
 };
 
 export default function AdminArtifactsList({ items }: { items: AdminArtifactRow[] }) {
+  const { pendingKeys } = useAdminDelete();
   const [query, setQuery] = useState("");
   const [rarity, setRarity] = useState("ALL");
   const [status, setStatus] = useState("ALL");
@@ -24,6 +26,7 @@ export default function AdminArtifactsList({ items }: { items: AdminArtifactRow[
 
   const filtered = useMemo(() => {
     return items.filter((a) => {
+      if (pendingKeys.has(`artifacts:${a.id}`)) return false;
       if (rarity !== "ALL" && a.rarity !== rarity) return false;
       if (status === "published" && !a.published) return false;
       if (status === "draft" && a.published) return false;
@@ -33,7 +36,7 @@ export default function AdminArtifactsList({ items }: { items: AdminArtifactRow[
         a.slug.toLowerCase().includes(deferred)
       );
     });
-  }, [items, deferred, rarity, status]);
+  }, [items, deferred, rarity, status, pendingKeys]);
 
   return (
     <div className="glass-panel overflow-hidden">
