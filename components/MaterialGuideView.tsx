@@ -338,15 +338,13 @@ export default function MaterialGuideView({
         </GuideSection>
       )}
 
-      {(data.mapUrl || data.mapIntro || data.mapTitle) && (
+      {(data.mapUrl || data.mapIntro) && (
         <GuideSection
           title={data.mapTitle || "Интерактивная карта"}
           intro={
-            data.mapIntro || data.mapUrl ? (
-              <p>
-                {data.mapIntro || `Где находится материал «${materialName}»:`}
-              </p>
-            ) : undefined
+            <p>
+              {data.mapIntro || `Где находится материал «${materialName}»:`}
+            </p>
           }
         >
           {data.mapUrl && isAllowedMapEmbedUrl(data.mapUrl) ? (
