@@ -1,4 +1,4 @@
-import { rarityBg } from "@/lib/genshin";
+﻿import { rarityBg } from "@/lib/genshin";
 
 export type GuideItem = {
   id: string;
@@ -21,6 +21,34 @@ export type GuideTeamMember = {
   elementIcon: string;
   rarity: 4 | 5;
   href?: string;
+  /** Роль в отряде (мейн-дд, саппорт…) */
+  role?: string;
+};
+
+export type GuideRankedItem = {
+  id: string;
+  rank: number;
+  name: string;
+  image: string;
+  rarity: 4 | 5;
+  href?: string;
+  subtitle: string;
+  effect: string;
+  verdict: string;
+};
+
+export type GuideStatTarget = {
+  id: string;
+  label: string;
+  value: string;
+  hint?: string;
+};
+
+export type GuideArtifactSlot = {
+  id: string;
+  slot: string;
+  main: string;
+  subs: string;
 };
 
 export type GuideRoleRow = {
@@ -90,6 +118,34 @@ export type GuideBlock =
       title: string;
       intro: string;
       rows: GuideResourceRow[];
+    }
+  | {
+      id: string;
+      type: "prosCons";
+      eyebrow: string;
+      title: string;
+      prosTitle: string;
+      consTitle: string;
+      pros: string[];
+      cons: string[];
+    }
+  | {
+      id: string;
+      type: "statTargets";
+      eyebrow: string;
+      title: string;
+      intro: string;
+      targets: GuideStatTarget[];
+      slots: GuideArtifactSlot[];
+    }
+  | {
+      id: string;
+      type: "rankedList";
+      eyebrow: string;
+      title: string;
+      intro: string;
+      kind: "weapons" | "artifacts";
+      items: GuideRankedItem[];
     };
 
 const MARKER_START = "<!--genshin-guide-blocks:";
@@ -212,6 +268,73 @@ export function emptyResourceRow(): GuideResourceRow {
   return { id: uid(), name: "", image: "", qty: "", where: "", href: "" };
 }
 
+export function emptyRankedItem(rank = 1): GuideRankedItem {
+  return {
+    id: uid(),
+    rank,
+    name: "",
+    image: "",
+    rarity: 5,
+    href: "",
+    subtitle: "",
+    effect: "",
+    verdict: "",
+  };
+}
+
+export function emptyStatTarget(): GuideStatTarget {
+  return { id: uid(), label: "", value: "", hint: "" };
+}
+
+export function emptyArtifactSlot(slot = ""): GuideArtifactSlot {
+  return { id: uid(), slot, main: "", subs: "" };
+}
+
+export function emptyProsConsBlock(): Extract<GuideBlock, { type: "prosCons" }> {
+  return {
+    id: uid(),
+    type: "prosCons",
+    eyebrow: "Анализ",
+    title: "Плюсы и минусы",
+    prosTitle: "Преимущества",
+    consTitle: "Недостатки",
+    pros: [""],
+    cons: [""],
+  };
+}
+
+export function emptyStatTargetsBlock(): Extract<GuideBlock, { type: "statTargets" }> {
+  return {
+    id: uid(),
+    type: "statTargets",
+    eyebrow: "Билд",
+    title: "Рекомендуемые характеристики",
+    intro: "",
+    targets: [emptyStatTarget()],
+    slots: [
+      emptyArtifactSlot("Цветок"),
+      emptyArtifactSlot("Перо"),
+      emptyArtifactSlot("Пески"),
+      emptyArtifactSlot("Кубок"),
+      emptyArtifactSlot("Корона"),
+    ],
+  };
+}
+
+export function emptyRankedListBlock(
+  kind: "weapons" | "artifacts" = "weapons",
+): Extract<GuideBlock, { type: "rankedList" }> {
+  return {
+    id: uid(),
+    type: "rankedList",
+    eyebrow: kind === "weapons" ? "Оружие" : "Артефакты",
+    title: kind === "weapons" ? "Рейтинг оружия" : "Рейтинг артефактов",
+    intro: "",
+    kind,
+    items: [emptyRankedItem(1)],
+  };
+}
+
 export function youtubeEmbedUrl(raw: string): string | null {
   const value = raw.trim();
   if (!value) return null;
@@ -244,6 +367,48 @@ function escapeHtml(text: string) {
     .replaceAll('"', "&quot;");
 }
 
+/** Простой markdown-lite: абзацы, списки, **bold**, ### заголовки */
+export function renderLiteMarkdown(raw: string): string {
+  const src = raw.replace(/\r\n/g, "\n").trim();
+  if (!src) return "";
+
+  const inline = (s: string) =>
+    escapeHtml(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+
+  const blocks = src.split(/\n{2,}/);
+  const out: string[] = [];
+  const bulletRe = /^[-•*]\s+/;
+
+  for (const block of blocks) {
+    const lines = block.split("\n").map((l) => l.trimEnd());
+    const isList = lines.every((l) => !l.trim() || bulletRe.test(l.trim()));
+    if (isList && lines.some((l) => bulletRe.test(l.trim()))) {
+      const items = lines
+        .filter((l) => bulletRe.test(l.trim()))
+        .map((l) => `<li>${inline(l.trim().replace(bulletRe, ""))}</li>`)
+        .join("");
+      out.push(`<ul class="guide-md-list">${items}</ul>`);
+      continue;
+    }
+
+    const htmlLines: string[] = [];
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t) continue;
+      if (t.startsWith("### ")) {
+        htmlLines.push(`<h3 class="guide-md-h3">${inline(t.slice(4))}</h3>`);
+      } else if (t.startsWith("## ")) {
+        htmlLines.push(`<h3 class="guide-md-h3">${inline(t.slice(3))}</h3>`);
+      } else {
+        htmlLines.push(`<p class="guide-md-p">${inline(t)}</p>`);
+      }
+    }
+    out.push(htmlLines.join("\n"));
+  }
+
+  return out.join("\n");
+}
+
 function visibleQty(qty?: string | number | null): string | null {
   if (qty === undefined || qty === null || qty === "") return null;
   const raw = String(qty).trim().replace(/^×/, "");
@@ -266,7 +431,7 @@ function itemCardHtml(item: GuideItem) {
     ${qtyBadge}
   </div>
   <p class="font-genshin break-words bg-white px-1.5 py-1.5 text-center text-[12px] leading-snug tracking-wide text-[#1e1e1e]" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</p>
-  ${item.note ? `<p class="line-clamp-1 px-1.5 pb-2 text-center text-[10px] font-bold text-[#189b8e]" title="${escapeHtml(item.note)}">${escapeHtml(item.note)}</p>` : ""}`;
+  ${item.note ? `<p class="line-clamp-3 px-1.5 pb-2 text-center text-[10px] font-bold leading-snug text-[#189b8e]" title="${escapeHtml(item.note)}">${escapeHtml(item.note)}</p>` : ""}`;
   if (item.href) {
     return `<a href="${escapeHtml(item.href)}" title="${escapeHtml(item.name)}" class="guide-item-link inline-block w-[92px] shrink-0 overflow-hidden rounded-[12px] bg-card shadow-panel ring-1 ring-black/[0.06] transition hover:opacity-95">${inner}</a>`;
   }
@@ -274,25 +439,126 @@ function itemCardHtml(item: GuideItem) {
 }
 
 function sectionHead(eyebrow: string, title: string, intro?: string) {
-  return `<div class="mb-4">
+  return `<div class="mb-5">
   ${eyebrow ? `<p class="mb-1 text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">${escapeHtml(eyebrow)}</p>` : ""}
   <h2 class="font-genshin text-2xl tracking-wide text-foreground">${escapeHtml(title)}</h2>
   ${intro ? `<p class="mt-2 text-base font-medium leading-relaxed text-muted-foreground">${escapeHtml(intro)}</p>` : ""}
 </div>`;
 }
 
+function rankedItemHtml(item: GuideRankedItem) {
+  const stars = item.rarity >= 5 ? 5 : 4;
+  const bg = rarityBg(stars);
+  const iconInner = item.image
+    ? `<img src="${escapeHtml(item.image)}" alt="" class="h-full w-full object-contain" />`
+    : `<span class="px-1 text-center text-[10px] font-bold text-muted-foreground">Нет иконки</span>`;
+  const icon = `<div class="guide-rank-icon shrink-0 overflow-hidden rounded-[14px] bg-cover bg-center ring-1 ring-black/[0.06]" style="background-image:url(${bg})">${iconInner}</div>`;
+  const titleRow = item.href
+    ? `<a href="${escapeHtml(item.href)}" class="guide-item-link font-genshin text-base tracking-wide text-[#189b8e] hover:underline">${escapeHtml(item.name)}</a>`
+    : `<span class="font-genshin text-base tracking-wide text-foreground">${escapeHtml(item.name)}</span>`;
+
+  return `<article class="guide-rank-card">
+  <div class="guide-rank-badge" aria-hidden="true">${escapeHtml(String(item.rank))}</div>
+  <div class="guide-rank-body">
+    ${item.href ? `<a href="${escapeHtml(item.href)}" class="guide-item-link shrink-0 transition hover:opacity-90">${icon}</a>` : icon}
+    <div class="min-w-0 flex-1">
+      <div class="mb-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        ${titleRow}
+        ${item.subtitle ? `<span class="text-[12px] font-semibold text-muted-foreground">${escapeHtml(item.subtitle)}</span>` : ""}
+      </div>
+      ${item.effect ? `<p class="guide-rank-effect">${escapeHtml(item.effect)}</p>` : ""}
+      ${item.verdict ? `<p class="guide-rank-verdict">${escapeHtml(item.verdict)}</p>` : ""}
+    </div>
+  </div>
+</article>`;
+}
+
 function renderBlock(block: GuideBlock): string {
   if (block.type === "text") {
-    return `<div>
+    const body = renderLiteMarkdown(block.body);
+    if (!body && !block.title) return "";
+    return `<div class="guide-section">
   ${sectionHead(block.eyebrow || "Раздел", block.title, undefined)}
-  <p class="text-base font-medium leading-relaxed text-muted-foreground whitespace-pre-wrap">${escapeHtml(block.body)}</p>
+  <div class="guide-md">${body}</div>
+</div>`;
+  }
+
+  if (block.type === "prosCons") {
+    const pros = block.pros.filter((p) => p.trim());
+    const cons = block.cons.filter((c) => c.trim());
+    if (!pros.length && !cons.length) return "";
+    return `<div class="guide-section">
+  ${sectionHead(block.eyebrow || "Анализ", block.title)}
+  <div class="guide-proscons">
+    <div class="guide-pros">
+      <h3 class="guide-proscons-title guide-proscons-title--pro">${escapeHtml(block.prosTitle || "Преимущества")}</h3>
+      <ul class="guide-proscons-list">${pros.map((p) => `<li>${escapeHtml(p)}</li>`).join("")}</ul>
+    </div>
+    <div class="guide-cons">
+      <h3 class="guide-proscons-title guide-proscons-title--con">${escapeHtml(block.consTitle || "Недостатки")}</h3>
+      <ul class="guide-proscons-list">${cons.map((c) => `<li>${escapeHtml(c)}</li>`).join("")}</ul>
+    </div>
+  </div>
+</div>`;
+  }
+
+  if (block.type === "statTargets") {
+    const targets = block.targets.filter((t) => t.label.trim() || t.value.trim());
+    const slots = block.slots.filter((s) => s.slot.trim() || s.main.trim());
+    if (!targets.length && !slots.length) return "";
+    return `<div class="guide-section">
+  ${sectionHead(block.eyebrow || "Билд", block.title, block.intro)}
+  ${
+    targets.length
+      ? `<div class="guide-stat-targets">${targets
+          .map(
+            (t) => `<div class="guide-stat-chip">
+    <p class="guide-stat-chip-label">${escapeHtml(t.label)}</p>
+    <p class="guide-stat-chip-value">${escapeHtml(t.value)}</p>
+    ${t.hint ? `<p class="guide-stat-chip-hint">${escapeHtml(t.hint)}</p>` : ""}
+  </div>`,
+          )
+          .join("")}</div>`
+      : ""
+  }
+  ${
+    slots.length
+      ? `<div class="guide-table-wrap mt-4">
+    <table class="guide-table">
+      <thead><tr><th>Слот</th><th>Основная характеристика</th><th>Саб-статы</th></tr></thead>
+      <tbody>
+        ${slots
+          .map(
+            (s) => `<tr>
+          <td class="guide-td-center font-bold text-foreground">${escapeHtml(s.slot)}</td>
+          <td class="guide-td-center">${escapeHtml(s.main)}</td>
+          <td class="guide-td-desc">${escapeHtml(s.subs)}</td>
+        </tr>`,
+          )
+          .join("")}
+      </tbody>
+    </table>
+  </div>`
+      : ""
+  }
+</div>`;
+  }
+
+  if (block.type === "rankedList") {
+    if (!block.items.length) return "";
+    const sorted = [...block.items].sort((a, b) => a.rank - b.rank);
+    return `<div class="guide-section">
+  ${sectionHead(block.eyebrow || (block.kind === "weapons" ? "Оружие" : "Артефакты"), block.title, block.intro)}
+  <div class="guide-rank-list">
+    ${sorted.map(rankedItemHtml).join("\n    ")}
+  </div>
 </div>`;
   }
 
   if (block.type === "video") {
     const yt = youtubeEmbedUrl(block.youtubeUrl);
     if (!yt && !block.videoUrl) return "";
-    return `<div>
+    return `<div class="guide-section">
   ${sectionHead("Медиа", block.title || "Видео")}
   <div class="overflow-hidden rounded-[20px] border border-black/[0.05] bg-black/5 shadow-soft">
     ${
@@ -308,7 +574,7 @@ function renderBlock(block: GuideBlock): string {
     if (block.items.length === 0) return "";
     const eyebrow =
       block.type === "weapons" ? "Оружие" : block.type === "artifacts" ? "Артефакты" : "Материалы";
-    return `<div>
+    return `<div class="guide-section">
   ${sectionHead(eyebrow, block.title)}
   <div class="flex flex-wrap gap-3">
     ${block.items.map(itemCardHtml).join("\n    ")}
@@ -318,6 +584,7 @@ function renderBlock(block: GuideBlock): string {
 
   if (block.type === "team") {
     if (block.members.length === 0) return "";
+    const defaultRoles = ["Мейн-дд", "Саппорт", "Саб-дд", "Флекс"];
     return `<div class="guide-team overflow-hidden rounded-[20px] border border-black/[0.06] bg-white shadow-soft">
   <div class="flex flex-wrap items-center justify-between gap-2 border-b border-black/[0.05] bg-[#0b1f44]/[0.03] px-4 py-3 sm:px-5">
     <h3 class="font-display text-lg font-bold text-foreground">${escapeHtml(block.title)}</h3>
@@ -327,28 +594,29 @@ function renderBlock(block: GuideBlock): string {
     ${block.members
       .map((m, i) => {
         const bg = m.rarity === 5 ? "/images/legend-bg.jpg" : "/images/epic-bg.jpg";
+        const role = (m.role && m.role.trim()) || defaultRoles[i] || `Слот ${i + 1}`;
         const nameHtml = m.href
           ? `<a href="${escapeHtml(m.href)}" class="font-genshin text-center text-[13px] text-[#189b8e] hover:underline">${escapeHtml(m.name)}</a>`
           : `<p class="font-genshin text-center text-[13px] tracking-wide text-[#1e1e1e]">${escapeHtml(m.name)}</p>`;
         const avatar = `<div class="relative h-16 w-16 overflow-hidden rounded-full bg-cover bg-center ring-2 ring-white shadow-md" style="background-image:url(${bg})">
-        <img src="${escapeHtml(m.image)}" alt="${escapeHtml(m.name)}" class="h-full w-full object-cover" />
+        ${m.image ? `<img src="${escapeHtml(m.image)}" alt="${escapeHtml(m.name)}" class="h-full w-full object-cover" />` : ""}
         ${m.elementIcon ? `<img src="${escapeHtml(m.elementIcon)}" alt="" class="absolute -right-0.5 -top-0.5 h-5 w-5 drop-shadow" />` : ""}
       </div>`;
         return `<div class="flex flex-col items-center gap-2 border-black/[0.05] px-3 py-4 ${i < block.members.length - 1 ? "sm:border-r" : ""}">
-      <p class="text-[10px] font-bold uppercase tracking-[0.06em] text-muted-foreground">Персонаж ${i + 1}</p>
+      <p class="text-[10px] font-bold uppercase tracking-[0.06em] text-muted-foreground">${escapeHtml(role)}</p>
       ${m.href ? `<a href="${escapeHtml(m.href)}" class="transition hover:opacity-90">${avatar}</a>` : avatar}
       ${nameHtml}
     </div>`;
       })
       .join("\n    ")}
   </div>
-  ${block.note ? `<p class="border-t border-black/[0.05] px-4 py-3 text-sm font-medium leading-relaxed text-muted-foreground sm:px-5">${escapeHtml(block.note)}</p>` : ""}
+  ${block.note ? `<p class="border-t border-black/[0.05] px-4 py-3.5 text-[15px] font-medium leading-relaxed text-muted-foreground sm:px-5">${escapeHtml(block.note)}</p>` : ""}
 </div>`;
   }
 
   if (block.type === "roleTable") {
     if (block.rows.length === 0) return "";
-    return `<div>
+    return `<div class="guide-section">
   ${sectionHead(block.eyebrow || "Роли", block.title, block.intro)}
   <div class="guide-table-wrap">
     <table class="guide-table">
@@ -402,7 +670,7 @@ function renderBlock(block: GuideBlock): string {
   if (block.type === "statsTable") {
     if (block.rows.length === 0) return "";
     const [c0, c1, c2, c3, c4, c5] = block.colLabels;
-    return `<div>
+    return `<div class="guide-section">
   ${sectionHead("Характеристики", block.title, block.intro)}
   <div class="guide-table-wrap">
     <table class="guide-table guide-table-stats">
@@ -437,7 +705,7 @@ function renderBlock(block: GuideBlock): string {
 
   if (block.type === "resourceTable") {
     if (block.rows.length === 0) return "";
-    return `<div>
+    return `<div class="guide-section">
   ${sectionHead("Прокачка", block.title, block.intro)}
   <div class="guide-table-wrap">
     <table class="guide-table">
@@ -476,7 +744,7 @@ function renderBlock(block: GuideBlock): string {
 
 export function serializeGuide(blocks: GuideBlock[]): string {
   const payload = JSON.stringify(blocks);
-  const html = `<section class="space-y-10">
+  const html = `<section class="space-y-12">
 ${blocks.map(renderBlock).filter(Boolean).join("\n\n")}
 </section>`;
   return `${MARKER_START}${payload}${MARKER_END}\n${html}`;

@@ -166,7 +166,7 @@ export function emptyMaterialGuide(): MaterialGuideData {
     forgingDiagram: emptyForgingDiagram(),
     forgingIntro: "",
     forgingIngredients: [],
-    mapTitle: "Интерактивная карта",
+    mapTitle: "",
     mapIntro: "",
     mapUrl: "",
   };

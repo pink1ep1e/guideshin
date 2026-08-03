@@ -14,6 +14,9 @@ import {
   Table2,
   BarChart3,
   Package,
+  Scale,
+  Target,
+  ListOrdered,
 } from "lucide-react";
 import MediaUpload from "@/components/admin/MediaUpload";
 import FancySelect from "@/components/ui/FancySelect";
@@ -24,8 +27,14 @@ import {
   type GuideItem,
   type GuideTeamMember,
   createEmptyBlocks,
+  emptyArtifactSlot,
+  emptyProsConsBlock,
+  emptyRankedItem,
+  emptyRankedListBlock,
   emptyResourceRow,
   emptyRoleRow,
+  emptyStatTarget,
+  emptyStatTargetsBlock,
   emptyStatsRow,
   parseGuideBlocks,
   serializeGuide,
@@ -134,6 +143,12 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
         intro: "Для повышения уровней персонажа нужны следующие ресурсы:",
         rows: [emptyResourceRow()],
       };
+    } else if (type === "prosCons") {
+      block = { ...emptyProsConsBlock(), id: base.id };
+    } else if (type === "statTargets") {
+      block = { ...emptyStatTargetsBlock(), id: base.id };
+    } else if (type === "rankedList") {
+      block = { ...emptyRankedListBlock("weapons"), id: base.id };
     } else {
       block = {
         ...base,
@@ -167,6 +182,9 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
       roleTable: "Таблица ролей",
       statsTable: "Таблица характеристик",
       resourceTable: "Таблица ресурсов",
+      prosCons: "Плюсы / минусы",
+      statTargets: "Цели статов",
+      rankedList: "Рейтинг (карточки)",
     };
     return map[type];
   };
@@ -195,9 +213,12 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
         {(
           [
             ["text", "Текст", Type],
+            ["prosCons", "Плюсы/минусы", Scale],
+            ["statTargets", "Статы билда", Target],
+            ["rankedList", "Рейтинг", ListOrdered],
             ["video", "Видео", Video],
             ["roleTable", "Роли", Table2],
-            ["statsTable", "Статы", BarChart3],
+            ["statsTable", "Таблица статов", BarChart3],
             ["resourceTable", "Ресурсы", Package],
             ["weapons", "Оружие", Sword],
             ["artifacts", "Артефакты", Gem],
@@ -261,13 +282,397 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                     </div>
                   </div>
                   <div>
-                    <label className={label}>Текст</label>
+                    <label className={label}>Текст (абзацы, - списки, **жирный**, ### подзаголовок)</label>
                     <textarea
-                      className={`${input} min-h-[100px]`}
+                      className={`${input} min-h-[120px]`}
                       value={block.body}
                       onChange={(e) => updateBlock(block.id, { body: e.target.value })}
                     />
                   </div>
+                </>
+              )}
+
+              {block.type === "prosCons" && (
+                <>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className={label}>Подпись</label>
+                      <input
+                        className={input}
+                        value={block.eyebrow}
+                        onChange={(e) => updateBlock(block.id, { eyebrow: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className={label}>Заголовок</label>
+                      <input
+                        className={input}
+                        value={block.title}
+                        onChange={(e) => updateBlock(block.id, { title: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className={label}>{block.prosTitle || "Плюсы"} (по строке)</label>
+                      <textarea
+                        className={`${input} min-h-[140px]`}
+                        value={block.pros.join("\n")}
+                        onChange={(e) =>
+                          updateBlock(block.id, {
+                            pros: e.target.value.split("\n"),
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className={label}>{block.consTitle || "Минусы"} (по строке)</label>
+                      <textarea
+                        className={`${input} min-h-[140px]`}
+                        value={block.cons.join("\n")}
+                        onChange={(e) =>
+                          updateBlock(block.id, {
+                            cons: e.target.value.split("\n"),
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {block.type === "statTargets" && (
+                <>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className={label}>Подпись</label>
+                      <input
+                        className={input}
+                        value={block.eyebrow}
+                        onChange={(e) => updateBlock(block.id, { eyebrow: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className={label}>Заголовок</label>
+                      <input
+                        className={input}
+                        value={block.title}
+                        onChange={(e) => updateBlock(block.id, { title: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className={label}>Вступление</label>
+                    <textarea
+                      className={`${input} min-h-[64px]`}
+                      value={block.intro}
+                      onChange={(e) => updateBlock(block.id, { intro: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <p className={label}>Целевые значения</p>
+                    {block.targets.map((t) => (
+                      <div key={t.id} className="grid gap-2 sm:grid-cols-3">
+                        <input
+                          className={input}
+                          value={t.label}
+                          placeholder="HP"
+                          onChange={(e) =>
+                            updateBlock(block.id, {
+                              targets: block.targets.map((x) =>
+                                x.id === t.id ? { ...x, label: e.target.value } : x,
+                              ),
+                            })
+                          }
+                        />
+                        <input
+                          className={input}
+                          value={t.value}
+                          placeholder="35 000+"
+                          onChange={(e) =>
+                            updateBlock(block.id, {
+                              targets: block.targets.map((x) =>
+                                x.id === t.id ? { ...x, value: e.target.value } : x,
+                              ),
+                            })
+                          }
+                        />
+                        <input
+                          className={input}
+                          value={t.hint}
+                          placeholder="Подсказка"
+                          onChange={(e) =>
+                            updateBlock(block.id, {
+                              targets: block.targets.map((x) =>
+                                x.id === t.id ? { ...x, hint: e.target.value } : x,
+                              ),
+                            })
+                          }
+                        />
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateBlock(block.id, {
+                          targets: [...block.targets, emptyStatTarget()],
+                        })
+                      }
+                      className="inline-flex items-center gap-1 rounded-xl bg-[#189b8e]/12 px-3 py-2 text-xs font-bold text-[#189b8e]"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Цель
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    <p className={label}>Слоты артефактов</p>
+                    {block.slots.map((s) => (
+                      <div key={s.id} className="grid gap-2 sm:grid-cols-3">
+                        <input
+                          className={input}
+                          value={s.slot}
+                          placeholder="Пески"
+                          onChange={(e) =>
+                            updateBlock(block.id, {
+                              slots: block.slots.map((x) =>
+                                x.id === s.id ? { ...x, slot: e.target.value } : x,
+                              ),
+                            })
+                          }
+                        />
+                        <input
+                          className={input}
+                          value={s.main}
+                          placeholder="HP% / ВЭ%"
+                          onChange={(e) =>
+                            updateBlock(block.id, {
+                              slots: block.slots.map((x) =>
+                                x.id === s.id ? { ...x, main: e.target.value } : x,
+                              ),
+                            })
+                          }
+                        />
+                        <input
+                          className={input}
+                          value={s.subs}
+                          placeholder="К/У, К/Ш…"
+                          onChange={(e) =>
+                            updateBlock(block.id, {
+                              slots: block.slots.map((x) =>
+                                x.id === s.id ? { ...x, subs: e.target.value } : x,
+                              ),
+                            })
+                          }
+                        />
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateBlock(block.id, {
+                          slots: [...block.slots, emptyArtifactSlot()],
+                        })
+                      }
+                      className="inline-flex items-center gap-1 rounded-xl bg-[#189b8e]/12 px-3 py-2 text-xs font-bold text-[#189b8e]"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Слот
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {block.type === "rankedList" && (
+                <>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className={label}>Подпись</label>
+                      <input
+                        className={input}
+                        value={block.eyebrow}
+                        onChange={(e) => updateBlock(block.id, { eyebrow: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className={label}>Заголовок</label>
+                      <input
+                        className={input}
+                        value={block.title}
+                        onChange={(e) => updateBlock(block.id, { title: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className={label}>Вступление</label>
+                    <textarea
+                      className={`${input} min-h-[56px]`}
+                      value={block.intro}
+                      onChange={(e) => updateBlock(block.id, { intro: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className={label}>Тип рейтинга</label>
+                    <FancySelect
+                      value={block.kind}
+                      onChange={(kind) =>
+                        updateBlock(block.id, {
+                          kind: kind as "weapons" | "artifacts",
+                        })
+                      }
+                      options={[
+                        { value: "weapons", label: "Оружие" },
+                        { value: "artifacts", label: "Артефакты" },
+                      ]}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    {block.items.map((item, idx) => (
+                      <div
+                        key={item.id}
+                        className="rounded-[16px] border border-black/[0.05] bg-[#0b1f44]/[0.02] p-3"
+                      >
+                        <div className="mb-3 flex items-center justify-between">
+                          <p className="text-xs font-bold text-muted-foreground">
+                            #{item.rank || idx + 1}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateBlock(block.id, {
+                                items: block.items.filter((x) => x.id !== item.id),
+                              })
+                            }
+                            className="text-xs font-bold text-destructive"
+                          >
+                            Удалить
+                          </button>
+                        </div>
+                        <div className="mb-2">
+                          <CatalogPicker
+                            label={
+                              block.kind === "weapons"
+                                ? "Оружие из базы"
+                                : "Сет из базы"
+                            }
+                            kind={block.kind === "weapons" ? "weapons" : "artifacts"}
+                            catalog={catalog}
+                            onPick={(picked) =>
+                              updateBlock(block.id, {
+                                items: block.items.map((x) =>
+                                  x.id === item.id
+                                    ? {
+                                        ...x,
+                                        name: picked.name,
+                                        image: picked.image,
+                                        rarity: picked.rarity,
+                                        href: picked.href,
+                                      }
+                                    : x,
+                                ),
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-3">
+                          <input
+                            className={input}
+                            type="number"
+                            value={item.rank}
+                            placeholder="Ранг"
+                            onChange={(e) =>
+                              updateBlock(block.id, {
+                                items: block.items.map((x) =>
+                                  x.id === item.id
+                                    ? { ...x, rank: Number(e.target.value) || 1 }
+                                    : x,
+                                ),
+                              })
+                            }
+                          />
+                          <input
+                            className={input}
+                            value={item.name}
+                            placeholder="Название"
+                            onChange={(e) =>
+                              updateBlock(block.id, {
+                                items: block.items.map((x) =>
+                                  x.id === item.id ? { ...x, name: e.target.value } : x,
+                                ),
+                              })
+                            }
+                          />
+                          <input
+                            className={input}
+                            value={item.subtitle}
+                            placeholder="Статы / 2п"
+                            onChange={(e) =>
+                              updateBlock(block.id, {
+                                items: block.items.map((x) =>
+                                  x.id === item.id
+                                    ? { ...x, subtitle: e.target.value }
+                                    : x,
+                                ),
+                              })
+                            }
+                          />
+                        </div>
+                        <MediaUpload
+                          label="Иконка"
+                          value={item.image}
+                          onChange={(image) =>
+                            updateBlock(block.id, {
+                              items: block.items.map((x) =>
+                                x.id === item.id ? { ...x, image } : x,
+                              ),
+                            })
+                          }
+                          kind="artifact"
+                          preview="image"
+                          accept="image/*"
+                          hint="/uploads/…"
+                        />
+                        <textarea
+                          className={`${input} mt-2 min-h-[64px]`}
+                          value={item.effect}
+                          placeholder="Эффект"
+                          onChange={(e) =>
+                            updateBlock(block.id, {
+                              items: block.items.map((x) =>
+                                x.id === item.id ? { ...x, effect: e.target.value } : x,
+                              ),
+                            })
+                          }
+                        />
+                        <textarea
+                          className={`${input} mt-2 min-h-[56px]`}
+                          value={item.verdict}
+                          placeholder="Рекомендация"
+                          onChange={(e) =>
+                            updateBlock(block.id, {
+                              items: block.items.map((x) =>
+                                x.id === item.id ? { ...x, verdict: e.target.value } : x,
+                              ),
+                            })
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateBlock(block.id, {
+                        items: [
+                          ...block.items,
+                          emptyRankedItem(block.items.length + 1),
+                        ],
+                      })
+                    }
+                    className="inline-flex items-center gap-1 rounded-xl bg-[#189b8e]/12 px-3 py-2 text-xs font-bold text-[#189b8e]"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Добавить в рейтинг
+                  </button>
                 </>
               )}
 
@@ -963,6 +1368,21 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                         <p className="mb-2 text-xs font-bold text-muted-foreground">
                           Слот {idx + 1}
                         </p>
+                        <div className="mb-2">
+                          <label className={label}>Роль</label>
+                          <input
+                            className={input}
+                            value={m.role || ""}
+                            placeholder="Мейн-дд / Саппорт…"
+                            onChange={(e) =>
+                              updateBlock(block.id, {
+                                members: block.members.map((x) =>
+                                  x.id === m.id ? { ...x, role: e.target.value } : x,
+                                ),
+                              })
+                            }
+                          />
+                        </div>
                         <div className="mb-2">
                           <CatalogPicker
                             label="Персонаж из базы"
