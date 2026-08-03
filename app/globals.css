@@ -84,17 +84,21 @@
     @apply prose prose-neutral max-w-none prose-headings:font-genshin prose-a:text-primary prose-img:rounded-xl;
   }
 
-  /* HTML-гайды из админки: Tailwind-классы работают, prose не ломает вёрстку */
+  /* HTML-гайды из админки */
   .guide-html {
-    @apply max-w-none text-[15px] leading-relaxed text-muted-foreground;
+    @apply max-w-none text-[14.5px] leading-relaxed text-muted-foreground;
+  }
+
+  .guide-html .guide-blocks {
+    @apply space-y-11;
   }
 
   .guide-html h2 {
-    @apply font-genshin tracking-wide text-foreground;
+    @apply font-genshin text-[1.45rem] tracking-wide text-foreground sm:text-[1.55rem];
   }
 
   .guide-html h3 {
-    @apply font-display font-semibold text-foreground;
+    @apply font-display text-base font-semibold text-foreground;
   }
 
   .guide-html a {
@@ -110,7 +114,7 @@
   }
 
   .guide-html .guide-video {
-    @apply relative w-full overflow-hidden rounded-[20px] bg-black;
+    @apply relative w-full overflow-hidden rounded-[18px] bg-black;
     padding-top: 56.25%;
   }
 
@@ -119,19 +123,19 @@
   }
 
   .guide-html video {
-    @apply w-full rounded-[20px];
+    @apply w-full rounded-[18px];
   }
 
   .guide-html .guide-md-p {
-    @apply mb-3 text-[15px] font-medium leading-[1.7] text-muted-foreground last:mb-0;
+    @apply mb-2.5 text-[14.5px] font-medium leading-[1.7] text-muted-foreground last:mb-0;
   }
 
   .guide-html .guide-md-h3 {
-    @apply mb-2 mt-5 font-display text-lg font-semibold text-foreground first:mt-0;
+    @apply mb-2 mt-4 font-display text-[15px] font-semibold text-foreground first:mt-0;
   }
 
   .guide-html .guide-md-list {
-    @apply mb-3 list-disc space-y-1.5 pl-5 text-[15px] font-medium leading-[1.65] text-muted-foreground last:mb-0;
+    @apply mb-2.5 list-disc space-y-1.5 pl-5 text-[14.5px] font-medium leading-[1.65] text-muted-foreground last:mb-0;
   }
 
   .guide-html .guide-md-list li {
@@ -139,12 +143,12 @@
   }
 
   .guide-html .guide-proscons {
-    @apply grid gap-4 md:grid-cols-2;
+    @apply grid gap-3 md:grid-cols-2;
   }
 
   .guide-html .guide-pros,
   .guide-html .guide-cons {
-    @apply rounded-[16px] border border-black/[0.06] bg-[#fafbfc] p-4 sm:p-5;
+    @apply rounded-[14px] border border-black/[0.05] bg-[#f8fafb] p-4;
   }
 
   .guide-html .guide-pros {
@@ -156,7 +160,7 @@
   }
 
   .guide-html .guide-proscons-title {
-    @apply mb-3 font-display text-[15px] font-semibold text-foreground;
+    @apply mb-2.5 text-[13px] font-semibold uppercase tracking-[0.04em] text-foreground;
   }
 
   .guide-html .guide-proscons-title--pro {
@@ -168,79 +172,79 @@
   }
 
   .guide-html .guide-proscons-list {
-    @apply list-disc space-y-2 pl-5 text-[14px] font-medium leading-relaxed text-muted-foreground;
+    @apply list-disc space-y-1.5 pl-4 text-[13.5px] font-medium leading-relaxed text-muted-foreground;
   }
 
   .guide-html .guide-stat-targets {
-    @apply grid gap-3 sm:grid-cols-2 xl:grid-cols-4;
+    @apply grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4;
   }
 
   .guide-html .guide-stat-chip {
-    @apply rounded-[14px] border border-black/[0.05] bg-[#0b1f44]/[0.025] px-3.5 py-3.5;
+    @apply rounded-[12px] border border-black/[0.045] bg-[#f8fafb] px-3.5 py-3;
   }
 
   .guide-html .guide-stat-chip-label {
-    @apply text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground;
+    @apply text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground;
   }
 
   .guide-html .guide-stat-chip-value {
-    @apply mt-1 font-genshin text-lg tracking-wide text-foreground;
+    @apply mt-1 font-genshin text-[17px] tracking-wide text-foreground;
   }
 
   .guide-html .guide-stat-chip-hint {
-    @apply mt-1.5 text-[12px] font-medium leading-snug text-muted-foreground;
+    @apply mt-1 text-[12px] font-medium leading-snug text-muted-foreground;
   }
 
   .guide-html .guide-rank-list {
-    @apply space-y-2.5;
+    @apply space-y-2;
   }
 
   .guide-html .guide-rank-card {
-    @apply relative overflow-hidden rounded-[16px] border border-black/[0.05] bg-[#fafbfc] transition hover:border-[#189b8e]/25 hover:bg-white;
+    @apply relative overflow-hidden rounded-[14px] border border-black/[0.045] bg-[#f8fafb] transition hover:border-black/[0.08] hover:bg-white;
   }
 
   .guide-html .guide-rank-badge {
-    @apply absolute left-0 top-0 z-[1] flex h-7 min-w-7 items-center justify-center rounded-br-[12px] bg-[#0b1f44]/[0.08] px-2 text-[12px] font-semibold tabular-nums text-foreground/80;
+    @apply absolute left-0 top-0 z-[1] flex h-6 min-w-6 items-center justify-center rounded-br-[10px] bg-[#0b1f44]/[0.06] px-1.5 text-[11px] font-semibold tabular-nums text-foreground/70;
   }
 
   .guide-html .guide-rank-body {
-    @apply flex gap-3.5 p-3.5 pl-11 sm:gap-4 sm:p-4 sm:pl-12;
+    @apply flex gap-3 p-3 pl-9 sm:gap-3.5 sm:p-3.5 sm:pl-10;
   }
 
   .guide-html .guide-rank-icon {
-    @apply h-[68px] w-[68px] shrink-0 sm:h-[78px] sm:w-[78px];
+    @apply h-[60px] w-[60px] shrink-0 sm:h-[68px] sm:w-[68px];
   }
 
   .guide-html .guide-rank-icon img {
-    @apply h-full w-full object-contain p-1.5;
+    @apply h-full w-full object-contain p-1;
   }
 
   .guide-html .guide-rank-effect {
-    @apply mt-1.5 text-[13.5px] font-medium leading-[1.55] text-muted-foreground;
+    @apply mt-1 text-[13px] font-medium leading-[1.55] text-muted-foreground;
   }
 
   .guide-html .guide-rank-verdict {
-    @apply mt-2 border-l-2 border-[#189b8e]/40 pl-2.5 text-[13.5px] font-medium leading-snug text-[#147a70];
+    @apply mt-1.5 border-l-2 border-[#189b8e]/35 pl-2 text-[13px] font-medium leading-snug text-[#1a7a70];
   }
 
   .guide-html .guide-table-wrap {
-    @apply -mx-1 overflow-x-auto rounded-[16px] border border-black/[0.06] bg-white;
+    @apply overflow-x-auto rounded-[14px] border border-black/[0.05] bg-white;
   }
 
   .guide-html .guide-table {
-    @apply w-full min-w-[520px] border-collapse text-sm;
+    @apply w-full min-w-[480px] border-collapse text-sm;
   }
 
   .guide-html .guide-table th {
-    @apply border-b border-black/[0.06] bg-[#0b1f44]/[0.03] px-3 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.04em] text-foreground/80;
+    @apply border-b border-black/[0.05] bg-[#f5f7f9] px-3 py-2.5 text-center text-[10px] font-semibold uppercase tracking-[0.05em] text-foreground/65;
   }
 
   .guide-html .guide-table td {
-    @apply border-b border-black/[0.04] px-3 py-3.5 align-middle text-muted-foreground;
+    @apply border-b border-black/[0.035] px-3 py-3 align-middle text-muted-foreground;
   }
 
   .guide-html .guide-table tbody tr:nth-child(even) {
-    @apply bg-[#0b1f44]/[0.015];
+    @apply bg-[#fafbfc];
   }
 
   .guide-html .guide-table tbody tr:hover {
@@ -266,23 +270,23 @@
   }
 
   .guide-html .guide-char-icon {
-    @apply h-12 w-12 rounded-xl object-cover shadow-sm ring-1 ring-black/[0.06];
+    @apply h-11 w-11 rounded-xl object-cover ring-1 ring-black/[0.05];
   }
 
   .guide-html .guide-char-name {
-    @apply font-medium text-[#189b8e];
+    @apply text-[13px] font-medium text-[#189b8e];
   }
 
   .guide-html .guide-el-icon {
-    @apply h-8 w-8 drop-shadow;
+    @apply h-7 w-7 drop-shadow;
   }
 
   .guide-html .guide-weapon-icon {
-    @apply h-7 w-7 object-contain opacity-80;
+    @apply h-6 w-6 object-contain opacity-80;
   }
 
   .guide-html .guide-resource-icon {
-    @apply h-14 w-14 object-contain;
+    @apply h-12 w-12 object-contain;
   }
 
   .guide-html .guide-table-stats td {
@@ -298,7 +302,11 @@
   }
 
   .guide-html .guide-team {
-    @apply mb-4 last:mb-0;
+    @apply mb-3 last:mb-0;
+  }
+
+  .guide-html .guide-section > .mb-5 {
+    @apply mb-4;
   }
 
   .rarity-legend {
