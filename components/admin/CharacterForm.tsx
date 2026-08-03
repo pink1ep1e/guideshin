@@ -14,6 +14,7 @@ import MediaUpload from "@/components/admin/MediaUpload";
 import GuideBuilder from "@/components/admin/GuideBuilder";
 import MaterialsEditor from "@/components/admin/MaterialsEditor";
 import AdminStickyActions from "@/components/admin/AdminStickyActions";
+import { useAdminToast } from "@/components/admin/AdminToastContext";
 import { invalidateGuideCatalog } from "@/components/admin/CatalogPicker";
 import FancySelect from "@/components/ui/FancySelect";
 import { slugFromName } from "@/lib/slug";
@@ -102,6 +103,7 @@ export default function CharacterForm({
   );
   const [builderKey, setBuilderKey] = useState(0);
   const isEdit = Boolean(values.id);
+  const { showError } = useAdminToast();
 
   const theme = ELEMENT_THEME[values.element];
   const stars = values.rarity === "LEGEND" ? 5 : 4;
@@ -115,6 +117,18 @@ export default function CharacterForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    const messages: string[] = [];
+    if (!values.name.trim()) messages.push("Не заполнено имя");
+    if (!values.image.trim()) messages.push("Не загружена иконка");
+    if (messages.length) {
+      const title =
+        messages.length === 1 ? messages[0] : "Не все поля заполнены";
+      showError(title, messages.length > 1 ? messages.join(" · ") : undefined);
+      setError(messages.join(". "));
+      return;
+    }
+
     setSaving(true);
     setError(null);
 
@@ -123,22 +137,28 @@ export default function CharacterForm({
       : "/api/admin/characters";
     const method = isEdit ? "PUT" : "POST";
 
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
 
-    setSaving(false);
+      if (!res.ok) {
+        setError("Не удалось сохранить персонажа");
+        showError("Ошибка сохранения", "Не удалось сохранить персонажа");
+        return;
+      }
 
-    if (!res.ok) {
-      setError("Не удалось сохранить персонажа");
-      return;
+      invalidateGuideCatalog();
+      router.push("/admin/characters");
+      router.refresh();
+    } catch {
+      setError("Нет связи с сервером");
+      showError("Нет связи с сервером", "Проверьте интернет и попробуйте снова.");
+    } finally {
+      setSaving(false);
     }
-
-    invalidateGuideCatalog();
-    router.push("/admin/characters");
-    router.refresh();
   }
 
   const inputClass =
@@ -147,7 +167,7 @@ export default function CharacterForm({
     "mb-1.5 block text-xs font-bold uppercase tracking-[0.06em] text-muted-foreground";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       <div className="glass-panel relative overflow-hidden p-5 sm:p-6">
         <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#189b8e] to-[#67d5cc]" />
         <div className="flex flex-wrap items-center gap-5">
@@ -222,7 +242,6 @@ export default function CharacterForm({
               }));
             }}
             placeholder="Фурина"
-            required
           />
         </div>
         <div>

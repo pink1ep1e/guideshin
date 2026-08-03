@@ -16,6 +16,7 @@ import {
   buildMaterialWeaponsIntro,
   emptyForgingDiagram,
   emptyMaterialGuide,
+  MATERIAL_GUIDE_SECTION_IDS as SID,
   parseMaterialGuide,
   uid,
   type GuideMatRef,
@@ -155,24 +156,26 @@ export default function MaterialGuideEditor({
         </p>
       </div>
 
-      <div>
-        <label className={label}>Описание</label>
-        <textarea
-          className={`${input} min-h-[80px]`}
-          value={data.description}
-          onChange={(e) => set({ description: e.target.value })}
-        />
-      </div>
-      <div>
-        <label className={label}>Лор (курсив)</label>
-        <textarea
-          className={`${input} min-h-[56px]`}
-          value={data.lore}
-          onChange={(e) => set({ lore: e.target.value })}
-        />
+      <div id={SID.overview} className="scroll-mt-24 space-y-3">
+        <div>
+          <label className={label}>Описание</label>
+          <textarea
+            className={`${input} min-h-[80px]`}
+            value={data.description}
+            onChange={(e) => set({ description: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className={label}>Лор (курсив)</label>
+          <textarea
+            className={`${input} min-h-[56px]`}
+            value={data.lore}
+            onChange={(e) => set({ lore: e.target.value })}
+          />
+        </div>
       </div>
 
-      <div className="space-y-2">
+      <div id={SID.characters} className="scroll-mt-24 space-y-2">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.06em] text-muted-foreground">
             Улучшаемые персонажи
@@ -332,7 +335,7 @@ export default function MaterialGuideEditor({
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div id={SID.weapons} className="scroll-mt-24 space-y-2">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.06em] text-muted-foreground">
             Возвышаемое оружие
@@ -432,7 +435,7 @@ export default function MaterialGuideEditor({
         ))}
       </div>
 
-      <div className="space-y-2">
+      <div id={SID.teapot} className="scroll-mt-24 space-y-2">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.06em] text-muted-foreground">
             Создание материалов (чайник)
@@ -527,7 +530,7 @@ export default function MaterialGuideEditor({
         ))}
       </div>
 
-      <div className="space-y-2">
+      <div id={SID.alchemyUse} className="scroll-mt-24 space-y-2">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.06em] text-muted-foreground">
             Применение в алхимии
@@ -554,7 +557,7 @@ export default function MaterialGuideEditor({
         />
       </div>
 
-      <div className="space-y-2">
+      <div id={SID.forgingUse} className="scroll-mt-24 space-y-2">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.06em] text-muted-foreground">
             Применение в ковке
@@ -661,7 +664,7 @@ export default function MaterialGuideEditor({
         ))}
       </div>
 
-      <div className="space-y-2">
+      <div id={SID.sources} className="scroll-mt-24 space-y-2">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.06em] text-muted-foreground">
             Источники
@@ -729,7 +732,7 @@ export default function MaterialGuideEditor({
         ))}
       </div>
 
-      <div className="space-y-2">
+      <div id={SID.alchemyCraft} className="scroll-mt-24 space-y-2">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.06em] text-muted-foreground">
             Алхимия (рецепт получения)
@@ -756,7 +759,10 @@ export default function MaterialGuideEditor({
         />
       </div>
 
-      <div className="space-y-3 rounded-[14px] border border-black/[0.06] bg-white/70 p-3">
+      <div
+        id={SID.forging}
+        className="scroll-mt-24 space-y-3 rounded-[14px] border border-black/[0.06] bg-white/70 p-3"
+      >
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.06em] text-muted-foreground">
             Рецепты ковки
