@@ -374,6 +374,35 @@ export function hasForgingRecipe(data: MaterialGuideData): boolean {
   );
 }
 
+/** id секций гайда материала для навигации в админке */
+export const MATERIAL_GUIDE_SECTION_IDS = {
+  overview: "mg-overview",
+  characters: "mg-characters",
+  weapons: "mg-weapons",
+  teapot: "mg-teapot",
+  alchemyUse: "mg-alchemy-use",
+  forgingUse: "mg-forging-use",
+  sources: "mg-sources",
+  alchemyCraft: "mg-alchemy-craft",
+  forging: "mg-forging",
+} as const;
+
+export function materialSectionFilled(
+  data: MaterialGuideData,
+): Record<keyof typeof MATERIAL_GUIDE_SECTION_IDS, boolean> {
+  return {
+    overview: Boolean(data.description.trim() || data.lore.trim()),
+    characters: data.characters.some((c) => c.name.trim()),
+    weapons: data.weapons.some((w) => w.name.trim()),
+    teapot: data.teapotItems.some((m) => m.name.trim()),
+    alchemyUse: data.alchemyUses.some((m) => m.name.trim()),
+    forgingUse: data.forgingUses.some((m) => m.name.trim()),
+    sources: data.sources.some((s) => s.name.trim() || s.image),
+    alchemyCraft: data.alchemyCraft.some((m) => m.name.trim()),
+    forging: hasForgingRecipe(data),
+  };
+}
+
 export function uid() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }

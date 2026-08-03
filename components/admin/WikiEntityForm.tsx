@@ -1,15 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  FlaskConical,
+  Hammer,
+  Home,
+  Pickaxe,
+  ScrollText,
+  Skull,
+  Sparkles,
+  Sword,
+  Users,
+} from "lucide-react";
 import MediaUpload from "@/components/admin/MediaUpload";
 import FancySelect from "@/components/ui/FancySelect";
-import AdminStickyActions from "@/components/admin/AdminStickyActions";
+import AdminStickyActions, {
+  type AdminNavItem,
+} from "@/components/admin/AdminStickyActions";
+import { useAdminToast } from "@/components/admin/AdminToastContext";
 import { invalidateGuideCatalog } from "@/components/admin/CatalogPicker";
 import WeaponGuideEditor from "@/components/admin/WeaponGuideEditor";
 import MaterialGuideEditor from "@/components/admin/MaterialGuideEditor";
-import { emptyMaterialGuide, emptyWeaponGuide } from "@/lib/wiki-guide-data";
+import {
+  emptyMaterialGuide,
+  emptyWeaponGuide,
+  MATERIAL_GUIDE_SECTION_IDS as SID,
+  materialSectionFilled,
+  parseMaterialGuide,
+} from "@/lib/wiki-guide-data";
 import { REGION_OPTIONS } from "@/lib/regions";
 import { slugFromName } from "@/lib/slug";
 
@@ -80,6 +100,7 @@ const UPLOAD_KIND: Record<WikiEntityKind, "weapon" | "artifact" | "material"> = 
 export default function WikiEntityForm(props: Props) {
   const { kind } = props;
   const router = useRouter();
+  const { showError } = useAdminToast();
 
   const defaultsWeapon: WeaponValues = {
     name: "",
@@ -135,8 +156,69 @@ export default function WikiEntityForm(props: Props) {
     setValues((v) => ({ ...v, ...patch }));
   }
 
+  const materialNav = useMemo((): AdminNavItem[] => {
+    if (kind !== "material") return [];
+    const guide = parseMaterialGuide((values as MaterialValues).guideData);
+    const filled = materialSectionFilled(guide);
+    const all: AdminNavItem[] = [
+      { id: SID.overview, label: "Описание", icon: ScrollText },
+      { id: SID.characters, label: "Персы", icon: Users },
+      { id: SID.weapons, label: "Оружие", icon: Sword },
+      { id: SID.teapot, label: "Чайник", icon: Home },
+      { id: SID.alchemyUse, label: "Алх. исп.", icon: Sparkles },
+      { id: SID.forgingUse, label: "Ковка исп.", icon: Pickaxe },
+      { id: SID.sources, label: "Источники", icon: Skull },
+      { id: SID.alchemyCraft, label: "Алхимия", icon: FlaskConical },
+      { id: SID.forging, label: "Ковка", icon: Hammer },
+    ];
+    return all.filter((item) => {
+      const key = (Object.keys(SID) as (keyof typeof SID)[]).find((k) => SID[k] === item.id);
+      return key ? filled[key] : false;
+    });
+  }, [kind, values]);
+
+  function validate(): { ok: boolean; messages: string[]; focusId?: string } {
+    const base = values as BaseValues;
+    const messages: string[] = [];
+    let focusId: string | undefined;
+
+    if (!base.name.trim()) {
+      messages.push("Не заполнено название");
+      focusId ??= "wiki-field-name";
+    }
+    if (!base.image.trim()) {
+      messages.push("Не загружена иконка");
+      focusId ??= "wiki-field-image";
+    }
+    if (kind === "weapon" && !(values as WeaponValues).weaponType.trim()) {
+      messages.push("Не выбран тип оружия");
+    }
+    if (kind === "material" && !(values as MaterialValues).category.trim()) {
+      messages.push("Не выбрана категория");
+    }
+
+    return { ok: messages.length === 0, messages, focusId };
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const check = validate();
+    if (!check.ok) {
+      const title =
+        check.messages.length === 1 ? check.messages[0] : "Не все поля заполнены";
+      const message =
+        check.messages.length > 1 ? check.messages.join(" · ") : undefined;
+      showError(title, message);
+      setError(check.messages.join(". "));
+      if (check.focusId) {
+        document.getElementById(check.focusId)?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+      return;
+    }
+
     setSaving(true);
     setError(null);
     const base = API[kind];
@@ -151,7 +233,9 @@ export default function WikiEntityForm(props: Props) {
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => null)) as { error?: string } | null;
-        setError(data?.error || `Не удалось сохранить ${LABELS[kind]}`);
+        const msg = data?.error || `Не удалось сохранить ${LABELS[kind]}`;
+        setError(msg);
+        showError("Ошибка сохранения", msg);
         return;
       }
       invalidateGuideCatalog();
@@ -160,7 +244,9 @@ export default function WikiEntityForm(props: Props) {
       );
       router.refresh();
     } catch {
-      setError("Нет связи с сервером. Проверьте интернет и попробуйте снова.");
+      const msg = "Нет связи с сервером. Проверьте интернет и попробуйте снова.";
+      setError(msg);
+      showError("Нет связи с сервером", "Проверьте интернет и попробуйте снова.");
     } finally {
       setSaving(false);
     }
@@ -173,13 +259,12 @@ export default function WikiEntityForm(props: Props) {
     kind === "weapon" ? "/admin/weapons" : kind === "artifact" ? "/admin/artifacts" : "/admin/materials";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="glass-panel grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
-        <div>
+    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+      <div id="wiki-field-basics" className="glass-panel grid scroll-mt-24 gap-5 p-5 sm:grid-cols-2 sm:p-6">
+        <div id="wiki-field-name">
           <label className={label}>Название</label>
           <input
             className={input}
-            required
             value={(values as BaseValues).name}
             onChange={(e) => update({ name: e.target.value })}
           />
@@ -206,12 +291,14 @@ export default function WikiEntityForm(props: Props) {
           </div>
         </div>
 
-        <MediaUpload
-          label="Иконка"
-          value={(values as BaseValues).image}
-          onChange={(image) => update({ image })}
-          kind={UPLOAD_KIND[kind]}
-        />
+        <div id="wiki-field-image">
+          <MediaUpload
+            label="Иконка"
+            value={(values as BaseValues).image}
+            onChange={(image) => update({ image })}
+            kind={UPLOAD_KIND[kind]}
+          />
+        </div>
 
         <div>
           <label className={label}>Плашка</label>
@@ -350,7 +437,7 @@ export default function WikiEntityForm(props: Props) {
 
       <div className="h-4" aria-hidden />
 
-      <AdminStickyActions>
+      <AdminStickyActions nav={materialNav}>
         <button
           type="submit"
           disabled={saving}
