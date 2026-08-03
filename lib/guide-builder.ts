@@ -35,6 +35,16 @@ export type GuideRankedItem = {
   subtitle: string;
   effect: string;
   verdict: string;
+  /** Короткий тир: S / A / B */
+  tier?: string;
+};
+
+export type GuideTeamVariant = {
+  id: string;
+  badge?: string;
+  /** Особенности состава — как в гайдах wotpack */
+  features: string;
+  members: GuideTeamMember[];
 };
 
 export type GuideStatTarget = {
@@ -146,7 +156,69 @@ export type GuideBlock =
       intro: string;
       kind: "weapons" | "artifacts";
       items: GuideRankedItem[];
+    }
+  | {
+      id: string;
+      type: "teamGroup";
+      eyebrow: string;
+      title: string;
+      intro: string;
+      variants: GuideTeamVariant[];
     };
+
+/** Вкладки публичного гайда персонажа */
+export type GuideTabId =
+  | "overview"
+  | "build"
+  | "gear"
+  | "teams"
+  | "leveling"
+  | "play";
+
+export const GUIDE_TAB_LABELS: Record<GuideTabId, string> = {
+  overview: "Обзор",
+  build: "Билд",
+  gear: "Экипировка",
+  teams: "Отряды",
+  leveling: "Прокачка",
+  play: "Геймплей",
+};
+
+export function classifyGuideBlock(block: GuideBlock): GuideTabId {
+  switch (block.type) {
+    case "prosCons":
+      return "overview";
+    case "statTargets":
+      return "build";
+    case "rankedList":
+    case "weapons":
+    case "artifacts":
+      return "gear";
+    case "team":
+    case "teamGroup":
+    case "roleTable":
+      return "teams";
+    case "resourceTable":
+    case "materials":
+      return "leveling";
+    case "statsTable":
+      return "play";
+    case "video":
+      return "play";
+    case "text": {
+      const key = `${block.eyebrow} ${block.title}`.toLowerCase();
+      if (/оруж|артефакт|экип|сет/.test(key)) return "gear";
+      if (/отряд|команд|союзн|синерг/.test(key)) return "teams";
+      if (/прокач|возвыш|материал|талант.*книг|ресурс/.test(key)) return "leveling";
+      if (/талант|способн|созв|ротац|играть|геймплей|вердикт|выбив/.test(key))
+        return "play";
+      if (/билд|стат|характерист/.test(key)) return "build";
+      return "overview";
+    }
+    default:
+      return "overview";
+  }
+}
 
 const MARKER_START = "<!--genshin-guide-blocks:";
 const MARKER_END = "-->";
@@ -503,6 +575,8 @@ export function navLabelForBlock(block: GuideBlock): string | null {
       return "Таланты";
     case "team":
       return null;
+    case "teamGroup":
+      return "Отряды";
     case "roleTable":
       return "Союзники";
     case "statsTable":
@@ -522,7 +596,7 @@ export function buildGuideNavItems(blocks: GuideBlock[]): GuideNavItem[] {
   let teamsAdded = false;
 
   blocks.forEach((block, index) => {
-    if (block.type === "team") {
+    if (block.type === "team" || block.type === "teamGroup") {
       if (teamsAdded) return;
       teamsAdded = true;
       items.push({ id: guideSectionId(index), label: "Отряды" });
@@ -702,6 +776,47 @@ function renderBlock(block: GuideBlock, index = 0): string {
       .join("\n    ")}
   </div>
   ${block.note ? `<p class="border-t border-black/[0.04] px-3.5 py-2.5 text-[13px] leading-relaxed text-muted-foreground sm:px-4">${escapeHtml(block.note)}</p>` : ""}
+</div>`;
+  }
+
+  if (block.type === "teamGroup") {
+    if (!block.variants.length) return "";
+    const defaultRoles = ["Мейн-дд", "Саппорт", "Саб-дд", "Флекс"];
+    const variantsHtml = block.variants
+      .map((v) => {
+        const members = v.members
+          .map((m, i) => {
+            const bg = m.rarity === 5 ? "/images/legend-bg.jpg" : "/images/epic-bg.jpg";
+            const role = (m.role && m.role.trim()) || defaultRoles[i] || "";
+            return `<div class="flex items-center gap-2 min-w-0">
+  <div class="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-cover bg-center ring-1 ring-black/[0.06]" style="background-image:url(${bg})">
+    ${m.image ? `<img src="${escapeHtml(m.image)}" alt="" class="h-full w-full object-cover" />` : ""}
+    ${m.elementIcon ? `<img src="${escapeHtml(m.elementIcon)}" alt="" class="absolute -right-0.5 -top-0.5 h-3.5 w-3.5" />` : ""}
+  </div>
+  <div class="min-w-0">
+    ${role ? `<p class="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">${escapeHtml(role)}</p>` : ""}
+    ${m.href ? `<a href="${escapeHtml(m.href)}" class="block truncate text-[12.5px] font-medium text-[#189b8e] hover:underline">${escapeHtml(m.name)}</a>` : `<p class="truncate text-[12.5px] font-medium text-foreground">${escapeHtml(m.name)}</p>`}
+  </div>
+</div>`;
+          })
+          .join("");
+        return `<article class="guide-team-variant overflow-hidden rounded-[16px] border border-black/[0.05] bg-white">
+  <div class="grid gap-3 p-3.5 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] sm:gap-4 sm:p-4">
+    <div>
+      ${v.badge ? `<span class="mb-2 inline-block rounded-md bg-[#189b8e]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#189b8e]">${escapeHtml(v.badge)}</span>` : ""}
+      <div class="grid grid-cols-2 gap-2.5">${members}</div>
+    </div>
+    <div class="rounded-[12px] bg-[#f7f9fb] px-3 py-2.5">
+      <p class="mb-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Особенности</p>
+      <p class="text-[13px] leading-relaxed text-foreground/80">${escapeHtml(v.features)}</p>
+    </div>
+  </div>
+</article>`;
+      })
+      .join("\n");
+    return `<div class="guide-section">
+  ${sectionHead(block.eyebrow || "Отряды", block.title, block.intro)}
+  <div class="space-y-2.5">${variantsHtml}</div>
 </div>`;
   }
 

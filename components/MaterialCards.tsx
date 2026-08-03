@@ -46,30 +46,32 @@ export default function MaterialCards({
   return (
     <section
       id="guide-materials"
-      className="rounded-[18px] border border-black/[0.045] bg-white p-4 shadow-soft sm:p-5"
+      className="overflow-hidden rounded-[18px] border border-black/[0.045] bg-white shadow-soft"
     >
-      <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#189b8e]">
-        Прокачка
-      </p>
-      <h2 className="font-genshin mb-1 text-lg tracking-wide text-foreground sm:text-xl">
-        {title}
-      </h2>
-      <p className="mb-4 text-[13px] leading-relaxed text-muted-foreground">
-        Сколько ресурсов нужно на полную прокачку персонажа и талантов.
-      </p>
+      <div className="border-b border-black/[0.04] bg-gradient-to-r from-[#189b8e]/[0.07] to-transparent px-4 py-4 sm:px-5">
+        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#189b8e]">
+          Прокачка
+        </p>
+        <h2 className="font-genshin text-lg tracking-wide text-foreground sm:text-xl">
+          {title}
+        </h2>
+        <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+          Полный список ресурсов на 90 уровень и таланты. Наводите на иконку — краткая справка.
+        </p>
+      </div>
 
-      <div className="space-y-4">
+      <div className="divide-y divide-black/[0.04]">
         {categories.map((category) => (
-          <div key={category}>
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          <div key={category} className="px-3 py-3 sm:px-4">
+            <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
               {MATERIAL_CATEGORY_LABEL[category as keyof typeof MATERIAL_CATEGORY_LABEL] ??
                 category}
             </p>
-            <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
+            <ul className="space-y-1">
               {grouped[category].map((m) => (
                 <li
                   key={m.id}
-                  className="flex items-center gap-2.5 rounded-[12px] border border-black/[0.04] bg-[#f7f9fb] px-2 py-1.5"
+                  className="flex items-center gap-3 rounded-[12px] px-1.5 py-1.5 transition hover:bg-[#f7f9fb]"
                 >
                   <ItemIconCard
                     name={m.name}
@@ -77,23 +79,18 @@ export default function MaterialCards({
                     rarityStars={m.rarityStars ?? 3}
                     size="sm"
                     compact
-                    className="!h-11 !w-11"
+                    className="!h-10 !w-10"
                     lore={loreOf(m.name)}
                     preview
                   />
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className="truncate text-[12.5px] leading-snug text-foreground"
-                      title={m.name}
-                    >
-                      {m.name}
-                    </p>
-                    {m.qty > 0 ? (
-                      <p className="mt-0.5 text-[12px] font-semibold tabular-nums text-[#189b8e]">
-                        ×{formatQty(m.qty)}
-                      </p>
-                    ) : null}
-                  </div>
+                  <p className="min-w-0 flex-1 truncate text-[13px] text-foreground" title={m.name}>
+                    {m.name}
+                  </p>
+                  {m.qty > 0 ? (
+                    <span className="shrink-0 rounded-md bg-[#189b8e]/10 px-2 py-0.5 text-[12px] font-semibold tabular-nums text-[#189b8e]">
+                      ×{formatQty(m.qty)}
+                    </span>
+                  ) : null}
                 </li>
               ))}
             </ul>

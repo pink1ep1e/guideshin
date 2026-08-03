@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import CharacterHeroBanner from "@/components/CharacterHeroBanner";
-import GuideCalculators from "@/components/GuideCalculators";
-import MaterialCards from "@/components/MaterialCards";
+import CharacterGuideView from "@/components/CharacterGuideView";
 import { parseMaterials } from "@/lib/character-materials";
 import { getCharacterBySlug } from "@/lib/character-data";
 import { ELEMENT_LABEL } from "@/lib/genshin";
 import { materialPreviewLore } from "@/lib/wiki-guide-data";
+import { parseGuideBlocks } from "@/lib/guide-builder";
 import { withPrisma } from "@/prisma/prisma-client";
 import { absoluteUrl, SITE_NAME, SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
@@ -96,6 +96,7 @@ export default async function CharacterPage({ params }: Props) {
     if (text) loreByName[row.name.trim().toLowerCase()] = text;
   }
 
+  const guideBlocks = parseGuideBlocks(character.contentHtml);
   const guideHtml = character.contentHtml.replace(
     /<!--genshin-guide-blocks:[\s\S]*?-->/,
     "",
@@ -146,16 +147,24 @@ export default async function CharacterPage({ params }: Props) {
       </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_272px] lg:gap-7">
-        <div className="min-w-0 space-y-5">
-          <GuideCalculators characterName={character.name} />
-          <MaterialCards materials={materials} loreByName={loreByName} />
-
-          <article className="rounded-[18px] border border-black/[0.045] bg-white p-4 shadow-soft sm:p-6">
-            <div
-              className="guide-html"
-              dangerouslySetInnerHTML={{ __html: guideHtml }}
+        <div className="min-w-0">
+          {guideBlocks && guideBlocks.length > 0 ? (
+            <CharacterGuideView
+              characterName={character.name}
+              blocks={guideBlocks}
+              materials={materials}
+              loreByName={loreByName}
             />
-          </article>
+          ) : (
+            <div className="space-y-5">
+              <article className="rounded-[18px] border border-black/[0.045] bg-white p-4 shadow-soft sm:p-6">
+                <div
+                  className="guide-html"
+                  dangerouslySetInnerHTML={{ __html: guideHtml }}
+                />
+              </article>
+            </div>
+          )}
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
