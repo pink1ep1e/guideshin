@@ -156,24 +156,21 @@ export default function GuideCalculators({ characterName }: { characterName: str
   return (
     <section
       id="guide-calc"
-      className="glass-panel relative scroll-mt-28 overflow-hidden p-5 sm:p-6"
+      className="rounded-[20px] border border-black/[0.045] bg-white p-5 shadow-soft sm:p-6"
     >
-      <span className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-[#189b8e]/10 blur-2xl" />
-      <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#189b8e] to-[#67d5cc]" />
-
-      <div className="relative mb-6">
-        <p className="mb-1 text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">
+      <div className="mb-5">
+        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#189b8e]">
           Калькуляторы
         </p>
-        <h2 className="font-genshin text-xl tracking-wide text-foreground sm:text-2xl">
+        <h2 className="font-genshin text-xl tracking-wide text-foreground">
           Прокачка {characterName}
         </h2>
-        <p className="mt-1.5 max-w-xl text-sm font-medium leading-relaxed text-muted-foreground">
-          Быстрый расчёт книг опыта, моры и талантов — ориентир для фарма.
+        <p className="mt-1.5 max-w-lg text-sm font-medium leading-relaxed text-muted-foreground">
+          Расчёт опыта, моры и материалов талантов.
         </p>
       </div>
 
-      <div className="relative grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-3.5 lg:grid-cols-2">
         <CalcCard title="Уровень персонажа">
           <LevelRange
             from={fromLvl}
@@ -184,7 +181,7 @@ export default function GuideCalculators({ characterName }: { characterName: str
           />
 
           <div className="mb-3 overflow-hidden rounded-[14px] border border-black/[0.05] bg-white/80 p-3">
-            <p className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+            <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
               Книги опыта
             </p>
             {bookItems.length > 0 ? (
@@ -260,12 +257,12 @@ export default function GuideCalculators({ characterName }: { characterName: str
 
 function CalcCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-[18px] border border-black/[0.06] bg-gradient-to-b from-white to-[#f7f9fb] p-4 shadow-soft sm:p-5">
-      <div className="mb-4 flex items-center gap-2.5">
-        <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-[#189b8e]/12 text-[#189b8e] ring-1 ring-[#189b8e]/15">
-          <Calculator className="h-4 w-4" />
+    <div className="rounded-[16px] border border-black/[0.05] bg-[#f7f9fb]/80 p-4">
+      <div className="mb-3.5 flex items-center gap-2.5">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-[#189b8e]/10 text-[#189b8e]">
+          <Calculator className="h-3.5 w-3.5" />
         </span>
-        <h3 className="font-display text-[15px] font-bold text-foreground sm:text-base">
+        <h3 className="text-[14px] font-semibold tracking-tight text-foreground sm:text-[15px]">
           {title}
         </h3>
       </div>
@@ -328,16 +325,16 @@ function ResultRow({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={icon} alt="" className="h-6 w-6 object-contain" />
         ) : (
-          <span className="font-display text-[10px] font-bold uppercase tracking-wide text-[#189b8e]">
+          <span className="font-sans text-[10px] font-semibold uppercase tracking-wide text-[#189b8e]">
             XP
           </span>
         )}
       </span>
-      <span className="min-w-0 flex-1 text-[13px] font-semibold text-foreground/80">
+      <span className="min-w-0 flex-1 text-[13px] font-medium text-foreground/75">
         {label}
       </span>
       <span
-        className={`shrink-0 tabular-nums font-display text-[15px] font-bold sm:text-base ${
+        className={`shrink-0 tabular-nums text-[14px] font-semibold sm:text-[15px] ${
           emphasize ? "text-[#189b8e]" : "text-foreground"
         }`}
       >

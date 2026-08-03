@@ -1,15 +1,10 @@
 import { notFound } from "next/navigation";
+import Sidebar from "@/components/Sidebar";
 import CharacterHeroBanner from "@/components/CharacterHeroBanner";
 import GuideCalculators from "@/components/GuideCalculators";
-import GuideSectionNav from "@/components/GuideSectionNav";
 import MaterialCards from "@/components/MaterialCards";
 import { parseMaterials } from "@/lib/character-materials";
 import { getCharacterBySlug } from "@/lib/character-data";
-import {
-  buildGuideNavItems,
-  parseGuideBlocks,
-  type GuideNavItem,
-} from "@/lib/guide-builder";
 import { ELEMENT_LABEL } from "@/lib/genshin";
 import { materialPreviewLore } from "@/lib/wiki-guide-data";
 import { withPrisma } from "@/prisma/prisma-client";
@@ -101,15 +96,6 @@ export default async function CharacterPage({ params }: Props) {
     if (text) loreByName[row.name.trim().toLowerCase()] = text;
   }
 
-  const blocks = parseGuideBlocks(character.contentHtml) ?? [];
-  const navItems: GuideNavItem[] = [
-    { id: "guide-calc", label: "Калькулятор" },
-    ...(materials.length
-      ? [{ id: "guide-materials", label: "Материалы" } satisfies GuideNavItem]
-      : []),
-    ...buildGuideNavItems(blocks),
-  ];
-
   const guideHtml = character.contentHtml.replace(
     /<!--genshin-guide-blocks:[\s\S]*?-->/,
     "",
@@ -139,13 +125,13 @@ export default async function CharacterPage({ params }: Props) {
   };
 
   return (
-    <div className="container-page-wide py-7 sm:py-9">
+    <div className="container-page py-6 sm:py-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="mb-5">
+      <div className="mb-6">
         <CharacterHeroBanner
           name={character.name}
           image={character.image}
@@ -159,18 +145,22 @@ export default async function CharacterPage({ params }: Props) {
         />
       </div>
 
-      <GuideSectionNav items={navItems} />
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_272px] lg:gap-7">
+        <div className="min-w-0 space-y-5">
+          <GuideCalculators characterName={character.name} />
+          <MaterialCards materials={materials} loreByName={loreByName} />
 
-      <div className="space-y-6">
-        <GuideCalculators characterName={character.name} />
-        <MaterialCards materials={materials} loreByName={loreByName} />
+          <article className="rounded-[20px] border border-black/[0.045] bg-white p-5 shadow-soft sm:p-7">
+            <div
+              className="guide-html"
+              dangerouslySetInnerHTML={{ __html: guideHtml }}
+            />
+          </article>
+        </div>
 
-        <section className="overflow-hidden rounded-[22px] border border-black/[0.05] bg-white/90 p-5 shadow-panel sm:p-8 lg:p-10">
-          <div
-            className="guide-html"
-            dangerouslySetInnerHTML={{ __html: guideHtml }}
-          />
-        </section>
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <Sidebar />
+        </aside>
       </div>
     </div>
   );

@@ -43,24 +43,23 @@ export default function MaterialCards({
   return (
     <section
       id="guide-materials"
-      className="glass-panel relative scroll-mt-28 overflow-hidden p-5 sm:p-6"
+      className="rounded-[20px] border border-black/[0.045] bg-white p-5 shadow-soft sm:p-6"
     >
-      <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#189b8e] to-[#67d5cc]" />
-      <p className="mb-1 text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">
+      <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#189b8e]">
         Прокачка
       </p>
-      <h2 className="font-genshin mb-5 text-xl tracking-wide text-foreground sm:text-2xl">
+      <h2 className="font-genshin mb-5 text-xl tracking-wide text-foreground">
         {title}
       </h2>
 
       <div className="space-y-6">
         {categories.map((category) => (
           <div key={category}>
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
               {MATERIAL_CATEGORY_LABEL[category as keyof typeof MATERIAL_CATEGORY_LABEL] ??
                 category}
             </p>
-            <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
+            <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-6">
               {grouped[category].map((m) => (
                 <ItemIconCard
                   key={m.id}
