@@ -5,9 +5,12 @@ import {
 } from "@/components/GuideSections";
 import { rarityBg, sortByRarityDesc } from "@/lib/genshin";
 import {
+  buildMaterialAlchemyCraftIntro,
+  buildMaterialAlchemyUseIntro,
   buildMaterialCharactersIntro,
   buildMaterialForgingIntro,
   buildMaterialForgingUseIntro,
+  buildMaterialSourcesIntro,
   buildMaterialTeapotIntro,
   buildMaterialWeaponsIntro,
   hasForgingRecipe,
@@ -85,6 +88,12 @@ export default function MaterialGuideView({
     buildMaterialForgingUseIntro(materialName) || data.forgingUseIntro;
   const forgingIntro =
     buildMaterialForgingIntro(materialName, data.forgingDiagram) || data.forgingIntro;
+  const sourcesIntro =
+    buildMaterialSourcesIntro(materialName, data.sources) || data.sourcesIntro;
+  const alchemyCraftIntro =
+    buildMaterialAlchemyCraftIntro(materialName) || data.alchemyCraftIntro;
+  const alchemyUseIntro =
+    buildMaterialAlchemyUseIntro(materialName) || data.alchemyUseIntro;
 
   return (
     <div className="space-y-5">
@@ -194,7 +203,7 @@ export default function MaterialGuideView({
         <GuideSection
           large
           title="Применение в алхимии"
-          intro={<p>{data.alchemyUseIntro || `«${materialName}» используется в алхимии:`}</p>}
+          intro={<p>{alchemyUseIntro}</p>}
         >
           <div className="flex flex-wrap gap-2.5">
             {alchemyUses.map((m) => (
@@ -241,7 +250,14 @@ export default function MaterialGuideView({
       {data.sources.length > 0 && (
         <GuideSection
           title="Обычные и элитные враги"
-          intro={<p>{data.sourcesIntro || `Источник материала «${materialName}»:`}</p>}
+          intro={
+            sourcesIntro ? (
+              <p
+                className="[&_a]:font-semibold [&_a]:text-[#c45a1f] [&_a]:underline-offset-2 hover:[&_a]:underline"
+                dangerouslySetInnerHTML={{ __html: sourcesIntro }}
+              />
+            ) : null
+          }
         >
           <div className="flex flex-wrap gap-2.5">
             {data.sources.map((s) => (
@@ -263,12 +279,7 @@ export default function MaterialGuideView({
         <GuideSection
           large
           title="Алхимия"
-          intro={
-            <p>
-              {data.alchemyCraftIntro ||
-                `Материал «${materialName}» можно получить в алхимии. Рецепт:`}
-            </p>
-          }
+          intro={<p>{alchemyCraftIntro}</p>}
         >
           <div className="flex flex-wrap gap-2.5">
             {alchemyCraft.map((m) => (

@@ -3,25 +3,41 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAdminDelete } from "@/components/admin/AdminDeleteContext";
 
 export default function DeleteEntityButton({
   apiBase,
   id,
   name,
+  pendingKey,
 }: {
   apiBase: string;
   id: number;
   name: string;
+  /** Ключ для optimistic hide, по умолчанию из apiBase */
+  pendingKey?: string;
 }) {
   const router = useRouter();
+  const { requestDelete } = useAdminDelete();
   const [loading, setLoading] = useState(false);
 
-  async function onDelete() {
-    if (!confirm(`Удалить «${name}»?`)) return;
-    setLoading(true);
-    await fetch(`${apiBase}/${id}`, { method: "DELETE" });
-    setLoading(false);
-    router.refresh();
+  function onDelete() {
+    const key =
+      pendingKey ??
+      `${apiBase.replace(/^\/api\/admin\//, "").replace(/\/$/, "")}:${id}`;
+    requestDelete({
+      key,
+      name,
+      execute: async () => {
+        setLoading(true);
+        try {
+          await fetch(`${apiBase}/${id}`, { method: "DELETE" });
+          router.refresh();
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   }
 
   return (

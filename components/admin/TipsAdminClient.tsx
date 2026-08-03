@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAdminDelete } from "@/components/admin/AdminDeleteContext";
 
 type Tip = {
   id?: number;
@@ -17,6 +18,7 @@ const label = "mb-1 block text-[11px] font-bold uppercase tracking-[0.06em] text
 
 export default function TipsAdminClient({ initial }: { initial: Tip[] }) {
   const router = useRouter();
+  const { requestDelete, pendingKeys } = useAdminDelete();
   const [items, setItems] = useState(initial);
   const [draft, setDraft] = useState<Tip>({ title: "", body: "", published: true, order: 0 });
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -43,12 +45,21 @@ export default function TipsAdminClient({ initial }: { initial: Tip[] }) {
     router.refresh();
   }
 
-  async function remove(id: number) {
-    if (!confirm("Удалить совет?")) return;
-    await fetch(`/api/admin/tips/${id}`, { method: "DELETE" });
-    setItems((p) => p.filter((x) => x.id !== id));
-    router.refresh();
+  function remove(id: number, title: string) {
+    requestDelete({
+      key: `tips:${id}`,
+      name: title.trim() || `Совет #${id}`,
+      execute: async () => {
+        await fetch(`/api/admin/tips/${id}`, { method: "DELETE" });
+        setItems((p) => p.filter((x) => x.id !== id));
+        router.refresh();
+      },
+    });
   }
+
+  const visibleItems = items.filter(
+    (item) => !item.id || !pendingKeys.has(`tips:${item.id}`),
+  );
 
   return (
     <div className="space-y-6">
@@ -99,7 +110,7 @@ export default function TipsAdminClient({ initial }: { initial: Tip[] }) {
       </div>
 
       <div className="space-y-2">
-        {items.map((item) => (
+        {visibleItems.map((item) => (
           <div
             key={item.id}
             className="rounded-[14px] border border-black/[0.06] bg-white px-4 py-3"
@@ -123,7 +134,7 @@ export default function TipsAdminClient({ initial }: { initial: Tip[] }) {
                 <button
                   type="button"
                   className="text-xs font-bold text-destructive"
-                  onClick={() => void remove(item.id!)}
+                  onClick={() => remove(item.id!, item.title)}
                 >
                   Удалить
                 </button>

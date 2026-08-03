@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
 import AdminListToolbar from "@/components/admin/AdminListToolbar";
+import { useAdminDelete } from "@/components/admin/AdminDeleteContext";
 import DeleteEntityButton from "@/components/admin/AdminNavTabs";
 import { DuplicateEntityButton } from "@/components/admin/DuplicateEntityButton";
 import {
@@ -21,6 +22,7 @@ export type AdminMaterialRow = {
 };
 
 export default function AdminMaterialsList({ items }: { items: AdminMaterialRow[] }) {
+  const { pendingKeys } = useAdminDelete();
   const [query, setQuery] = useState("");
   const [rarity, setRarity] = useState("ALL");
   const [category, setCategory] = useState("ALL");
@@ -29,6 +31,7 @@ export default function AdminMaterialsList({ items }: { items: AdminMaterialRow[
 
   const filtered = useMemo(() => {
     return items.filter((m) => {
+      if (pendingKeys.has(`materials:${m.id}`)) return false;
       if (rarity !== "ALL" && String(m.rarityStars) !== rarity) return false;
       if (category !== "ALL" && m.category !== category) return false;
       if (status === "published" && !m.published) return false;
@@ -39,7 +42,7 @@ export default function AdminMaterialsList({ items }: { items: AdminMaterialRow[
         m.slug.toLowerCase().includes(deferred)
       );
     });
-  }, [items, deferred, rarity, category, status]);
+  }, [items, deferred, rarity, category, status, pendingKeys]);
 
   return (
     <div className="glass-panel overflow-hidden">

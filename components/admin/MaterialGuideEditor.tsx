@@ -6,9 +6,12 @@ import MediaUpload from "@/components/admin/MediaUpload";
 import FancySelect from "@/components/ui/FancySelect";
 import { CatalogPicker, useGuideCatalog } from "@/components/admin/CatalogPicker";
 import {
+  buildMaterialAlchemyCraftIntro,
+  buildMaterialAlchemyUseIntro,
   buildMaterialCharactersIntro,
   buildMaterialForgingIntro,
   buildMaterialForgingUseIntro,
+  buildMaterialSourcesIntro,
   buildMaterialTeapotIntro,
   buildMaterialWeaponsIntro,
   emptyForgingDiagram,
@@ -71,6 +74,27 @@ export default function MaterialGuideEditor({
     });
   }
 
+  function setAlchemyUses(alchemyUses: MaterialGuideData["alchemyUses"]) {
+    set({
+      alchemyUses,
+      alchemyUseIntro: buildMaterialAlchemyUseIntro(materialName),
+    });
+  }
+
+  function setAlchemyCraft(alchemyCraft: MaterialGuideData["alchemyCraft"]) {
+    set({
+      alchemyCraft,
+      alchemyCraftIntro: buildMaterialAlchemyCraftIntro(materialName),
+    });
+  }
+
+  function setSources(sources: MaterialGuideData["sources"]) {
+    set({
+      sources,
+      sourcesIntro: buildMaterialSourcesIntro(materialName, sources),
+    });
+  }
+
   function setForging(
     patch: Partial<Pick<MaterialGuideData, "forgingDiagram" | "forgingIngredients">>,
   ) {
@@ -90,6 +114,9 @@ export default function MaterialGuideEditor({
     const nextTeapot = buildMaterialTeapotIntro(materialName);
     const nextForgingUse = buildMaterialForgingUseIntro(materialName);
     const nextForge = buildMaterialForgingIntro(materialName, data.forgingDiagram);
+    const nextSources = buildMaterialSourcesIntro(materialName, data.sources);
+    const nextAlchemyCraft = buildMaterialAlchemyCraftIntro(materialName);
+    const nextAlchemyUse = buildMaterialAlchemyUseIntro(materialName);
     const patch: Partial<MaterialGuideData> = {};
     if (nextChars && nextChars !== data.charactersIntro) patch.charactersIntro = nextChars;
     if (data.weapons.length > 0 && nextWeapons !== data.weaponsIntro) {
@@ -102,6 +129,19 @@ export default function MaterialGuideEditor({
       patch.forgingUseIntro = nextForgingUse;
     }
     if (nextForge !== data.forgingIntro) patch.forgingIntro = nextForge;
+    if (nextSources && nextSources !== data.sourcesIntro) patch.sourcesIntro = nextSources;
+    if (
+      (data.alchemyCraft.length > 0 || data.alchemyCraftIntro) &&
+      nextAlchemyCraft !== data.alchemyCraftIntro
+    ) {
+      patch.alchemyCraftIntro = nextAlchemyCraft;
+    }
+    if (
+      (data.alchemyUses.length > 0 || data.alchemyUseIntro) &&
+      nextAlchemyUse !== data.alchemyUseIntro
+    ) {
+      patch.alchemyUseIntro = nextAlchemyUse;
+    }
     if (Object.keys(patch).length) onChange({ ...data, ...patch });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- только при смене имени материала
   }, [materialName]);
@@ -487,14 +527,32 @@ export default function MaterialGuideEditor({
         ))}
       </div>
 
-      <MatBlock
-        title="Применение в алхимии"
-        intro={data.alchemyUseIntro}
-        onIntro={(alchemyUseIntro) => set({ alchemyUseIntro })}
-        items={data.alchemyUses}
-        catalog={catalog}
-        onChange={(alchemyUses) => set({ alchemyUses })}
-      />
+      <div className="space-y-2">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.06em] text-muted-foreground">
+            Применение в алхимии
+          </p>
+          <p className="mt-0.5 text-[11px] font-medium text-muted-foreground">
+            Текст собирается сам из названия материала
+          </p>
+        </div>
+
+        {(data.alchemyUseIntro || data.alchemyUses.length > 0) && (
+          <div className="rounded-[12px] border border-black/[0.06] bg-white/90 px-3 py-2.5 text-sm font-medium leading-relaxed text-muted-foreground">
+            {data.alchemyUseIntro || buildMaterialAlchemyUseIntro(materialName)}
+          </div>
+        )}
+
+        <MatBlock
+          title="Предметы"
+          intro=""
+          onIntro={() => {}}
+          hideIntro
+          items={data.alchemyUses}
+          catalog={catalog}
+          onChange={setAlchemyUses}
+        />
+      </div>
 
       <div className="space-y-2">
         <div>
@@ -604,21 +662,33 @@ export default function MaterialGuideEditor({
       </div>
 
       <div className="space-y-2">
-        <label className={label}>Источники — текст</label>
-        <input
-          className={input}
-          value={data.sourcesIntro}
-          onChange={(e) => set({ sourcesIntro: e.target.value })}
-        />
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.06em] text-muted-foreground">
+            Источники
+          </p>
+          <p className="mt-0.5 text-[11px] font-medium text-muted-foreground">
+            Текст собирается сам из названия материала и источников
+          </p>
+        </div>
+
+        {data.sourcesIntro ? (
+          <div
+            className="rounded-[12px] border border-black/[0.06] bg-white/90 px-3 py-2.5 text-sm font-medium leading-relaxed text-muted-foreground [&_a]:font-semibold [&_a]:text-[#c45a1f]"
+            dangerouslySetInnerHTML={{ __html: data.sourcesIntro }}
+          />
+        ) : (
+          <p className="rounded-[12px] bg-[#0b1f44]/[0.03] px-3 py-2 text-xs font-medium text-muted-foreground">
+            Добавьте источники — текст появится автоматически.
+          </p>
+        )}
+
         <div className="flex justify-between">
           <p className="text-xs font-bold uppercase text-muted-foreground">Враги / источники</p>
           <button
             type="button"
             className="text-xs font-bold text-[#189b8e]"
             onClick={() =>
-              set({
-                sources: [...data.sources, { id: uid(), name: "", image: "", href: "" }],
-              })
+              setSources([...data.sources, { id: uid(), name: "", image: "", href: "" }])
             }
           >
             + Источник
@@ -630,9 +700,7 @@ export default function MaterialGuideEditor({
               label="Картинка"
               value={s.image}
               onChange={(image) =>
-                set({
-                  sources: data.sources.map((x) => (x.id === s.id ? { ...x, image } : x)),
-                })
+                setSources(data.sources.map((x) => (x.id === s.id ? { ...x, image } : x)))
               }
               kind="icon"
             />
@@ -641,18 +709,18 @@ export default function MaterialGuideEditor({
                 className={input}
                 value={s.name}
                 onChange={(e) =>
-                  set({
-                    sources: data.sources.map((x) =>
+                  setSources(
+                    data.sources.map((x) =>
                       x.id === s.id ? { ...x, name: e.target.value } : x,
                     ),
-                  })
+                  )
                 }
                 placeholder="Маг Бездны"
               />
               <button
                 type="button"
                 className="text-xs font-bold text-destructive"
-                onClick={() => set({ sources: data.sources.filter((x) => x.id !== s.id) })}
+                onClick={() => setSources(data.sources.filter((x) => x.id !== s.id))}
               >
                 Удалить
               </button>
@@ -661,14 +729,32 @@ export default function MaterialGuideEditor({
         ))}
       </div>
 
-      <MatBlock
-        title="Алхимия (рецепт получения)"
-        intro={data.alchemyCraftIntro}
-        onIntro={(alchemyCraftIntro) => set({ alchemyCraftIntro })}
-        items={data.alchemyCraft}
-        catalog={catalog}
-        onChange={(alchemyCraft) => set({ alchemyCraft })}
-      />
+      <div className="space-y-2">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.06em] text-muted-foreground">
+            Алхимия (рецепт получения)
+          </p>
+          <p className="mt-0.5 text-[11px] font-medium text-muted-foreground">
+            Текст собирается сам из названия материала
+          </p>
+        </div>
+
+        {(data.alchemyCraftIntro || data.alchemyCraft.length > 0) && (
+          <div className="rounded-[12px] border border-black/[0.06] bg-white/90 px-3 py-2.5 text-sm font-medium leading-relaxed text-muted-foreground">
+            {data.alchemyCraftIntro || buildMaterialAlchemyCraftIntro(materialName)}
+          </div>
+        )}
+
+        <MatBlock
+          title="Материалы рецепта"
+          intro=""
+          onIntro={() => {}}
+          hideIntro
+          items={data.alchemyCraft}
+          catalog={catalog}
+          onChange={setAlchemyCraft}
+        />
+      </div>
 
       <div className="space-y-3 rounded-[14px] border border-black/[0.06] bg-white/70 p-3">
         <div>

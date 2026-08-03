@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
 import AdminListToolbar from "@/components/admin/AdminListToolbar";
+import { useAdminDelete } from "@/components/admin/AdminDeleteContext";
 import DeleteEntityButton from "@/components/admin/AdminNavTabs";
 import { DuplicateEntityButton } from "@/components/admin/DuplicateEntityButton";
 import { RARITY_LABEL } from "@/lib/genshin";
@@ -19,6 +20,7 @@ export type AdminWeaponRow = {
 };
 
 export default function AdminWeaponsList({ items }: { items: AdminWeaponRow[] }) {
+  const { pendingKeys } = useAdminDelete();
   const [query, setQuery] = useState("");
   const [rarity, setRarity] = useState("ALL");
   const [type, setType] = useState("ALL");
@@ -27,6 +29,7 @@ export default function AdminWeaponsList({ items }: { items: AdminWeaponRow[] })
 
   const filtered = useMemo(() => {
     return items.filter((w) => {
+      if (pendingKeys.has(`weapons:${w.id}`)) return false;
       if (rarity !== "ALL" && w.rarity !== rarity) return false;
       if (type !== "ALL" && w.weaponType !== type) return false;
       if (status === "published" && !w.published) return false;
@@ -38,7 +41,7 @@ export default function AdminWeaponsList({ items }: { items: AdminWeaponRow[] })
         w.weaponType.toLowerCase().includes(deferred)
       );
     });
-  }, [items, deferred, rarity, type, status]);
+  }, [items, deferred, rarity, type, status, pendingKeys]);
 
   return (
     <div className="glass-panel overflow-hidden">

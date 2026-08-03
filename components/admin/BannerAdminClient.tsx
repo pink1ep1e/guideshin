@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import MediaUpload from "@/components/admin/MediaUpload";
 import FancySelect from "@/components/ui/FancySelect";
 import { CatalogPicker, useGuideCatalog } from "@/components/admin/CatalogPicker";
+import { useAdminDelete } from "@/components/admin/AdminDeleteContext";
 import { slugFromName } from "@/lib/slug";
 
 type Slide = {
@@ -43,6 +44,7 @@ const label = "mb-1 block text-[11px] font-bold uppercase tracking-[0.06em] text
 export default function BannerAdminClient({ initial }: { initial: Slide[] }) {
   const router = useRouter();
   const { catalog } = useGuideCatalog();
+  const { requestDelete, pendingKeys } = useAdminDelete();
   const [items, setItems] = useState<Slide[]>(initial);
   const [draft, setDraft] = useState<Slide>(empty());
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -72,12 +74,21 @@ export default function BannerAdminClient({ initial }: { initial: Slide[] }) {
     setItems(list);
   }
 
-  async function remove(id: number) {
-    if (!confirm("Удалить слайд?")) return;
-    await fetch(`/api/admin/banners/${id}`, { method: "DELETE" });
-    setItems((prev) => prev.filter((x) => x.id !== id));
-    router.refresh();
+  function remove(id: number, name: string) {
+    requestDelete({
+      key: `banners:${id}`,
+      name: name.trim() || `Слайд #${id}`,
+      execute: async () => {
+        await fetch(`/api/admin/banners/${id}`, { method: "DELETE" });
+        setItems((prev) => prev.filter((x) => x.id !== id));
+        router.refresh();
+      },
+    });
   }
+
+  const visibleItems = items.filter(
+    (item) => !item.id || !pendingKeys.has(`banners:${item.id}`),
+  );
 
   return (
     <div className="space-y-6">
@@ -238,7 +249,7 @@ export default function BannerAdminClient({ initial }: { initial: Slide[] }) {
       </div>
 
       <div className="space-y-2">
-        {items.map((item) => (
+        {visibleItems.map((item) => (
           <div
             key={item.id}
             className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-black/[0.06] bg-white/90 px-4 py-3"
@@ -289,7 +300,7 @@ export default function BannerAdminClient({ initial }: { initial: Slide[] }) {
               <button
                 type="button"
                 className="rounded-xl px-3 py-1.5 text-xs font-bold text-destructive"
-                onClick={() => void remove(item.id!)}
+                onClick={() => remove(item.id!, item.name)}
               >
                 Удалить
               </button>

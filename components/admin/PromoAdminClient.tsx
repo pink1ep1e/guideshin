@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAdminDelete } from "@/components/admin/AdminDeleteContext";
 
 type Promo = {
   id: number;
@@ -25,6 +26,7 @@ function toLocalInput(iso: string | null) {
 
 export default function PromoAdminClient({ initial }: { initial: Promo[] }) {
   const router = useRouter();
+  const { requestDelete, pendingKeys } = useAdminDelete();
   const [items, setItems] = useState(
     initial.map((p) => ({
       ...p,
@@ -71,12 +73,19 @@ export default function PromoAdminClient({ initial }: { initial: Promo[] }) {
     router.refresh();
   }
 
-  async function remove(id: number) {
-    if (!confirm("Удалить промокод?")) return;
-    await fetch(`/api/admin/promos/${id}`, { method: "DELETE" });
-    setItems((prev) => prev.filter((x) => x.id !== id));
-    router.refresh();
+  function remove(id: number, code: string) {
+    requestDelete({
+      key: `promos:${id}`,
+      name: code.trim() || `Промокод #${id}`,
+      execute: async () => {
+        await fetch(`/api/admin/promos/${id}`, { method: "DELETE" });
+        setItems((prev) => prev.filter((x) => x.id !== id));
+        router.refresh();
+      },
+    });
   }
+
+  const visibleItems = items.filter((item) => !pendingKeys.has(`promos:${item.id}`));
 
   return (
     <div className="space-y-4">
@@ -90,7 +99,7 @@ export default function PromoAdminClient({ initial }: { initial: Promo[] }) {
           {error}
         </p>
       )}
-      {items.map((item) => (
+      {visibleItems.map((item) => (
         <div key={item.id} className="glass-panel grid gap-3 p-4 sm:grid-cols-[1fr_1fr_auto]">
           <div>
             <label className="mb-1 block text-[11px] font-bold uppercase text-muted-foreground">Код</label>
@@ -152,7 +161,11 @@ export default function PromoAdminClient({ initial }: { initial: Promo[] }) {
             <button type="button" className="ui-btn-secondary px-3 py-1.5 text-xs" onClick={() => void save(item)}>
               Сохранить
             </button>
-            <button type="button" className="text-xs font-bold text-destructive" onClick={() => void remove(item.id)}>
+            <button
+              type="button"
+              className="text-xs font-bold text-destructive"
+              onClick={() => remove(item.id, item.code)}
+            >
               Удалить
             </button>
           </div>

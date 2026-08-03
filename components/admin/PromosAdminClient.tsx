@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAdminDelete } from "@/components/admin/AdminDeleteContext";
 
 type Promo = {
   id?: number;
@@ -26,6 +27,7 @@ function toLocalInput(iso: string | null) {
 
 export default function PromosAdminClient({ initial }: { initial: Promo[] }) {
   const router = useRouter();
+  const { requestDelete, pendingKeys } = useAdminDelete();
   const [items, setItems] = useState(initial);
   const [draft, setDraft] = useState<Promo>({
     code: "",
@@ -63,12 +65,21 @@ export default function PromosAdminClient({ initial }: { initial: Promo[] }) {
     router.refresh();
   }
 
-  async function remove(id: number) {
-    if (!confirm("Удалить промокод?")) return;
-    await fetch(`/api/admin/promos/${id}`, { method: "DELETE" });
-    setItems((p) => p.filter((x) => x.id !== id));
-    router.refresh();
+  function remove(id: number, code: string) {
+    requestDelete({
+      key: `promos:${id}`,
+      name: code.trim() || `Промокод #${id}`,
+      execute: async () => {
+        await fetch(`/api/admin/promos/${id}`, { method: "DELETE" });
+        setItems((p) => p.filter((x) => x.id !== id));
+        router.refresh();
+      },
+    });
   }
+
+  const visibleItems = items.filter(
+    (item) => !item.id || !pendingKeys.has(`promos:${item.id}`),
+  );
 
   return (
     <div className="space-y-6">
@@ -134,7 +145,7 @@ export default function PromosAdminClient({ initial }: { initial: Promo[] }) {
       </div>
 
       <div className="space-y-2">
-        {items.map((item) => (
+        {visibleItems.map((item) => (
           <div
             key={item.id}
             className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-black/[0.06] bg-white px-4 py-3"
@@ -165,7 +176,7 @@ export default function PromosAdminClient({ initial }: { initial: Promo[] }) {
               <button
                 type="button"
                 className="text-xs font-bold text-destructive"
-                onClick={() => void remove(item.id!)}
+                onClick={() => remove(item.id!, item.code)}
               >
                 Удалить
               </button>
