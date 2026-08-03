@@ -150,7 +150,7 @@ export default async function CharacterPage({ params }: Props) {
           <GuideCalculators characterName={character.name} />
           <MaterialCards materials={materials} loreByName={loreByName} />
 
-          <article className="rounded-[20px] border border-black/[0.045] bg-white p-5 shadow-soft sm:p-7">
+          <article className="rounded-[18px] border border-black/[0.045] bg-white p-4 shadow-soft sm:p-6">
             <div
               className="guide-html"
               dangerouslySetInnerHTML={{ __html: guideHtml }}

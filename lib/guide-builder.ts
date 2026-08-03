@@ -423,26 +423,29 @@ function itemCardHtml(item: GuideItem) {
   const stars = item.rarity >= 5 ? 5 : item.rarity >= 4 ? 4 : item.rarity;
   const bg = rarityBg(stars);
   const qtyLabel = visibleQty(item.qty);
-  const qtyBadge = qtyLabel
-    ? `<span class="absolute bottom-1.5 right-1.5 rounded-full bg-[#189b8e] px-2 py-0.5 text-[10px] font-extrabold leading-none text-white shadow-sm">×${escapeHtml(qtyLabel)}</span>`
-    : "";
-  const inner = `<div class="relative flex h-[84px] items-center justify-center overflow-hidden bg-cover bg-center p-1.5" style="background-image:url(${bg})">
-    ${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="h-full w-full object-contain" />` : `<span class="px-1 text-center text-[10px] font-bold text-muted-foreground">Нет иконки</span>`}
-    ${qtyBadge}
-  </div>
-  <p class="font-genshin break-words bg-white px-1.5 py-1.5 text-center text-[12px] leading-snug tracking-wide text-[#1e1e1e]" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</p>
-  ${item.note ? `<p class="line-clamp-3 px-1.5 pb-2 text-center text-[10px] font-bold leading-snug text-[#189b8e]" title="${escapeHtml(item.note)}">${escapeHtml(item.note)}</p>` : ""}`;
+  const noteText = item.note?.trim() && !qtyLabel ? item.note.trim() : null;
+  const qtyHtml = qtyLabel
+    ? `<span class="shrink-0 text-[12px] font-semibold tabular-nums text-[#189b8e]">×${escapeHtml(qtyLabel)}</span>`
+    : noteText
+      ? `<span class="shrink-0 text-[11px] text-[#189b8e]">${escapeHtml(noteText)}</span>`
+      : "";
+  const icon = `<div class="h-10 w-10 shrink-0 overflow-hidden rounded-[9px] bg-cover bg-center ring-1 ring-black/[0.05]" style="background-image:url(${bg})">
+    ${item.image ? `<img src="${escapeHtml(item.image)}" alt="" class="h-full w-full object-contain p-0.5" />` : ""}
+  </div>`;
+  const body = `${icon}
+  <span class="min-w-0 flex-1 truncate text-[12.5px] leading-snug text-foreground" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
+  ${qtyHtml}`;
   if (item.href) {
-    return `<a href="${escapeHtml(item.href)}" title="${escapeHtml(item.name)}" class="guide-item-link inline-block w-[92px] shrink-0 overflow-hidden rounded-[12px] bg-card shadow-panel ring-1 ring-black/[0.06] transition hover:opacity-95">${inner}</a>`;
+    return `<a href="${escapeHtml(item.href)}" title="${escapeHtml(item.name)}" class="guide-item-link flex min-w-0 items-center gap-2 rounded-[12px] border border-black/[0.04] bg-[#f7f9fb] px-2 py-1.5 transition hover:border-black/[0.08] hover:bg-white">${body}</a>`;
   }
-  return `<div class="inline-block w-[92px] shrink-0 overflow-hidden rounded-[12px] bg-card shadow-panel ring-1 ring-black/[0.06]" title="${escapeHtml(item.name)}">${inner}</div>`;
+  return `<div class="flex min-w-0 items-center gap-2 rounded-[12px] border border-black/[0.04] bg-[#f7f9fb] px-2 py-1.5" title="${escapeHtml(item.name)}">${body}</div>`;
 }
 
 function sectionHead(eyebrow: string, title: string, intro?: string) {
-  return `<div class="mb-5">
-  ${eyebrow ? `<p class="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#189b8e]">${escapeHtml(eyebrow)}</p>` : ""}
-  <h2 class="font-genshin text-[1.65rem] leading-tight tracking-wide text-foreground sm:text-2xl">${escapeHtml(title)}</h2>
-  ${intro ? `<p class="mt-2.5 text-[15px] font-medium leading-relaxed text-muted-foreground">${escapeHtml(intro)}</p>` : ""}
+  return `<div class="mb-4">
+  ${eyebrow ? `<p class="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#189b8e]">${escapeHtml(eyebrow)}</p>` : ""}
+  <h2 class="font-genshin text-[1.35rem] leading-tight tracking-wide text-foreground sm:text-[1.5rem]">${escapeHtml(title)}</h2>
+  ${intro ? `<p class="mt-2 text-[14px] leading-relaxed text-muted-foreground">${escapeHtml(intro)}</p>` : ""}
 </div>`;
 }
 
@@ -454,17 +457,17 @@ function rankedItemHtml(item: GuideRankedItem) {
     : `<span class="px-1 text-center text-[10px] font-medium text-muted-foreground">Нет иконки</span>`;
   const icon = `<div class="guide-rank-icon shrink-0 overflow-hidden rounded-[14px] bg-cover bg-center ring-1 ring-black/[0.06]" style="background-image:url(${bg})">${iconInner}</div>`;
   const titleRow = item.href
-    ? `<a href="${escapeHtml(item.href)}" class="guide-item-link font-genshin text-[15px] tracking-wide text-foreground hover:text-[#189b8e]">${escapeHtml(item.name)}</a>`
-    : `<span class="font-genshin text-[15px] tracking-wide text-foreground">${escapeHtml(item.name)}</span>`;
+    ? `<a href="${escapeHtml(item.href)}" class="guide-item-link font-genshin text-[14px] tracking-wide text-foreground hover:text-[#189b8e]">${escapeHtml(item.name)}</a>`
+    : `<span class="font-genshin text-[14px] tracking-wide text-foreground">${escapeHtml(item.name)}</span>`;
 
   return `<article class="guide-rank-card">
   <div class="guide-rank-badge" aria-hidden="true">${escapeHtml(String(item.rank))}</div>
   <div class="guide-rank-body">
     ${item.href ? `<a href="${escapeHtml(item.href)}" class="guide-item-link shrink-0 transition hover:opacity-90">${icon}</a>` : icon}
     <div class="min-w-0 flex-1">
-      <div class="mb-1 flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+      <div class="mb-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
         ${titleRow}
-        ${item.subtitle ? `<span class="text-[12px] font-medium text-muted-foreground/90">${escapeHtml(item.subtitle)}</span>` : ""}
+        ${item.subtitle ? `<span class="text-[11.5px] text-muted-foreground/90">${escapeHtml(item.subtitle)}</span>` : ""}
       </div>
       ${item.effect ? `<p class="guide-rank-effect">${escapeHtml(item.effect)}</p>` : ""}
       ${item.verdict ? `<p class="guide-rank-verdict">${escapeHtml(item.verdict)}</p>` : ""}
@@ -664,7 +667,7 @@ function renderBlock(block: GuideBlock, index = 0): string {
       block.type === "weapons" ? "Оружие" : block.type === "artifacts" ? "Артефакты" : "Материалы";
     return `<div class="guide-section">
   ${sectionHead(eyebrow, block.title)}
-  <div class="flex flex-wrap gap-3">
+  <div class="grid gap-1.5 sm:grid-cols-2">
     ${block.items.map(itemCardHtml).join("\n    ")}
   </div>
 </div>`;
@@ -673,10 +676,10 @@ function renderBlock(block: GuideBlock, index = 0): string {
   if (block.type === "team") {
     if (block.members.length === 0) return "";
     const defaultRoles = ["Мейн-дд", "Саппорт", "Саб-дд", "Флекс"];
-    return `<div class="guide-team overflow-hidden rounded-[20px] border border-black/[0.06] bg-white shadow-soft">
-  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-black/[0.05] bg-[#0b1f44]/[0.03] px-4 py-3 sm:px-5">
-    <h3 class="font-display text-lg font-bold text-foreground">${escapeHtml(block.title)}</h3>
-    ${block.badge ? `<span class="rounded-full bg-[#189b8e]/12 px-3 py-1 text-xs font-bold text-[#189b8e]">${escapeHtml(block.badge)}</span>` : ""}
+    return `<div class="guide-team overflow-hidden rounded-[16px] border border-black/[0.05] bg-white">
+  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-black/[0.04] bg-[#f7f9fb] px-3.5 py-2.5 sm:px-4">
+    <h3 class="font-display text-[15px] font-semibold text-foreground">${escapeHtml(block.title)}</h3>
+    ${block.badge ? `<span class="rounded-md bg-[#189b8e]/10 px-2 py-0.5 text-[11px] font-semibold text-[#189b8e]">${escapeHtml(block.badge)}</span>` : ""}
   </div>
   <div class="grid gap-0 sm:grid-cols-4">
     ${block.members
@@ -686,19 +689,19 @@ function renderBlock(block: GuideBlock, index = 0): string {
         const nameHtml = m.href
           ? `<a href="${escapeHtml(m.href)}" class="font-genshin text-center text-[13px] text-[#189b8e] hover:underline">${escapeHtml(m.name)}</a>`
           : `<p class="font-genshin text-center text-[13px] tracking-wide text-[#1e1e1e]">${escapeHtml(m.name)}</p>`;
-        const avatar = `<div class="relative h-16 w-16 overflow-hidden rounded-full bg-cover bg-center ring-2 ring-white shadow-md" style="background-image:url(${bg})">
+        const avatar = `<div class="relative h-14 w-14 overflow-hidden rounded-full bg-cover bg-center ring-2 ring-white shadow-sm" style="background-image:url(${bg})">
         ${m.image ? `<img src="${escapeHtml(m.image)}" alt="${escapeHtml(m.name)}" class="h-full w-full object-cover" />` : ""}
-        ${m.elementIcon ? `<img src="${escapeHtml(m.elementIcon)}" alt="" class="absolute -right-0.5 -top-0.5 h-5 w-5 drop-shadow" />` : ""}
+        ${m.elementIcon ? `<img src="${escapeHtml(m.elementIcon)}" alt="" class="absolute -right-0.5 -top-0.5 h-4 w-4 drop-shadow" />` : ""}
       </div>`;
-        return `<div class="flex flex-col items-center gap-2 border-black/[0.05] px-3 py-4 ${i < block.members.length - 1 ? "sm:border-r" : ""}">
-      <p class="text-[10px] font-bold uppercase tracking-[0.06em] text-muted-foreground">${escapeHtml(role)}</p>
+        return `<div class="flex flex-col items-center gap-1.5 border-black/[0.04] px-2.5 py-3 ${i < block.members.length - 1 ? "sm:border-r" : ""}">
+      <p class="text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">${escapeHtml(role)}</p>
       ${m.href ? `<a href="${escapeHtml(m.href)}" class="transition hover:opacity-90">${avatar}</a>` : avatar}
       ${nameHtml}
     </div>`;
       })
       .join("\n    ")}
   </div>
-  ${block.note ? `<p class="border-t border-black/[0.05] px-4 py-3.5 text-[15px] font-medium leading-relaxed text-muted-foreground sm:px-5">${escapeHtml(block.note)}</p>` : ""}
+  ${block.note ? `<p class="border-t border-black/[0.04] px-3.5 py-2.5 text-[13px] leading-relaxed text-muted-foreground sm:px-4">${escapeHtml(block.note)}</p>` : ""}
 </div>`;
   }
 

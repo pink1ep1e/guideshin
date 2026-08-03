@@ -6,6 +6,10 @@ import {
 } from "@/lib/character-materials";
 import { sortByRarityDesc } from "@/lib/genshin";
 
+function formatQty(qty: number): string {
+  return qty.toLocaleString("ru-RU");
+}
+
 export default function MaterialCards({
   materials,
   title = "Материалы для прокачки",
@@ -13,7 +17,6 @@ export default function MaterialCards({
 }: {
   materials: CharacterMaterial[];
   title?: string;
-  /** Короткий лор по имени (lowercase) для hover-превью. */
   loreByName?: Record<string, string>;
 }) {
   if (materials.length === 0) return null;
@@ -43,37 +46,57 @@ export default function MaterialCards({
   return (
     <section
       id="guide-materials"
-      className="rounded-[20px] border border-black/[0.045] bg-white p-5 shadow-soft sm:p-6"
+      className="rounded-[18px] border border-black/[0.045] bg-white p-4 shadow-soft sm:p-5"
     >
       <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#189b8e]">
         Прокачка
       </p>
-      <h2 className="font-genshin mb-5 text-xl tracking-wide text-foreground">
+      <h2 className="font-genshin mb-1 text-lg tracking-wide text-foreground sm:text-xl">
         {title}
       </h2>
+      <p className="mb-4 text-[13px] leading-relaxed text-muted-foreground">
+        Сколько ресурсов нужно на полную прокачку персонажа и талантов.
+      </p>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {categories.map((category) => (
           <div key={category}>
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
               {MATERIAL_CATEGORY_LABEL[category as keyof typeof MATERIAL_CATEGORY_LABEL] ??
                 category}
             </p>
-            <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-6">
+            <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
               {grouped[category].map((m) => (
-                <ItemIconCard
+                <li
                   key={m.id}
-                  name={m.name}
-                  image={m.image}
-                  rarityStars={m.rarityStars ?? 3}
-                  qty={m.qty}
-                  size="md"
-                  fluid
-                  lore={loreOf(m.name)}
-                  preview
-                />
+                  className="flex items-center gap-2.5 rounded-[12px] border border-black/[0.04] bg-[#f7f9fb] px-2 py-1.5"
+                >
+                  <ItemIconCard
+                    name={m.name}
+                    image={m.image}
+                    rarityStars={m.rarityStars ?? 3}
+                    size="sm"
+                    compact
+                    className="!h-11 !w-11"
+                    lore={loreOf(m.name)}
+                    preview
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className="truncate text-[12.5px] leading-snug text-foreground"
+                      title={m.name}
+                    >
+                      {m.name}
+                    </p>
+                    {m.qty > 0 ? (
+                      <p className="mt-0.5 text-[12px] font-semibold tabular-nums text-[#189b8e]">
+                        ×{formatQty(m.qty)}
+                      </p>
+                    ) : null}
+                  </div>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         ))}
       </div>
