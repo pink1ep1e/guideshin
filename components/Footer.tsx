@@ -23,7 +23,10 @@ export default function Footer() {
               Гайды по Genshin Impact: билды, артефакты, материалы и советы для
               комфортного прогресса.
             </p>
-            <TelegramLink className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#189b8e]/10 px-3.5 py-2.5 text-sm font-bold text-[#189b8e] transition hover:bg-[#189b8e] hover:text-white" />
+            <TelegramLink
+              placement="footer"
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#189b8e]/10 px-3.5 py-2.5 text-sm font-bold text-[#189b8e] transition hover:bg-[#189b8e] hover:text-white"
+            />
           </div>
           <div>
             <p className="mb-3 text-sm font-bold uppercase tracking-wider text-[#189b8e]">
@@ -48,7 +51,10 @@ export default function Footer() {
             </p>
             <ul className="space-y-2">
               <li>
-                <TelegramLink className="inline-flex items-center gap-2 text-sm font-medium text-foreground/85 transition hover:text-[#189b8e]" />
+                <TelegramLink
+                  placement="footer"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-foreground/85 transition hover:text-[#189b8e]"
+                />
               </li>
             </ul>
           </div>

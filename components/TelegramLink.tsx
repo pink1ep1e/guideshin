@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { SITE_TELEGRAM } from "@/lib/site";
+import { TelegramLinkClient } from "@/components/TelegramLinkClient";
 
 /** Иконка Telegram (paper plane). */
 export function TelegramIcon({ className = "h-4 w-4" }: { className?: string }) {
@@ -19,23 +20,25 @@ type TelegramLinkProps = {
   className?: string;
   children?: ReactNode;
   showLabel?: boolean;
+  /** Откуда кликнули: navbar | sidebar | footer */
+  placement?: string;
 };
 
 export function TelegramLink({
   className = "",
   children,
   showLabel = true,
+  placement = "unknown",
 }: TelegramLinkProps) {
   return (
-    <a
+    <TelegramLinkClient
       href={SITE_TELEGRAM}
-      target="_blank"
-      rel="noopener noreferrer"
       className={className}
-      aria-label="Telegram-канал Guideshin"
+      placement={placement}
+      ariaLabel="Telegram-канал Guideshin"
     >
       <TelegramIcon className="h-4 w-4 shrink-0" />
       {children ?? (showLabel ? <span>Telegram</span> : null)}
-    </a>
+    </TelegramLinkClient>
   );
 }

@@ -55,6 +55,7 @@ export default function DeleteEntityButton({
 export function AdminNavTabs({ active }: { active: string }) {
   const tabs = [
     { href: "/admin", label: "Обзор", key: "overview" },
+    { href: "/admin/analytics", label: "Аналитика", key: "analytics" },
     { href: "/admin/characters", label: "Персонажи", key: "characters" },
     { href: "/admin/weapons", label: "Оружие", key: "weapons" },
     { href: "/admin/artifacts", label: "Артефакты", key: "artifacts" },
