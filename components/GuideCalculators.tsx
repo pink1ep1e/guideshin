@@ -156,16 +156,16 @@ export default function GuideCalculators({ characterName }: { characterName: str
   return (
     <section
       id="guide-calc"
-      className="rounded-[20px] border border-black/[0.045] bg-white p-5 shadow-soft sm:p-6"
+      className="rounded-[18px] border border-black/[0.045] bg-white p-4 shadow-soft sm:p-5"
     >
-      <div className="mb-5">
+      <div className="mb-4">
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#189b8e]">
           Калькуляторы
         </p>
-        <h2 className="font-genshin text-xl tracking-wide text-foreground">
+        <h2 className="font-genshin text-lg tracking-wide text-foreground sm:text-xl">
           Прокачка {characterName}
         </h2>
-        <p className="mt-1.5 max-w-lg text-sm font-medium leading-relaxed text-muted-foreground">
+        <p className="mt-1 max-w-lg text-[13px] leading-relaxed text-muted-foreground">
           Расчёт опыта, моры и материалов талантов.
         </p>
       </div>
@@ -193,7 +193,7 @@ export default function GuideCalculators({ characterName }: { characterName: str
                     image={item.icon}
                     rarityStars={item.rarity}
                     qty={item.qty}
-                    size="md"
+                    size="sm"
                     compact
                     preview
                   />
