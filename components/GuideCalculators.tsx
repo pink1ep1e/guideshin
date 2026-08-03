@@ -154,7 +154,10 @@ export default function GuideCalculators({ characterName }: { characterName: str
   ].filter((b) => b.qty > 0);
 
   return (
-    <section className="glass-panel relative overflow-hidden p-5 sm:p-6">
+    <section
+      id="guide-calc"
+      className="glass-panel relative scroll-mt-28 overflow-hidden p-5 sm:p-6"
+    >
       <span className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-[#189b8e]/10 blur-2xl" />
       <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#189b8e] to-[#67d5cc]" />
 

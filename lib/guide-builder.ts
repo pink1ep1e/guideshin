@@ -440,9 +440,9 @@ function itemCardHtml(item: GuideItem) {
 
 function sectionHead(eyebrow: string, title: string, intro?: string) {
   return `<div class="mb-5">
-  ${eyebrow ? `<p class="mb-1 text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">${escapeHtml(eyebrow)}</p>` : ""}
-  <h2 class="font-genshin text-2xl tracking-wide text-foreground">${escapeHtml(title)}</h2>
-  ${intro ? `<p class="mt-2 text-base font-medium leading-relaxed text-muted-foreground">${escapeHtml(intro)}</p>` : ""}
+  ${eyebrow ? `<p class="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#189b8e]">${escapeHtml(eyebrow)}</p>` : ""}
+  <h2 class="font-genshin text-[1.65rem] leading-tight tracking-wide text-foreground sm:text-2xl">${escapeHtml(title)}</h2>
+  ${intro ? `<p class="mt-2.5 text-[15px] font-medium leading-relaxed text-muted-foreground">${escapeHtml(intro)}</p>` : ""}
 </div>`;
 }
 
@@ -451,20 +451,20 @@ function rankedItemHtml(item: GuideRankedItem) {
   const bg = rarityBg(stars);
   const iconInner = item.image
     ? `<img src="${escapeHtml(item.image)}" alt="" class="h-full w-full object-contain" />`
-    : `<span class="px-1 text-center text-[10px] font-bold text-muted-foreground">Нет иконки</span>`;
+    : `<span class="px-1 text-center text-[10px] font-medium text-muted-foreground">Нет иконки</span>`;
   const icon = `<div class="guide-rank-icon shrink-0 overflow-hidden rounded-[14px] bg-cover bg-center ring-1 ring-black/[0.06]" style="background-image:url(${bg})">${iconInner}</div>`;
   const titleRow = item.href
-    ? `<a href="${escapeHtml(item.href)}" class="guide-item-link font-genshin text-base tracking-wide text-[#189b8e] hover:underline">${escapeHtml(item.name)}</a>`
-    : `<span class="font-genshin text-base tracking-wide text-foreground">${escapeHtml(item.name)}</span>`;
+    ? `<a href="${escapeHtml(item.href)}" class="guide-item-link font-genshin text-[15px] tracking-wide text-foreground hover:text-[#189b8e]">${escapeHtml(item.name)}</a>`
+    : `<span class="font-genshin text-[15px] tracking-wide text-foreground">${escapeHtml(item.name)}</span>`;
 
   return `<article class="guide-rank-card">
   <div class="guide-rank-badge" aria-hidden="true">${escapeHtml(String(item.rank))}</div>
   <div class="guide-rank-body">
     ${item.href ? `<a href="${escapeHtml(item.href)}" class="guide-item-link shrink-0 transition hover:opacity-90">${icon}</a>` : icon}
     <div class="min-w-0 flex-1">
-      <div class="mb-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+      <div class="mb-1 flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
         ${titleRow}
-        ${item.subtitle ? `<span class="text-[12px] font-semibold text-muted-foreground">${escapeHtml(item.subtitle)}</span>` : ""}
+        ${item.subtitle ? `<span class="text-[12px] font-medium text-muted-foreground/90">${escapeHtml(item.subtitle)}</span>` : ""}
       </div>
       ${item.effect ? `<p class="guide-rank-effect">${escapeHtml(item.effect)}</p>` : ""}
       ${item.verdict ? `<p class="guide-rank-verdict">${escapeHtml(item.verdict)}</p>` : ""}
@@ -473,14 +473,102 @@ function rankedItemHtml(item: GuideRankedItem) {
 </article>`;
 }
 
-function renderBlock(block: GuideBlock): string {
+export type GuideNavItem = { id: string; label: string };
+
+export function guideSectionId(index: number) {
+  return `guide-sec-${index}`;
+}
+
+export function navLabelForBlock(block: GuideBlock): string | null {
+  switch (block.type) {
+    case "text": {
+      const t = block.title || block.eyebrow || "Раздел";
+      if (t.length <= 24) return t;
+      return block.eyebrow && block.eyebrow.length <= 24 ? block.eyebrow : `${t.slice(0, 20)}…`;
+    }
+    case "prosCons":
+      return "Плюсы и минусы";
+    case "statTargets":
+      return "Билд";
+    case "rankedList":
+      return block.kind === "weapons" ? "Оружие" : "Артефакты";
+    case "weapons":
+      return "Оружие";
+    case "artifacts":
+      return "Артефакты";
+    case "materials":
+      return "Таланты";
+    case "team":
+      return null;
+    case "roleTable":
+      return "Союзники";
+    case "statsTable":
+      return "Характеристики";
+    case "resourceTable":
+      return "Прокачка";
+    case "video":
+      return "Видео";
+    default:
+      return null;
+  }
+}
+
+export function buildGuideNavItems(blocks: GuideBlock[]): GuideNavItem[] {
+  const items: GuideNavItem[] = [];
+  const seen = new Set<string>();
+  let teamsAdded = false;
+
+  blocks.forEach((block, index) => {
+    if (block.type === "team") {
+      if (teamsAdded) return;
+      teamsAdded = true;
+      items.push({ id: guideSectionId(index), label: "Отряды" });
+      seen.add("Отряды");
+      return;
+    }
+    const label = navLabelForBlock(block);
+    if (!label || seen.has(label)) return;
+    if (block.type === "video" && !block.youtubeUrl && !block.videoUrl) return;
+    if (
+      (block.type === "weapons" ||
+        block.type === "artifacts" ||
+        block.type === "materials") &&
+      block.items.length === 0
+    )
+      return;
+    if (block.type === "roleTable" && block.rows.length === 0) return;
+    if (block.type === "rankedList" && block.items.length === 0) return;
+    seen.add(label);
+    items.push({ id: guideSectionId(index), label });
+  });
+
+  return items;
+}
+
+function wrapSection(index: number, html: string) {
+  if (!html) return "";
+  return html
+    .replace(
+      /^<div class="guide-section"/,
+      `<div id="${guideSectionId(index)}" class="guide-section scroll-mt-28"`,
+    )
+    .replace(
+      /^<div class="guide-team"/,
+      `<div id="${guideSectionId(index)}" class="guide-team scroll-mt-28"`,
+    );
+}
+
+function renderBlock(block: GuideBlock, index = 0): string {
   if (block.type === "text") {
     const body = renderLiteMarkdown(block.body);
     if (!body && !block.title) return "";
-    return `<div class="guide-section">
+    return wrapSection(
+      index,
+      `<div class="guide-section">
   ${sectionHead(block.eyebrow || "Раздел", block.title, undefined)}
   <div class="guide-md">${body}</div>
-</div>`;
+</div>`,
+    );
   }
 
   if (block.type === "prosCons") {
@@ -744,8 +832,16 @@ function renderBlock(block: GuideBlock): string {
 
 export function serializeGuide(blocks: GuideBlock[]): string {
   const payload = JSON.stringify(blocks);
-  const html = `<section class="space-y-12">
-${blocks.map(renderBlock).filter(Boolean).join("\n\n")}
+  const html = `<section class="guide-blocks space-y-14">
+${blocks
+  .map((b, i) => {
+    const raw = renderBlock(b, i);
+    if (!raw) return "";
+    if (raw.includes(`id="${guideSectionId(i)}"`)) return raw;
+    return wrapSection(i, raw);
+  })
+  .filter(Boolean)
+  .join("\n\n")}
 </section>`;
   return `${MARKER_START}${payload}${MARKER_END}\n${html}`;
 }

@@ -41,7 +41,10 @@ export default function MaterialCards({
   }
 
   return (
-    <section className="glass-panel relative overflow-hidden p-5 sm:p-6">
+    <section
+      id="guide-materials"
+      className="glass-panel relative scroll-mt-28 overflow-hidden p-5 sm:p-6"
+    >
       <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#189b8e] to-[#67d5cc]" />
       <p className="mb-1 text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">
         Прокачка

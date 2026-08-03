@@ -1,10 +1,15 @@
 import { notFound } from "next/navigation";
-import Sidebar from "@/components/Sidebar";
 import CharacterHeroBanner from "@/components/CharacterHeroBanner";
 import GuideCalculators from "@/components/GuideCalculators";
+import GuideSectionNav from "@/components/GuideSectionNav";
 import MaterialCards from "@/components/MaterialCards";
 import { parseMaterials } from "@/lib/character-materials";
 import { getCharacterBySlug } from "@/lib/character-data";
+import {
+  buildGuideNavItems,
+  parseGuideBlocks,
+  type GuideNavItem,
+} from "@/lib/guide-builder";
 import { ELEMENT_LABEL } from "@/lib/genshin";
 import { materialPreviewLore } from "@/lib/wiki-guide-data";
 import { withPrisma } from "@/prisma/prisma-client";
@@ -96,6 +101,20 @@ export default async function CharacterPage({ params }: Props) {
     if (text) loreByName[row.name.trim().toLowerCase()] = text;
   }
 
+  const blocks = parseGuideBlocks(character.contentHtml) ?? [];
+  const navItems: GuideNavItem[] = [
+    { id: "guide-calc", label: "Калькулятор" },
+    ...(materials.length
+      ? [{ id: "guide-materials", label: "Материалы" } satisfies GuideNavItem]
+      : []),
+    ...buildGuideNavItems(blocks),
+  ];
+
+  const guideHtml = character.contentHtml.replace(
+    /<!--genshin-guide-blocks:[\s\S]*?-->/,
+    "",
+  );
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -120,7 +139,7 @@ export default async function CharacterPage({ params }: Props) {
   };
 
   return (
-    <div className="container-page py-7 sm:py-9">
+    <div className="container-page-wide py-7 sm:py-9">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -140,25 +159,18 @@ export default async function CharacterPage({ params }: Props) {
         />
       </div>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="space-y-5">
-          <GuideCalculators characterName={character.name} />
-          <MaterialCards materials={materials} loreByName={loreByName} />
+      <GuideSectionNav items={navItems} />
 
-          <section className="panel p-6 sm:p-7">
-            <div
-              className="guide-html"
-              dangerouslySetInnerHTML={{
-                __html: character.contentHtml.replace(
-                  /<!--genshin-guide-blocks:[\s\S]*?-->/,
-                  "",
-                ),
-              }}
-            />
-          </section>
-        </div>
+      <div className="space-y-6">
+        <GuideCalculators characterName={character.name} />
+        <MaterialCards materials={materials} loreByName={loreByName} />
 
-        <Sidebar />
+        <section className="overflow-hidden rounded-[22px] border border-black/[0.05] bg-white/90 p-5 shadow-panel sm:p-8 lg:p-10">
+          <div
+            className="guide-html"
+            dangerouslySetInnerHTML={{ __html: guideHtml }}
+          />
+        </section>
       </div>
     </div>
   );
