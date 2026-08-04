@@ -13,13 +13,22 @@ export default function CharacterConstellations({ constellations }: Props) {
   if (!constellations.length) return null;
 
   return (
-    <section className="rounded-[20px] bg-white p-5 shadow-panel ring-1 ring-black/[0.04] sm:p-6">
+    <section className="guide-panel">
+      <span className="guide-panel-bd guide-panel-bd--l" aria-hidden />
+      <span className="guide-panel-bd guide-panel-bd--r" aria-hidden />
+      <span className="guide-panel-ornament" aria-hidden />
       <header className="guide-section-head">
-        <p className="guide-eyebrow">Геймплей</p>
-        <h2 className="guide-title">Созвездие</h2>
+        <p className="guide-eyebrow">
+          <span className="guide-eyebrow-mark" aria-hidden />
+          Геймплей
+        </p>
+        <h2 className="guide-title">
+          <span className="guide-title-glow" aria-hidden />
+          Созвездие
+        </h2>
       </header>
 
-      <ol className="mt-6 space-y-7">
+      <ol className="relative z-[1] mt-6 space-y-7">
         {constellations.map((c) => (
           <li key={c.id} className="flex gap-3.5 sm:gap-4">
             <div className="relative mt-0.5 h-11 w-11 shrink-0 overflow-hidden rounded-full bg-[#f0f3f6] ring-1 ring-black/[0.05] sm:h-12 sm:w-12">

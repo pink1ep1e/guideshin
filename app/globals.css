@@ -441,16 +441,67 @@
   margin-bottom: 0;
 }
 
-/* Минималистичный каркас гайда */
-.guide-section {
-  padding: 0;
+/* —— HoYoLab-like декор гайда —— */
+.guide-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #fff;
+  padding: 1.25rem 1.5rem 1.35rem;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.04),
+    0 8px 28px rgba(15, 35, 70, 0.06);
 }
 
-.guide-section-head {
-  max-width: 42rem;
+@media (min-width: 640px) {
+  .guide-panel {
+    padding: 1.5rem 1.75rem;
+  }
+}
+
+.guide-panel-bd {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  width: 14px;
+  height: 56px;
+  transform: translateY(-50%);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.45;
+  pointer-events: none;
+  filter: brightness(0) saturate(100%) invert(48%) sepia(42%) saturate(668%)
+    hue-rotate(131deg) brightness(93%) contrast(91%);
+}
+
+.guide-panel-bd--l {
+  left: 6px;
+  background-image: url("/images/decor/page-bd-left.png");
+}
+
+.guide-panel-bd--r {
+  right: 6px;
+  background-image: url("/images/decor/page-bd-right.png");
+}
+
+.guide-panel-ornament {
+  position: absolute;
+  right: 1.25rem;
+  top: 1.1rem;
+  width: 28px;
+  height: 36px;
+  background: url("/images/decor/ornament.png") center / contain no-repeat;
+  opacity: 0.18;
+  pointer-events: none;
+  filter: brightness(0) saturate(100%) invert(35%) sepia(12%) saturate(600%)
+    hue-rotate(180deg);
 }
 
 .guide-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   margin: 0 0 0.35rem;
   font-size: 11px;
   font-weight: 600;
@@ -459,8 +510,22 @@
   color: #189b8e;
 }
 
+.guide-eyebrow-mark {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  background-color: #189b8e;
+  -webkit-mask: url("/images/decor/title-mark.svg") center / contain no-repeat;
+  mask: url("/images/decor/title-mark.svg") center / contain no-repeat;
+}
+
 .guide-title {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
   margin: 0;
+  max-width: 100%;
   font-family: var(--font-genshin), Unbounded, sans-serif;
   font-size: 1.35rem;
   font-weight: 400;
@@ -472,6 +537,21 @@
   .guide-title {
     font-size: 1.5rem;
   }
+}
+
+.guide-title-glow {
+  position: absolute;
+  left: -0.35rem;
+  top: 50%;
+  z-index: -1;
+  width: min(280px, 70vw);
+  height: 1.6em;
+  transform: translateY(-50%);
+  background: url("/images/decor/menu-active.png") left center / auto 100% no-repeat;
+  opacity: 0.5;
+  pointer-events: none;
+  filter: brightness(0) saturate(100%) invert(48%) sepia(42%) saturate(668%)
+    hue-rotate(131deg) brightness(105%) contrast(91%);
 }
 
 .guide-intro {
@@ -490,6 +570,97 @@
   color: #189b8e;
   font-weight: 600;
   margin-right: 0.15rem;
+}
+
+.guide-section-head {
+  position: relative;
+  z-index: 1;
+  max-width: 42rem;
+}
+
+/* Карточки оружия / артефактов */
+.guide-gear-card {
+  position: relative;
+  display: flex;
+  gap: 0.75rem;
+  overflow: hidden;
+  border-radius: 14px;
+  padding: 0.65rem 0.75rem;
+  background: #f7f9fb;
+}
+
+.guide-gear-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.14;
+  pointer-events: none;
+}
+
+.guide-gear-card--weapon::before {
+  background-image: url("/images/decor/weaponCardBgPc.png");
+}
+
+.guide-gear-card--artifact::before {
+  background-image: url("/images/decor/artifactCardBg.png");
+}
+
+.guide-gear-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.guide-gear-icon {
+  position: relative;
+  height: 56px;
+  width: 56px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+}
+
+.guide-gear-icon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+  background: url("/images/decor/corner-star.svg") 4px 4px / 8px 8px no-repeat,
+    url("/images/decor/corner-star.svg") calc(100% - 4px) 4px / 8px 8px no-repeat,
+    url("/images/decor/corner-star.svg") 4px calc(100% - 4px) / 8px 8px no-repeat;
+  opacity: 0.55;
+  filter: brightness(0) invert(1);
+}
+
+/* Активный таб с glow */
+.guide-nav-tab--on {
+  position: relative;
+}
+
+.guide-nav-tab--on::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  z-index: 0;
+  width: 90%;
+  height: 14px;
+  transform: translateX(-50%);
+  background: url("/images/decor/menu-active.png") center / contain no-repeat;
+  opacity: 0.35;
+  pointer-events: none;
+  filter: brightness(0) invert(1);
+}
+
+/* Минималистичный каркас гайда (legacy helpers) */
+.guide-section {
+  padding: 0;
 }
 
 .constellation-desc p {
