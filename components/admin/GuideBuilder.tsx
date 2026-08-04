@@ -991,6 +991,7 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                                           name: picked.name,
                                           image: picked.image,
                                           href: picked.href,
+                                          rarity: picked.rarity >= 5 ? 5 : 4,
                                           elementIcon: picked.element
                                             ? ELEMENT_SVG[picked.element as ElementKey] ||
                                               x.elementIcon

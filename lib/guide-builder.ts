@@ -86,6 +86,8 @@ export type GuideRoleRow = {
   weaponIcon: string;
   description: string;
   href?: string;
+  /** 4 = эпик, 5 = легенда; влияет на фон аватара */
+  rarity?: 4 | 5;
 };
 
 export type GuideStatsRow = {
@@ -347,6 +349,7 @@ export function emptyRoleRow(): GuideRoleRow {
     weapon: "Лук",
     weaponIcon: "",
     description: "",
+    rarity: 5,
   };
 }
 
