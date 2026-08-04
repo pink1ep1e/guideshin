@@ -151,6 +151,7 @@ export default async function CharacterPage({ params }: Props) {
           {guideBlocks && guideBlocks.length > 0 ? (
             <CharacterGuideView
               characterName={character.name}
+              element={character.element}
               blocks={guideBlocks}
               materials={materials}
               loreByName={loreByName}

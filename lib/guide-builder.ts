@@ -47,6 +47,21 @@ export type GuideTeamVariant = {
   members: GuideTeamMember[];
 };
 
+export type GuideSetPlanRow = {
+  id: string;
+  name: string;
+  image: string;
+  href?: string;
+  setName: string;
+  setImage?: string;
+};
+
+export type GuideSetPlanGroup = {
+  id: string;
+  title: string;
+  rows: GuideSetPlanRow[];
+};
+
 export type GuideStatTarget = {
   id: string;
   label: string;
@@ -164,6 +179,14 @@ export type GuideBlock =
       title: string;
       intro: string;
       variants: GuideTeamVariant[];
+    }
+  | {
+      id: string;
+      type: "setPlan";
+      eyebrow: string;
+      title: string;
+      intro: string;
+      groups: GuideSetPlanGroup[];
     };
 
 /** Вкладки публичного гайда персонажа */
@@ -198,6 +221,8 @@ export function classifyGuideBlock(block: GuideBlock): GuideTabId {
     case "teamGroup":
     case "roleTable":
       return "teams";
+    case "setPlan":
+      return "gear";
     case "resourceTable":
     case "materials":
       return "leveling";
@@ -577,6 +602,8 @@ export function navLabelForBlock(block: GuideBlock): string | null {
       return null;
     case "teamGroup":
       return "Отряды";
+    case "setPlan":
+      return "Сеты";
     case "roleTable":
       return "Союзники";
     case "statsTable":
@@ -942,6 +969,28 @@ function renderBlock(block: GuideBlock, index = 0): string {
       </tbody>
     </table>
   </div>
+</div>`;
+  }
+
+  if (block.type === "setPlan") {
+    if (!block.groups.length) return "";
+    const groupsHtml = block.groups
+      .map((g) => {
+        const rows = g.rows
+          .map((r) => {
+            const char = r.href
+              ? `<a href="${escapeHtml(r.href)}" class="flex min-w-0 items-center gap-2"><img src="${escapeHtml(r.image)}" alt="" class="h-10 w-10 rounded-xl object-cover" /><span class="truncate text-[13px] font-medium text-[#189b8e]">${escapeHtml(r.name)}</span></a>`
+              : `<div class="flex min-w-0 items-center gap-2"><img src="${escapeHtml(r.image)}" alt="" class="h-10 w-10 rounded-xl object-cover" /><span class="truncate text-[13px] font-medium">${escapeHtml(r.name)}</span></div>`;
+            const set = `<div class="flex min-w-0 items-center justify-end gap-2 text-right"><span class="truncate text-[12.5px] text-muted-foreground">${escapeHtml(r.setName)}</span>${r.setImage ? `<img src="${escapeHtml(r.setImage)}" alt="" class="h-9 w-9 rounded-lg object-contain" />` : ""}</div>`;
+            return `<div class="flex items-center justify-between gap-3 rounded-[12px] bg-[#f7f9fb] px-2.5 py-2">${char}${set}</div>`;
+          })
+          .join("");
+        return `<div class="space-y-2"><h3 class="font-display text-[15px] font-semibold">${escapeHtml(g.title)}</h3><div class="space-y-1.5">${rows}</div></div>`;
+      })
+      .join("");
+    return `<div class="guide-section">
+  ${sectionHead(block.eyebrow || "Артефакты", block.title, block.intro)}
+  <div class="space-y-5">${groupsHtml}</div>
 </div>`;
   }
 
