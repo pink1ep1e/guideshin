@@ -116,14 +116,25 @@ function SectionChrome({
   pills?: ElementKey[];
 }) {
   return (
-    <section className="rounded-[20px] bg-white p-5 shadow-panel ring-1 ring-black/[0.04] sm:p-6">
+    <section className="guide-panel">
+      <span className="guide-panel-bd guide-panel-bd--l" aria-hidden />
+      <span className="guide-panel-bd guide-panel-bd--r" aria-hidden />
+      <span className="guide-panel-ornament" aria-hidden />
       <header className="guide-section-head">
-        {eyebrow ? <p className="guide-eyebrow">{eyebrow}</p> : null}
-        <h2 className="guide-title">{title}</h2>
+        {eyebrow ? (
+          <p className="guide-eyebrow">
+            <span className="guide-eyebrow-mark" aria-hidden />
+            {eyebrow}
+          </p>
+        ) : null}
+        <h2 className="guide-title">
+          <span className="guide-title-glow" aria-hidden />
+          {title}
+        </h2>
         {intro ? <p className="guide-intro">{intro}</p> : null}
         {pills?.length ? <ElementPills keys={pills} /> : null}
       </header>
-      <div className="mt-5">{children}</div>
+      <div className="relative z-[1] mt-5">{children}</div>
     </section>
   );
 }
@@ -197,7 +208,7 @@ function RankedGear({
                 const tip = item.verdict || item.effect;
                 return (
                   <li key={item.id}>
-                    <div className="flex gap-3 rounded-[14px] bg-white/80 px-2.5 py-2 ring-1 ring-black/[0.04]">
+                    <div className={`guide-gear-card guide-gear-card--${kind}`}>
                       <ItemHoverPreview
                         name={item.name}
                         image={item.image}
@@ -207,7 +218,7 @@ function RankedGear({
                         className="shrink-0"
                       >
                         <div
-                          className="relative h-[56px] w-[56px] overflow-hidden rounded-[12px] bg-cover bg-center ring-1 ring-black/[0.06]"
+                          className="guide-gear-icon"
                           style={{
                             backgroundImage: `url(${rarityBg(item.rarity >= 5 ? 5 : 4)})`,
                           }}
@@ -859,9 +870,9 @@ export default function CharacterGuideView({
                 key={id}
                 type="button"
                 onClick={() => setTab(id)}
-                className={`rounded-[12px] px-3.5 py-2.5 text-[14px] transition sm:flex-1 ${
+                className={`guide-nav-tab relative z-[1] rounded-[12px] px-3.5 py-2.5 text-[14px] transition sm:flex-1 ${
                   on
-                    ? "bg-[#189b8e] font-semibold text-white"
+                    ? "guide-nav-tab--on bg-[#189b8e] font-semibold text-white"
                     : "font-medium text-muted-foreground hover:bg-black/[0.03] hover:text-foreground"
                 }`}
               >

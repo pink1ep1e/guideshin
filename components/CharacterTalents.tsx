@@ -27,15 +27,22 @@ export default function CharacterTalents({ talents, element }: Props) {
         : defaultTalentLevelLabels();
 
   return (
-    <section className="rounded-[20px] bg-white p-5 shadow-panel ring-1 ring-black/[0.04] sm:p-6">
-      <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#189b8e]">
-        Билд
-      </p>
-      <h2 className="font-genshin text-[1.4rem] tracking-wide text-foreground sm:text-[1.55rem]">
-        Таланты
-      </h2>
+    <section className="guide-panel">
+      <span className="guide-panel-bd guide-panel-bd--l" aria-hidden />
+      <span className="guide-panel-bd guide-panel-bd--r" aria-hidden />
+      <span className="guide-panel-ornament" aria-hidden />
+      <header className="guide-section-head">
+        <p className="guide-eyebrow">
+          <span className="guide-eyebrow-mark" aria-hidden />
+          Билд
+        </p>
+        <h2 className="guide-title">
+          <span className="guide-title-glow" aria-hidden />
+          Таланты
+        </h2>
+      </header>
 
-      <div className="mt-6 flex flex-wrap gap-3 sm:gap-4">
+      <div className="relative z-[1] mt-6 flex flex-wrap gap-3 sm:gap-4">
         {talents.map((item, i) => {
           const on = i === active;
           const elStyle = {
@@ -86,7 +93,7 @@ export default function CharacterTalents({ talents, element }: Props) {
         })}
       </div>
 
-      <div className="mt-6 grid gap-5 border-t border-black/[0.06] pt-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)]">
+      <div className="relative z-[1] mt-6 grid gap-5 border-t border-black/[0.06] pt-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)]">
         <div className="overflow-hidden rounded-[16px] bg-[#f5f7f9] ring-1 ring-black/[0.04]">
           {t.videoUrl ? (
             <video
@@ -128,7 +135,7 @@ export default function CharacterTalents({ talents, element }: Props) {
       </div>
 
       {t.stats && t.stats.length > 0 && levels.length > 0 ? (
-        <div className="mt-5 overflow-x-auto rounded-[14px] border border-black/[0.05] bg-[#fafbfc]">
+        <div className="relative z-[1] mt-5 overflow-x-auto rounded-[14px] border border-black/[0.05] bg-[#fafbfc]">
           <table className="w-full min-w-[720px] border-collapse text-[12.5px]">
             <thead>
               <tr className="border-b border-black/[0.06] text-muted-foreground">
