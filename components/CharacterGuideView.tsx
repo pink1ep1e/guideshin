@@ -652,11 +652,13 @@ function BlockView({
       <SectionChrome eyebrow={block.eyebrow} title={block.title} intro={block.intro}>
         <div className="space-y-2">
           {block.rows.map((r) => {
+            const avatarBg =
+              r.rarity === 4 ? "/images/epic-bg.jpg" : "/images/legend-bg.jpg";
             const body = (
               <>
                 <div
                   className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[14px] bg-cover bg-center ring-1 ring-black/[0.05]"
-                  style={{ backgroundImage: "url(/images/legend-bg.jpg)" }}
+                  style={{ backgroundImage: `url(${avatarBg})` }}
                 >
                   {r.image ? (
                     // eslint-disable-next-line @next/next/no-img-element

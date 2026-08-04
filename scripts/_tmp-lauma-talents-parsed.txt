@@ -1,0 +1,39 @@
+=== LINE 243 len 1810
+parts: 191
+headerEnd idx 14
+1-Hit DMG: 33.7%, 36.23%, 38.76%, 42.13%, 44.66%, 47.18%, 50.55%, 53.92%, 57.29%, 60.66%, 64.03%, 67.4%, 71.62%
+2-Hit DMG: 31.8%, 34.19%, 36.58%, 39.76%, 42.14%, 44.53%, 47.71%, 50.89%, 54.07%, 57.25%, 60.43%, 63.61%, 67.59%
+3-Hit DMG: 44.5%, 47.83%, 51.17%, 55.62%, 58.96%, 62.3%, 66.75%, 71.19%, 75.64%, 80.09%, 84.54%, 88.99%, 94.56%
+Spirit Envoy Form Movement Stamina Cost: 25 / s, 25 / s, 25 / s, 25 / s, 25 / s, 25 / s, 25 / s, 25 / s, 25 / s, 25 / s, 25 / s, 25 / s, 25 / s
+Spirit Envoy Form Jumping Stamina Cost: 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10
+Spirit Envoy Form Max Duration: 10s, 10s, 10s, 10s, 10s, 10s, 10s, 10s, 10s, 10s, 10s, 10s, 10s
+Spirit Envoy Metamorphosis CD: 4s, 4s, 4s, 4s, 4s, 4s, 4s, 4s, 4s, 4s, 4s, 4s, 4s
+Spiritcall Prayer Stamina Cost: 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50
+Spiritcall Prayer DMG: 129.04%, 138.72%, 148.4%, 161.3%, 170.98%, 180.66%, 193.56%, 206.46%, 219.37%, 232.27%, 245.18%, 258.08%, 274.21%
+Plunge DMG: 56.83%, 61.45%, 66.08%, 72.69%, 77.31%, 82.6%, 89.87%, 97.14%, 104.41%, 112.34%, 120.27%, 128.2%, 136.12%
+Low/High Plunge DMG: 113.63% / 141.93%, 122.88% / 153.49%, 132.13% / 165.04%, 145.35% / 181.54%, 154.59% / 193.1%, 165.17% / 206.3%, 179.7% / 224.45%, 194.23% / 242.61%, 208.77% / 260.76%, 224.62% / 280.57%, 240.48% / 300.37%, 256.34% / 320.18%, 272.19% / 339.98%
+---
+=== LINE 250 len 2244
+parts: 159
+headerEnd idx 14
+Press DMG: 121.6%, 130.72%, 139.84%, 152%, 161.12%, 170.24%, 182.4%, 194.56%, 206.72%, 218.88%, 231.04%, 243.2%, 258.4%
+1-Hit Hold DMG: 158.08%, 169.94%, 181.79%, 197.6%, 209.46%, 221.31%, 237.12%, 252.93%, 268.74%, 284.54%, 300.35%, 316.16%, 335.92%
+2-Hit Hold DMG: 152% Elemental Mastery Per Verdant Dew, 163.4% Elemental Mastery Per Verdant Dew, 174.8% Elemental Mastery Per Verdant Dew, 190% Elemental Mastery Per Verdant Dew, 201.4% Elemental Mastery Per Verdant Dew, 212.8% Elemental Mastery Per Verdant Dew, 228% Elemental Mastery Per Verdant Dew, 243.2% Elemental Mastery Per Verdant Dew, 258.4% Elemental Mastery Per Verdant Dew, 273.6% Elemental Mastery Per Verdant Dew, 288.8% Elemental Mastery Per Verdant Dew, 304% Elemental Mastery Per Verdant Dew, 323% Elemental Mastery Per Verdant Dew
+Frostgrove Sanctuary Attack DMG: 96% ATK + 192% Elemental Mastery, 103.2% ATK + 206.4% Elemental Mastery, 110.4% ATK + 220.8% Elemental Mastery, 120% ATK + 240% Elemental Mastery, 127.2% ATK + 254.4% Elemental Mastery, 134.4% ATK + 268.8% Elemental Mastery, 144% ATK + 288% Elemental Mastery, 153.6% ATK + 307.2% Elemental Mastery, 163.2% ATK + 326.4% Elemental Mastery, 172.8% ATK + 345.6% Elemental Mastery, 182.4% ATK + 364.8% Elemental Mastery, 192% ATK + 384% Elemental Mastery, 204% ATK + 408% Elemental Mastery
+Frostgrove Sanctuary Duration: 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s
+Moon Song Duration: 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s
+Elemental RES Decrease: 2.5%, 5%, 7.5%, 10%, 12.5%, 15%, 17.5%, 20%, 22.5%, 25%, 28%, 31%, 34%
+Elemental RES Decrease Duration: 10s, 10s, 10s, 10s, 10s, 10s, 10s, 10s, 10s, 10s, 10s, 10s, 10s
+CD: 12s, 12s, 12s, 12s, 12s, 12s, 12s, 12s, 12s, 12s, 12s, 12s, 12s
+---
+=== LINE 257 len 1837
+parts: 127
+headerEnd idx 14
+Pale Hymn Stacks Gained From Elemental Burst: 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18
+Moon Song to Pale Hymn Conversion: 6 Stacks Per Moon Song, 6 Stacks Per Moon Song, 6 Stacks Per Moon Song, 6 Stacks Per Moon Song, 6 Stacks Per Moon Song, 6 Stacks Per Moon Song, 6 Stacks Per Moon Song, 6 Stacks Per Moon Song, 6 Stacks Per Moon Song, 6 Stacks Per Moon Song, 6 Stacks Per Moon Song, 6 Stacks Per Moon Song, 6 Stacks Per Moon Song
+Bloom, Hyperbloom, and Burgeon DMG Increase: 277.76% Elemental Mastery, 298.59% Elemental Mastery, 319.42% Elemental Mastery, 347.2% Elemental Mastery, 368.03% Elemental Mastery, 388.86% Elemental Mastery, 416.64% Elemental Mastery, 444.42% Elemental Mastery, 472.19% Elemental Mastery, 499.97% Elemental Mastery, 527.74% Elemental Mastery, 555.52% Elemental Mastery, 590.24% Elemental Mastery
+Lunar-Bloom DMG Increase: 222.24% Elemental Mastery, 238.91% Elemental Mastery, 255.58% Elemental Mastery, 277.8% Elemental Mastery, 294.47% Elemental Mastery, 311.14% Elemental Mastery, 333.36% Elemental Mastery, 355.58% Elemental Mastery, 377.81% Elemental Mastery, 400.03% Elemental Mastery, 422.26% Elemental Mastery, 444.48% Elemental Mastery, 472.26% Elemental Mastery
+Pale Hymn Duration: 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s
+CD: 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s, 15s
+Energy Cost: 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60
+---
