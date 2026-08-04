@@ -13,7 +13,7 @@ export default function CharacterConstellations({ constellations }: Props) {
   if (!constellations.length) return null;
 
   return (
-    <section className="guide-section">
+    <section className="rounded-[20px] bg-white p-5 shadow-panel ring-1 ring-black/[0.04] sm:p-6">
       <header className="guide-section-head">
         <p className="guide-eyebrow">Геймплей</p>
         <h2 className="guide-title">Созвездие</h2>

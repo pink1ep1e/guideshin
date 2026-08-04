@@ -407,15 +407,16 @@
 /* Таланты: idle / hover / active (светлая тема) */
 .talent-key--idle .talent-key-idle-ring {
   position: absolute;
-  inset: 6px;
+  inset: 4px;
   border-radius: 9999px;
-  border: 1.5px solid rgba(15, 35, 70, 0.12);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border: 2.5px solid rgba(15, 35, 70, 0.12);
+  transition: border-color 0.2s ease, border-width 0.15s ease, box-shadow 0.2s ease;
 }
 
 .talent-key--idle:hover .talent-key-idle-ring {
+  border-width: 3px;
   border-color: var(--talent-el, #4cc2f1);
-  box-shadow: 0 0 12px var(--talent-glow, rgba(76, 194, 241, 0.35));
+  box-shadow: 0 0 14px var(--talent-glow, rgba(76, 194, 241, 0.4));
 }
 
 .talent-key-ring {
@@ -423,6 +424,8 @@
   -webkit-mask: url("/images/talents/obvodka-talant.svg") center / contain no-repeat;
   mask: url("/images/talents/obvodka-talant.svg") center / contain no-repeat;
   filter: drop-shadow(0 0 6px var(--talent-glow, rgba(76, 194, 241, 0.4)));
+  transform: scale(1.12);
+  transform-origin: center;
 }
 
 .talent-hl {

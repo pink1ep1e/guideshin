@@ -116,7 +116,7 @@ function SectionChrome({
   pills?: ElementKey[];
 }) {
   return (
-    <section className="guide-section">
+    <section className="rounded-[20px] bg-white p-5 shadow-panel ring-1 ring-black/[0.04] sm:p-6">
       <header className="guide-section-head">
         {eyebrow ? <p className="guide-eyebrow">{eyebrow}</p> : null}
         <h2 className="guide-title">{title}</h2>
@@ -385,13 +385,15 @@ function MemberPortrait({ m, role }: { m: GuideTeamMember; role?: string }) {
 function TeamVariantCard({ v }: { v: GuideTeamVariant }) {
   const roles = ["Мейн-дд", "Саппорт", "Саб-дд", "Флекс"];
   return (
-    <article className="border-b border-black/[0.06] pb-6 last:border-0 last:pb-0">
+    <article className="overflow-hidden rounded-[16px] bg-[#f7f9fb] ring-1 ring-black/[0.04]">
       {v.badge ? (
-        <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#189b8e]">
-          {v.badge}
-        </p>
+        <div className="border-b border-black/[0.04] px-4 py-2.5">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#189b8e]">
+            {v.badge}
+          </span>
+        </div>
       ) : null}
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.75fr)]">
+      <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.75fr)]">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {v.members.map((m, i) => (
             <MemberPortrait key={m.id} m={m} role={(m.role && m.role.trim()) || roles[i]} />

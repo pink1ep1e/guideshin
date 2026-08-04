@@ -44,7 +44,10 @@ export default function MaterialCards({
   }
 
   return (
-    <section id="guide-materials" className="guide-section">
+    <section
+      id="guide-materials"
+      className="rounded-[20px] bg-white p-5 shadow-panel ring-1 ring-black/[0.04] sm:p-6"
+    >
       <header className="guide-section-head">
         <p className="guide-eyebrow">Прокачка</p>
         <h2 className="guide-title">{title}</h2>
