@@ -71,7 +71,7 @@ function NavDropdown({
         <ChevronDown className="h-4 w-4 text-[#189b8e]/80 transition duration-200 group-hover:rotate-180" />
       </button>
       <div className="invisible absolute left-0 top-full z-30 min-w-[240px] pt-2 opacity-0 transition-[opacity,visibility] duration-150 group-hover:visible group-hover:opacity-100">
-        <div className="origin-top rounded-[18px] border border-white/10 bg-card/95 p-2 shadow-panel backdrop-blur-md">
+        <div className="origin-top rounded-[18px] border border-black/[0.06] bg-white/95 p-2 shadow-panel backdrop-blur-md">
           <div className="mb-1 px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[#189b8e]/80">
             {label}
           </div>
@@ -267,7 +267,7 @@ export default function Navbar() {
           <nav
             className={`${
               open ? "flex" : "hidden"
-            } absolute left-0 right-0 top-full z-50 mt-2 flex-col gap-3 rounded-[20px] border border-white/10 bg-card p-3 shadow-panel lg:static lg:mt-0 lg:grid lg:flex-1 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-1 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}
+            } absolute left-0 right-0 top-full z-50 mt-2 flex-col gap-3 rounded-[20px] border border-black/[0.06] bg-white p-3 shadow-panel lg:static lg:mt-0 lg:grid lg:flex-1 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-1 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}
           >
             <div
               ref={navRef}
