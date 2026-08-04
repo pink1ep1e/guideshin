@@ -1,16 +1,29 @@
 "use client";
 
+import { useState, type CSSProperties } from "react";
 import {
   renderConstellationDescription,
   type CharacterConstellation,
 } from "@/lib/character-constellations";
+import { getElementTheme } from "@/lib/genshin";
+
+const DARK_ICON_FILTER =
+  "brightness(0) saturate(100%) invert(18%) sepia(18%) saturate(900%) hue-rotate(185deg)";
 
 type Props = {
   constellations: CharacterConstellation[];
+  element?: string;
 };
 
-export default function CharacterConstellations({ constellations }: Props) {
+export default function CharacterConstellations({
+  constellations,
+  element = "HYDRO",
+}: Props) {
+  const [active, setActive] = useState(0);
   if (!constellations.length) return null;
+
+  const theme = getElementTheme(element);
+  const c = constellations[Math.min(active, constellations.length - 1)];
 
   return (
     <section className="guide-panel">
@@ -24,44 +37,89 @@ export default function CharacterConstellations({ constellations }: Props) {
       </header>
       <div className="guide-module-line" aria-hidden />
 
-      <ol className="relative z-[1] mt-5 space-y-7">
-        {constellations.map((c) => (
-          <li key={c.id} className="flex gap-3.5 sm:gap-4">
-            <div className="relative mt-0.5 h-11 w-11 shrink-0 overflow-hidden rounded-full bg-[#f0f3f6] ring-1 ring-black/[0.05] sm:h-12 sm:w-12">
-              {c.icon ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={c.icon}
-                  alt=""
-                  className="h-full w-full object-contain p-1.5"
+      <div className="relative z-[1] mt-5 flex flex-wrap gap-3 sm:gap-4">
+        {constellations.map((item, i) => {
+          const on = i === active;
+          const elStyle = {
+            "--talent-el": theme.solid,
+            "--talent-glow": theme.glow,
+          } as CSSProperties;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setActive(i)}
+              className={`talent-key group relative flex h-[80px] w-[80px] items-center justify-center rounded-full transition sm:h-[92px] sm:w-[92px] ${
+                on ? "talent-key--active" : "talent-key--idle"
+              }`}
+              style={elStyle}
+              aria-pressed={on}
+              title={`C${item.level}: ${item.name}`}
+            >
+              {on ? (
+                <span
+                  className="talent-key-ring pointer-events-none absolute inset-[-8px]"
+                  style={{ color: theme.solid }}
+                  aria-hidden
                 />
               ) : (
-                <span className="flex h-full w-full items-center justify-center text-[13px] font-semibold tabular-nums text-[#189b8e]">
-                  C{c.level}
-                </span>
+                <span className="talent-key-idle-ring" aria-hidden />
               )}
-            </div>
-            <div className="min-w-0 flex-1 border-b border-black/[0.05] pb-7 last:border-0 last:pb-0">
-              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                <span className="text-[12px] font-semibold uppercase tracking-wide text-[#189b8e]">
-                  C{c.level}
-                </span>
-                <h3 className="text-[16px] font-semibold tracking-tight text-foreground sm:text-[17px]">
-                  {c.name}
-                </h3>
-              </div>
-              {c.description ? (
-                <div
-                  className="constellation-desc mt-2 text-[14.5px] leading-relaxed text-muted-foreground"
-                  dangerouslySetInnerHTML={{
-                    __html: `<p>${renderConstellationDescription(c.description)}</p>`,
-                  }}
-                />
-              ) : null}
-            </div>
-          </li>
-        ))}
-      </ol>
+              <span className="relative z-[1] flex h-[58px] w-[58px] items-center justify-center overflow-hidden rounded-full bg-[#f0f3f6] ring-1 ring-black/[0.06] sm:h-[66px] sm:w-[66px]">
+                {item.icon ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={item.icon}
+                    alt=""
+                    className={`h-[42px] w-[42px] object-contain transition sm:h-[48px] sm:w-[48px] ${
+                      on ? "opacity-100" : "opacity-70 group-hover:opacity-100"
+                    }`}
+                    style={{ filter: DARK_ICON_FILTER }}
+                  />
+                ) : (
+                  <span
+                    className={`text-[15px] font-semibold tabular-nums transition ${
+                      on ? "text-[#1a2744]" : "text-[#1a2744]/70"
+                    }`}
+                  >
+                    C{item.level}
+                  </span>
+                )}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="relative z-[1] mt-6 grid gap-5 border-t border-black/[0.06] pt-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)]">
+        <div className="overflow-hidden rounded-[16px] bg-[#f5f7f9] ring-1 ring-black/[0.04]">
+          <div className="flex aspect-video items-center justify-center bg-[#e8ecef] text-sm text-muted-foreground">
+            Нет видео
+          </div>
+          <div className="border-t border-black/[0.05] bg-white/70 py-2.5 text-center text-[13px] font-medium tracking-wide text-muted-foreground">
+            Просмотр
+          </div>
+        </div>
+
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="text-[13px] font-semibold uppercase tracking-wide text-[#189b8e]">
+              C{c.level}
+            </span>
+            <h3 className="text-[1.3rem] font-semibold tracking-tight text-foreground sm:text-[1.45rem]">
+              {c.name}
+            </h3>
+          </div>
+          {c.description ? (
+            <div
+              className="constellation-desc mt-3 space-y-3 text-[15px] leading-relaxed text-muted-foreground"
+              dangerouslySetInnerHTML={{
+                __html: `<p>${renderConstellationDescription(c.description)}</p>`,
+              }}
+            />
+          ) : null}
+        </div>
+      </div>
     </section>
   );
 }
