@@ -493,8 +493,6 @@ async function main() {
         },
       ],
       slots: [
-        { id: uid(), slot: "Цветок", main: "HP", subs: "HP% · ВЭ% · К/У · К/Ш" },
-        { id: uid(), slot: "Перо", main: "Сила атаки", subs: "HP% · ВЭ% · К/У · К/Ш" },
         { id: uid(), slot: "Пески", main: "HP% или ВЭ%", subs: "ВЭ% · К/У · К/Ш · HP" },
         { id: uid(), slot: "Кубок", main: "HP%", subs: "ВЭ% · К/У · К/Ш · HP" },
         { id: uid(), slot: "Корона", main: "К/У или К/Ш", subs: "HP% · ВЭ% · К/У или К/Ш" },

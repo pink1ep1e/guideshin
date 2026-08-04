@@ -4,34 +4,34 @@
 
 @layer base {
   :root {
-    /* Dark navy — тема по умолчанию */
-    --background: 220 40% 8%;
-    --foreground: 210 25% 96%;
+    /* VTB-like light palette */
+    --background: 220 25% 96%;
+    --foreground: 221 72% 15%;
 
-    --card: 218 35% 12%;
-    --card-foreground: 210 25% 96%;
+    --card: 0 0% 100%;
+    --card-foreground: 221 72% 15%;
 
-    --popover: 218 38% 11%;
-    --popover-foreground: 210 25% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 221 72% 15%;
 
-    --primary: 174 73% 35%;
+    --primary: 224 100% 52%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 218 28% 16%;
-    --secondary-foreground: 210 20% 90%;
+    --secondary: 220 30% 94%;
+    --secondary-foreground: 221 50% 20%;
 
-    --muted: 218 25% 15%;
-    --muted-foreground: 215 12% 62%;
+    --muted: 220 24% 93%;
+    --muted-foreground: 218 18% 42%;
 
-    --accent: 218 30% 18%;
-    --accent-foreground: 174 60% 70%;
+    --accent: 220 40% 94%;
+    --accent-foreground: 224 80% 35%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 218 22% 22%;
-    --input: 218 22% 22%;
-    --ring: 174 73% 40%;
+    --border: 220 20% 88%;
+    --input: 220 20% 88%;
+    --ring: 224 100% 52%;
 
     --radius: 1rem;
   }
@@ -65,7 +65,7 @@
   }
 
   .glass-panel {
-    @apply rounded-[20px] border border-white/[0.08] bg-card/90 shadow-panel backdrop-blur-sm;
+    @apply rounded-[20px] border border-black/[0.05] bg-white/85 shadow-panel backdrop-blur-sm;
   }
 
   .ui-btn-primary {
@@ -73,7 +73,7 @@
   }
 
   .ui-btn-secondary {
-    @apply inline-flex items-center justify-center rounded-[16px] border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-bold text-[#67d5cc] transition duration-300 hover:bg-[#189b8e]/15;
+    @apply inline-flex items-center justify-center rounded-[16px] border border-black/[0.08] bg-white/80 px-6 py-3.5 text-sm font-bold text-[#189b8e] transition duration-300 hover:bg-[#189b8e]/10;
   }
 
   .section-title {
@@ -379,10 +379,10 @@
 }
 
 .guide-slot-icon-inner img {
-  height: 26px;
-  width: 26px;
+  height: 28px;
+  width: 28px;
   object-fit: contain;
-  filter: brightness(1.15) saturate(0.9);
+  filter: brightness(0) invert(1);
 }
 
 .guide-tier-band {
