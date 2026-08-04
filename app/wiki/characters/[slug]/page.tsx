@@ -3,6 +3,7 @@ import Sidebar from "@/components/Sidebar";
 import CharacterHeroBanner from "@/components/CharacterHeroBanner";
 import CharacterGuideView from "@/components/CharacterGuideView";
 import { parseMaterials } from "@/lib/character-materials";
+import { parseTalents } from "@/lib/character-talents";
 import { getCharacterBySlug } from "@/lib/character-data";
 import { ELEMENT_LABEL } from "@/lib/genshin";
 import { materialPreviewLore } from "@/lib/wiki-guide-data";
@@ -70,6 +71,7 @@ export default async function CharacterPage({ params }: Props) {
   if (!character || !character.published) notFound();
 
   const materials = parseMaterials(character.levelMaterials);
+  const talents = parseTalents(character.talents);
   const element = ELEMENT_LABEL[character.element] ?? character.element;
   const pageUrl = absoluteUrl(`/wiki/characters/${character.slug}`);
   const image = character.splashImage || character.image;
@@ -154,11 +156,12 @@ export default async function CharacterPage({ params }: Props) {
               element={character.element}
               blocks={guideBlocks}
               materials={materials}
+              talents={talents}
               loreByName={loreByName}
             />
           ) : (
             <div className="space-y-5">
-              <article className="rounded-[18px] border border-black/[0.045] bg-white p-4 shadow-soft sm:p-6">
+              <article className="rounded-[18px] border border-white/[0.06] bg-card p-4 shadow-soft sm:p-6">
                 <div
                   className="guide-html"
                   dangerouslySetInnerHTML={{ __html: guideHtml }}

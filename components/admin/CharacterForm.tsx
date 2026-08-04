@@ -13,6 +13,7 @@ import {
 import MediaUpload from "@/components/admin/MediaUpload";
 import GuideBuilder from "@/components/admin/GuideBuilder";
 import MaterialsEditor from "@/components/admin/MaterialsEditor";
+import TalentsEditor from "@/components/admin/TalentsEditor";
 import AdminStickyActions from "@/components/admin/AdminStickyActions";
 import { useAdminToast } from "@/components/admin/AdminToastContext";
 import { invalidateGuideCatalog } from "@/components/admin/CatalogPicker";
@@ -23,6 +24,10 @@ import {
   parseMaterials,
   type CharacterMaterial,
 } from "@/lib/character-materials";
+import {
+  parseTalents,
+  type CharacterTalent,
+} from "@/lib/character-talents";
 
 type CharacterFormValues = {
   id?: number;
@@ -38,6 +43,7 @@ type CharacterFormValues = {
   shortDesc: string;
   contentHtml: string;
   levelMaterials: CharacterMaterial[];
+  talents: CharacterTalent[];
   published: boolean;
   order: number;
 };
@@ -78,6 +84,7 @@ const DEFAULTS: CharacterFormValues = {
   shortDesc: "",
   contentHtml: serializeGuide(createEmptyBlocks("Персонаж")),
   levelMaterials: [],
+  talents: [],
   published: true,
   order: 0,
 };
@@ -95,6 +102,7 @@ export default function CharacterForm({
     region: initial?.region || DEFAULTS.region,
     contentHtml: initial?.contentHtml || DEFAULTS.contentHtml,
     levelMaterials: parseMaterials(initial?.levelMaterials),
+    talents: parseTalents(initial?.talents),
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -397,6 +405,13 @@ export default function CharacterForm({
           onChange={(levelMaterials) =>
             update("levelMaterials", levelMaterials)
           }
+        />
+      </div>
+
+      <div className="glass-panel p-5 sm:p-6">
+        <TalentsEditor
+          value={values.talents}
+          onChange={(talents) => update("talents", talents)}
         />
       </div>
 

@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import CharacterForm from "@/components/admin/CharacterForm";
 import { withPrisma } from "@/prisma/prisma-client";
 import { parseMaterials } from "@/lib/character-materials";
+import { parseTalents } from "@/lib/character-talents";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -61,6 +62,7 @@ export default async function EditCharacterPage({ params }: Props) {
           shortDesc: character.shortDesc ?? "",
           contentHtml: character.contentHtml,
           levelMaterials: parseMaterials(character.levelMaterials),
+          talents: parseTalents(character.talents),
           published: character.published,
           order: character.order,
         }}

@@ -45,6 +45,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
         shortDesc: body.shortDesc || null,
         contentHtml: body.contentHtml || "",
         levelMaterials: Array.isArray(body.levelMaterials) ? body.levelMaterials : [],
+        talents: Array.isArray(body.talents) ? body.talents : [],
         published: body.published ?? true,
         order: body.order ?? 0,
       },

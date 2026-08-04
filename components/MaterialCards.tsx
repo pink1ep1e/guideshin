@@ -46,7 +46,7 @@ export default function MaterialCards({
   return (
     <section
       id="guide-materials"
-      className="rounded-[20px] bg-white p-5 shadow-panel ring-1 ring-black/[0.04] sm:p-6"
+      className="rounded-[20px] bg-card p-5 shadow-panel ring-1 ring-white/[0.05] sm:p-6"
     >
       <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#189b8e]">
         Прокачка
@@ -69,7 +69,7 @@ export default function MaterialCards({
               {grouped[category].map((m) => (
                 <li
                   key={m.id}
-                  className="flex items-center gap-3 rounded-[14px] bg-[#f7f9fb] px-2.5 py-2"
+                  className="flex items-center gap-3 rounded-[14px] bg-white/[0.04] px-2.5 py-2"
                 >
                   <ItemIconCard
                     name={m.name}
