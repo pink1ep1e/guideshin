@@ -124,9 +124,9 @@ export default function ItemHoverPreview({
                 "opacity 160ms ease, transform 200ms cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           >
-            <div className="flex overflow-hidden rounded-[16px] border border-black/[0.06] bg-[#f4f5f7]/95 shadow-[0_14px_36px_-16px_rgba(11,31,68,0.42)] ring-1 ring-[#189b8e]/12 backdrop-blur-md">
+            <div className="flex overflow-hidden rounded-[16px] border border-black/[0.08] bg-white shadow-[0_14px_36px_-16px_rgba(11,31,68,0.45)] ring-1 ring-[#189b8e]/15">
               {/* Слева: предмет + звёзды */}
-              <div className="relative flex w-[96px] shrink-0 flex-col items-center bg-white/40 p-2.5">
+              <div className="relative flex w-[96px] shrink-0 flex-col items-center bg-[#f7f9fb] p-2.5">
                 <div
                   className="relative flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-[12px] bg-cover bg-center shadow-sm ring-1 ring-black/[0.06]"
                   style={{ backgroundImage: `url(${rarityBg(stars)})` }}
@@ -155,8 +155,8 @@ export default function ItemHoverPreview({
               </div>
 
               {/* Справа: название + описание / статы оружия */}
-              <div className="min-w-0 flex-1 border-l border-black/[0.05] bg-white/80 px-3 py-2.5">
-                <p className="font-genshin text-[13px] leading-snug tracking-wide text-[#1e1e1e]">
+              <div className="min-w-0 flex-1 border-l border-black/[0.06] bg-white px-3 py-2.5">
+                <p className="text-[14px] font-semibold leading-snug text-foreground">
                   {name}
                 </p>
                 {showWeapon && weaponMeta ? (
@@ -169,7 +169,7 @@ export default function ItemHoverPreview({
                     />
                   </div>
                 ) : loreText ? (
-                  <p className="mt-1.5 line-clamp-4 text-[11px] font-medium leading-relaxed text-muted-foreground">
+                  <p className="mt-1.5 line-clamp-5 text-[13px] leading-relaxed text-[#4a5563]">
                     {loreText}
                   </p>
                 ) : null}
