@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
         contentHtml: body.contentHtml || "",
         levelMaterials: Array.isArray(body.levelMaterials) ? body.levelMaterials : [],
         talents: Array.isArray(body.talents) ? body.talents : [],
+        constellations: Array.isArray(body.constellations) ? body.constellations : [],
         published: body.published ?? true,
         order: body.order ?? 0,
       },

@@ -3,6 +3,9 @@
 import { Plus, Trash2 } from "lucide-react";
 import MediaUpload from "@/components/admin/MediaUpload";
 import {
+  TALENT_LEVEL_COUNT,
+  defaultTalentLevelLabels,
+  emptyTalentStatValues,
   talentUid,
   type CharacterTalent,
   type TalentStatRow,
@@ -13,18 +16,16 @@ type Props = {
   onChange: (next: CharacterTalent[]) => void;
 };
 
-const DEFAULT_LEVELS = Array.from({ length: 8 }, (_, i) => `Ур. ${i + 1}`);
-
 function emptyStats(): TalentStatRow[] {
   return [
-    { label: "Урон навыка", values: Array(8).fill("") },
-    { label: "Время отката", values: Array(8).fill("") },
+    { label: "Урон навыка", values: emptyTalentStatValues() },
+    { label: "Время отката", values: emptyTalentStatValues() },
   ];
 }
 
 export default function TalentsEditor({ value, onChange }: Props) {
   const input =
-    "w-full rounded-[12px] border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-foreground outline-none ring-[#189b8e]/25 focus:ring-2";
+    "w-full rounded-[12px] border border-black/[0.08] bg-white/90 px-3 py-2 text-sm font-medium outline-none ring-[#189b8e]/25 focus:ring-2";
   const label =
     "mb-1 block text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground";
 
@@ -42,7 +43,7 @@ export default function TalentsEditor({ value, onChange }: Props) {
         videoUrl: "",
         description: "",
         loreText: "",
-        levelLabels: [...DEFAULT_LEVELS],
+        levelLabels: defaultTalentLevelLabels(),
         stats: emptyStats(),
         order: value.length,
       },
@@ -66,8 +67,9 @@ export default function TalentsEditor({ value, onChange }: Props) {
     const stats = t.stats.map((s, i) => {
       if (i !== rowIdx) return s;
       const values = [...s.values];
+      while (values.length < TALENT_LEVEL_COUNT) values.push("");
       values[col] = v;
-      return { ...s, values };
+      return { ...s, values: values.slice(0, TALENT_LEVEL_COUNT) };
     });
     updateRow(talentId, { stats });
   }
@@ -80,7 +82,7 @@ export default function TalentsEditor({ value, onChange }: Props) {
             Таланты
           </p>
           <p className="text-sm font-medium text-muted-foreground">
-            Иконки, видео применения, описание и таблица уровней
+            Иконки, видео, описание и таблица на 13 уровней
           </p>
         </div>
         <button
@@ -94,7 +96,7 @@ export default function TalentsEditor({ value, onChange }: Props) {
       </div>
 
       {value.length === 0 && (
-        <p className="rounded-[14px] border border-dashed border-white/10 bg-white/[0.03] px-4 py-6 text-center text-sm font-medium text-muted-foreground">
+        <p className="rounded-[14px] border border-dashed border-black/[0.08] bg-white/60 px-4 py-6 text-center text-sm font-medium text-muted-foreground">
           Пока пусто — добавьте обычную атаку, E, ульту и пассивки.
         </p>
       )}
@@ -103,7 +105,7 @@ export default function TalentsEditor({ value, onChange }: Props) {
         {value.map((row, idx) => (
           <div
             key={row.id}
-            className="rounded-[16px] border border-white/10 bg-white/[0.03] p-3 sm:p-4"
+            className="rounded-[16px] border border-black/[0.05] bg-[#0b1f44]/[0.02] p-3 sm:p-4"
           >
             <div className="mb-3 flex items-center justify-between gap-2">
               <p className="text-xs font-bold text-muted-foreground">
@@ -144,12 +146,11 @@ export default function TalentsEditor({ value, onChange }: Props) {
                   className={input}
                   value={row.name}
                   onChange={(e) => updateRow(row.id, { name: e.target.value })}
-                  placeholder="Тоска во свете луны"
                 />
               </div>
               <div>
                 <label className={label}>
-                  Описание (**слово** — золотая подсветка)
+                  Описание (**слово** — акцент)
                 </label>
                 <textarea
                   className={`${input} min-h-[100px]`}
@@ -157,11 +158,10 @@ export default function TalentsEditor({ value, onChange }: Props) {
                   onChange={(e) =>
                     updateRow(row.id, { description: e.target.value })
                   }
-                  placeholder="Создаёт **Владения луны**, наносящие **Гидро урон**..."
                 />
               </div>
               <div>
-                <label className={label}>Лор (курсив внизу)</label>
+                <label className={label}>Лор (курсив)</label>
                 <textarea
                   className={`${input} min-h-[60px]`}
                   value={row.loreText || ""}
@@ -174,13 +174,16 @@ export default function TalentsEditor({ value, onChange }: Props) {
 
             <div className="mt-4">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <p className={label + " mb-0"}>Таблица уровней</p>
+                <p className={`${label} mb-0`}>Таблица (13 ур.)</p>
                 <button
                   type="button"
                   className="text-xs font-bold text-[#189b8e]"
                   onClick={() =>
                     updateRow(row.id, {
-                      stats: [...(row.stats || []), { label: "", values: Array(8).fill("") }],
+                      stats: [
+                        ...(row.stats || []),
+                        { label: "", values: emptyTalentStatValues() },
+                      ],
                     })
                   }
                 >
@@ -190,7 +193,7 @@ export default function TalentsEditor({ value, onChange }: Props) {
               {(row.stats || []).map((stat, si) => (
                 <div
                   key={si}
-                  className="mb-2 rounded-[12px] border border-white/10 bg-black/20 p-2"
+                  className="mb-2 rounded-[12px] border border-black/[0.06] bg-white/70 p-2"
                 >
                   <div className="mb-2 flex gap-2">
                     <input
@@ -213,13 +216,13 @@ export default function TalentsEditor({ value, onChange }: Props) {
                       ×
                     </button>
                   </div>
-                  <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-8">
-                    {Array.from({ length: 8 }).map((_, ci) => (
+                  <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-7">
+                    {Array.from({ length: TALENT_LEVEL_COUNT }).map((_, ci) => (
                       <input
                         key={ci}
-                        className={`${input} px-1.5 py-1.5 text-center text-[11px]`}
+                        className={`${input} px-1 py-1.5 text-center text-[10px]`}
                         value={stat.values[ci] || ""}
-                        placeholder={`Ур.${ci + 1}`}
+                        placeholder={`${ci + 1}`}
                         onChange={(e) =>
                           setStatCell(row.id, si, ci, e.target.value)
                         }

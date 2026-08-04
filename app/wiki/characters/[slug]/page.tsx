@@ -4,6 +4,7 @@ import CharacterHeroBanner from "@/components/CharacterHeroBanner";
 import CharacterGuideView from "@/components/CharacterGuideView";
 import { parseMaterials } from "@/lib/character-materials";
 import { parseTalents } from "@/lib/character-talents";
+import { parseConstellations } from "@/lib/character-constellations";
 import { getCharacterBySlug } from "@/lib/character-data";
 import { ELEMENT_LABEL } from "@/lib/genshin";
 import { materialPreviewLore } from "@/lib/wiki-guide-data";
@@ -72,6 +73,7 @@ export default async function CharacterPage({ params }: Props) {
 
   const materials = parseMaterials(character.levelMaterials);
   const talents = parseTalents(character.talents);
+  const constellations = parseConstellations(character.constellations);
   const element = ELEMENT_LABEL[character.element] ?? character.element;
   const pageUrl = absoluteUrl(`/wiki/characters/${character.slug}`);
   const image = character.splashImage || character.image;
@@ -157,6 +159,7 @@ export default async function CharacterPage({ params }: Props) {
               blocks={guideBlocks}
               materials={materials}
               talents={talents}
+              constellations={constellations}
               loreByName={loreByName}
             />
           ) : (

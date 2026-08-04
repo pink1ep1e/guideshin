@@ -6,6 +6,7 @@ import CharacterForm from "@/components/admin/CharacterForm";
 import { withPrisma } from "@/prisma/prisma-client";
 import { parseMaterials } from "@/lib/character-materials";
 import { parseTalents } from "@/lib/character-talents";
+import { parseConstellations } from "@/lib/character-constellations";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -63,6 +64,7 @@ export default async function EditCharacterPage({ params }: Props) {
           contentHtml: character.contentHtml,
           levelMaterials: parseMaterials(character.levelMaterials),
           talents: parseTalents(character.talents),
+          constellations: parseConstellations(character.constellations),
           published: character.published,
           order: character.order,
         }}

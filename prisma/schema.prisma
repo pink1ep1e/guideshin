@@ -57,6 +57,9 @@ model Character {
   /// Таланты: [{ id, name, icon, videoUrl, description, loreText, statsTable, order }]
   talents     Json?
 
+  /// Созвездия: [{ id, level, name, icon, description, order }]
+  constellations Json?
+
   shortDesc   String?
   contentHtml String   @db.Text
 
