@@ -507,6 +507,7 @@
 .guide-title {
   position: relative;
   z-index: 1;
+  isolation: isolate;
   display: block;
   margin: 0;
   width: fit-content;
@@ -515,7 +516,7 @@
   font-size: 1.35rem;
   font-weight: 400;
   letter-spacing: 0.04em;
-  line-height: 1.25;
+  line-height: 1.35;
   color: hsl(var(--foreground));
 }
 
@@ -525,21 +526,22 @@
   }
 }
 
-/* Мягкая подсветка строго по центру заголовка, без растягивания */
-.guide-title-glow {
+/* menu-active за текстом; isolation не даёт уйти под белый фон панели */
+.guide-title::before {
+  content: "";
   position: absolute;
-  left: 50%;
+  left: -6%;
   top: 50%;
   z-index: -1;
-  width: 140%;
-  max-width: 320px;
-  height: 18px;
-  transform: translate(-40%, -50%);
-  background: url("/images/decor/menu-active.png") center / contain no-repeat;
-  opacity: 0.35;
+  width: 112%;
+  min-width: 180px;
+  height: 1.05em;
+  transform: translateY(-50%);
+  background: url("/images/decor/menu-active.png") left center / auto 100% no-repeat;
+  opacity: 0.75;
   pointer-events: none;
-  filter: brightness(0) saturate(100%) invert(48%) sepia(42%) saturate(668%)
-    hue-rotate(131deg) brightness(105%) contrast(91%);
+  filter: brightness(0) saturate(100%) invert(48%) sepia(55%) saturate(750%)
+    hue-rotate(131deg) brightness(98%) contrast(95%);
 }
 
 .guide-intro {
@@ -616,6 +618,33 @@
 
 .constellation-desc p:last-child {
   margin-bottom: 0;
+}
+
+/* Активный таб — menu-active по центру за текстом */
+.guide-nav-tab--on {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.guide-nav-tab--on::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 0;
+  width: 130%;
+  height: 1.1em;
+  transform: translate(-50%, -50%);
+  background: url("/images/decor/menu-active.png") center / contain no-repeat;
+  opacity: 0.65;
+  pointer-events: none;
+  filter: brightness(0) invert(1);
+}
+
+.guide-nav-tab--on > span {
+  position: relative;
+  z-index: 1;
 }
 
 /* Карта на весь экран: iframe под шапкой, футер скрыт */

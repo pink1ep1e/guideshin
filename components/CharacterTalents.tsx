@@ -34,10 +34,7 @@ export default function CharacterTalents({ talents, element }: Props) {
           <span className="guide-eyebrow-mark" aria-hidden />
           Билд
         </p>
-        <h2 className="guide-title">
-          <span className="guide-title-glow" aria-hidden />
-          Таланты
-        </h2>
+        <h2 className="guide-title">Таланты</h2>
       </header>
       <div className="guide-module-line" aria-hidden />
 
