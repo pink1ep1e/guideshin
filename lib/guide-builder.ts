@@ -467,13 +467,18 @@ function escapeHtml(text: string) {
     .replaceAll('"', "&quot;");
 }
 
+/** Инлайн **жирный** (с акцентом guide-hl) — для intro, подсказок, списков */
+export function renderInlineMarkdown(raw: string): string {
+  return escapeHtml(raw).replace(/\*\*(.+?)\*\*/g, '<span class="guide-hl">$1</span>');
+}
+
 /** Простой markdown-lite: абзацы, списки, **bold**, ### заголовки */
 export function renderLiteMarkdown(raw: string): string {
   const src = raw.replace(/\r\n/g, "\n").trim();
   if (!src) return "";
 
   const inline = (s: string) =>
-    escapeHtml(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    escapeHtml(s).replace(/\*\*(.+?)\*\*/g, '<span class="guide-hl">$1</span>');
 
   const blocks = src.split(/\n{2,}/);
   const out: string[] = [];
@@ -545,7 +550,7 @@ function sectionHead(eyebrow: string, title: string, intro?: string) {
   return `<div class="mb-4">
   ${eyebrow ? `<p class="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#189b8e]">${escapeHtml(eyebrow)}</p>` : ""}
   <h2 class="font-genshin text-[1.35rem] leading-tight tracking-wide text-foreground sm:text-[1.5rem]">${escapeHtml(title)}</h2>
-  ${intro ? `<p class="mt-2 text-[14px] leading-relaxed text-muted-foreground">${escapeHtml(intro)}</p>` : ""}
+  ${intro ? `<p class="mt-2 text-[14px] leading-relaxed text-muted-foreground">${renderInlineMarkdown(intro)}</p>` : ""}
 </div>`;
 }
 
@@ -687,11 +692,11 @@ function renderBlock(block: GuideBlock, index = 0): string {
   <div class="guide-proscons">
     <div class="guide-pros">
       <h3 class="guide-proscons-title guide-proscons-title--pro">${escapeHtml(block.prosTitle || "Преимущества")}</h3>
-      <ul class="guide-proscons-list">${pros.map((p) => `<li>${escapeHtml(p)}</li>`).join("")}</ul>
+      <ul class="guide-proscons-list">${pros.map((p) => `<li>${renderInlineMarkdown(p)}</li>`).join("")}</ul>
     </div>
     <div class="guide-cons">
       <h3 class="guide-proscons-title guide-proscons-title--con">${escapeHtml(block.consTitle || "Недостатки")}</h3>
-      <ul class="guide-proscons-list">${cons.map((c) => `<li>${escapeHtml(c)}</li>`).join("")}</ul>
+      <ul class="guide-proscons-list">${cons.map((c) => `<li>${renderInlineMarkdown(c)}</li>`).join("")}</ul>
     </div>
   </div>
 </div>`;

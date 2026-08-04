@@ -11,6 +11,7 @@ import ItemHoverPreview from "@/components/ItemHoverPreview";
 import {
   classifyGuideBlock,
   GUIDE_TAB_LABELS,
+  renderInlineMarkdown,
   renderLiteMarkdown,
   youtubeEmbedUrl,
   type GuideBlock,
@@ -72,6 +73,16 @@ function Md({ html }: { html: string }) {
   );
 }
 
+function InlineMd({ text, className = "" }: { text: string; className?: string }) {
+  if (!text) return null;
+  return (
+    <span
+      className={className}
+      dangerouslySetInnerHTML={{ __html: renderInlineMarkdown(text) }}
+    />
+  );
+}
+
 function ElementPills({ keys }: { keys: ElementKey[] }) {
   if (!keys.length) return null;
   return (
@@ -123,7 +134,12 @@ function SectionChrome({
           </p>
         ) : null}
         <h2 className="guide-title">{title}</h2>
-        {intro ? <p className="guide-intro">{intro}</p> : null}
+        {intro ? (
+          <p
+            className="guide-intro"
+            dangerouslySetInnerHTML={{ __html: renderInlineMarkdown(intro) }}
+          />
+        ) : null}
         {pills?.length ? <ElementPills keys={pills} /> : null}
       </header>
       <div className="guide-module-line" aria-hidden />
@@ -301,7 +317,9 @@ function MaterialRowList({
                 ×{item.qty}
               </p>
             ) : item.note ? (
-              <p className="mt-0.5 truncate text-[12px] text-muted-foreground">{item.note}</p>
+              <p className="mt-0.5 truncate text-[12px] text-muted-foreground">
+                <InlineMd text={item.note} />
+              </p>
             ) : null}
           </div>
         </li>
@@ -318,7 +336,6 @@ function splitOverviewBody(body: string): { facts: string[]; rest: string } {
     .map((l) =>
       l
         .replace(/^[-*•]\s*/, "")
-        .replace(/\*\*([^*]+)\*\*/g, "$1")
         .trim(),
     )
     .filter(Boolean);
@@ -334,9 +351,8 @@ function OverviewFacts({ facts }: { facts: string[] }) {
         <li
           key={i}
           className="rounded-[14px] bg-[#f7f9fb] px-3.5 py-2.5 text-[14px] leading-snug text-foreground/90"
-        >
-          {f}
-        </li>
+          dangerouslySetInnerHTML={{ __html: renderInlineMarkdown(f) }}
+        />
       ))}
     </ul>
   );
@@ -407,7 +423,9 @@ function TeamVariantCard({ v }: { v: GuideTeamVariant }) {
           <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             Особенности
           </p>
-          <p className="text-[14.5px] leading-relaxed text-muted-foreground">{v.features}</p>
+          <p className="text-[14.5px] leading-relaxed text-muted-foreground">
+            <InlineMd text={v.features} />
+          </p>
         </div>
       </div>
     </article>
@@ -454,7 +472,9 @@ function BlockView({
             </h3>
             <ul className="list-disc space-y-2 pl-4 text-[14.5px] leading-relaxed text-muted-foreground">
               {block.pros.filter(Boolean).map((p, i) => (
-                <li key={i}>{p}</li>
+                <li key={i}>
+                  <InlineMd text={p} />
+                </li>
               ))}
             </ul>
           </div>
@@ -464,7 +484,9 @@ function BlockView({
             </h3>
             <ul className="list-disc space-y-2 pl-4 text-[14.5px] leading-relaxed text-muted-foreground">
               {block.cons.filter(Boolean).map((c, i) => (
-                <li key={i}>{c}</li>
+                <li key={i}>
+                  <InlineMd text={c} />
+                </li>
               ))}
             </ul>
           </div>
@@ -486,7 +508,9 @@ function BlockView({
                 {t.value}
               </p>
               {t.hint ? (
-                <p className="mt-1.5 text-[13px] leading-snug text-muted-foreground">{t.hint}</p>
+                <p className="mt-1.5 text-[13px] leading-snug text-muted-foreground">
+                  <InlineMd text={t.hint} />
+                </p>
               ) : null}
             </div>
           ))}
@@ -640,7 +664,7 @@ function BlockView({
         </div>
         {block.note ? (
           <p className="border-t border-black/[0.04] bg-[#f7f9fb] px-4 py-3 text-[14px] leading-relaxed text-muted-foreground">
-            {block.note}
+            <InlineMd text={block.note} />
           </p>
         ) : null}
       </article>
@@ -677,7 +701,7 @@ function BlockView({
                     </span>
                   </div>
                   <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">
-                    {r.description}
+                    <InlineMd text={r.description} />
                   </p>
                 </div>
               </>
