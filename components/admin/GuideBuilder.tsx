@@ -180,6 +180,7 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
       materials: "Материалы / цветы / расходники",
       team: "Отряд",
       teamGroup: "Отряды (варианты)",
+      setPlan: "Сеты в отрядах",
       roleTable: "Таблица ролей",
       statsTable: "Таблица характеристик",
       resourceTable: "Таблица ресурсов",

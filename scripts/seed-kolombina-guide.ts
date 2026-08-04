@@ -13,6 +13,7 @@ import {
   type GuideTeamMember,
   type GuideTeamVariant,
   type GuideRoleRow,
+  type GuideSetPlanRow,
   serializeGuide,
   uid,
   emptyStatsRow,
@@ -267,6 +268,31 @@ function variant(
   badge?: string,
 ): GuideTeamVariant {
   return { id: uid(), features, members, badge };
+}
+
+function planRow(
+  char: CharRow | undefined,
+  fallbackName: string,
+  setName: string,
+  setImage = "",
+): GuideSetPlanRow {
+  if (char) {
+    return {
+      id: uid(),
+      name: char.name,
+      image: char.image,
+      href: `/wiki/characters/${char.slug}`,
+      setName,
+      setImage,
+    };
+  }
+  return {
+    id: uid(),
+    name: fallbackName,
+    image: "",
+    setName,
+    setImage,
+  };
 }
 
 function roleRow(
@@ -640,26 +666,63 @@ async function main() {
     },
     {
       id: uid(),
-      type: "text",
+      type: "setPlan",
       eyebrow: "Артефакты",
       title: "Как раздать сеты в топ-отрядах",
-      body: `### Лунный заряд
-- **Флинс** — Ночь открытия неба
-- **Инеффа** — Серенада или Рассвет
-- **Коломбина** — Рассвет или Серенада
-- **Сахароза / Ягода** — Изумрудная тень
-
-### Лунная бутонизация
-- **Нефер** — Ночь открытия неба
-- **Лаума** — Серенада
-- **Коломбина** — Рассвет
-- **Гидро/Дендро саппорт** — Воспоминания дремучего леса
-
-### Лунный кристалл
-- **Цзы Бай** — Ночь открытия неба
-- **Иллуги** — Инструктор
-- **Коломбина** — Серенада или Рассвет
-- **Линнея** — Рассвет или Серенада`,
+      intro: "Ориентир по распределению сетов между союзниками в основных нод-краевских отрядах.",
+      groups: [
+        {
+          id: uid(),
+          title: "Лунный заряд",
+          rows: [
+            planRow(c("flins", "флинс"), "Флинс", "Ночь открытия неба", stub("noch-otkrytiya-neba.png", "Ночь открытия неба").image),
+            planRow(c("ineffa", "инеффа"), "Инеффа", "Серенада или Рассвет", stub("serenada.png", "Серенада").image),
+            {
+              id: uid(),
+              name: NAME,
+              image: IMAGE,
+              href: `/wiki/characters/${SLUG}`,
+              setName: "Рассвет или Серенада",
+              setImage: stub("rassvetnaya-pesn.png", "Рассвет").image,
+            },
+            planRow(c("sucrose", "сахароза"), "Сахароза / Ягода", "Изумрудная тень", a("Изумрудная тень")?.image || ""),
+          ],
+        },
+        {
+          id: uid(),
+          title: "Лунная бутонизация",
+          rows: [
+            planRow(c("nefer", "нефер"), "Нефер", "Ночь открытия неба", stub("noch-otkrytiya-neba.png", "Ночь").image),
+            planRow(c("lauma", "лаума"), "Лаума", "Серенада", stub("serenada.png", "Серенада").image),
+            {
+              id: uid(),
+              name: NAME,
+              image: IMAGE,
+              href: `/wiki/characters/${SLUG}`,
+              setName: "Рассвет",
+              setImage: stub("rassvetnaya-pesn.png", "Рассвет").image,
+            },
+            planRow(c("nahida", "нахида"), "Гидро / Дендро саппорт", "Воспоминания дремучего леса", a("Воспоминания дремучего леса")?.image || ""),
+          ],
+        },
+        {
+          id: uid(),
+          title: "Лунный кристалл",
+          rows: [
+            planRow(c("czy-baj", "цзы бай"), "Цзы Бай", "Ночь открытия неба", stub("noch-otkrytiya-neba.png", "Ночь").image),
+            planRow(c("illugi", "иллуги"), "Иллуги", "Инструктор", a("Инструктор")?.image || ""),
+            {
+              id: uid(),
+              name: NAME,
+              image: IMAGE,
+              href: `/wiki/characters/${SLUG}`,
+              setName: "Серенада или Рассвет",
+              setImage: stub("serenada.png", "Серенада").image,
+            },
+            planRow(c("linneya", "линнея"), "Линнея", "Рассвет или Серенада", stub("rassvetnaya-pesn.png", "Рассвет").image),
+          ],
+        },
+      ],
     },
     {
       id: uid(),
