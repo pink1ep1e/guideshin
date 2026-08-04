@@ -14,8 +14,6 @@ export default function CharacterConstellations({ constellations }: Props) {
 
   return (
     <section className="guide-panel">
-      <span className="guide-panel-bd guide-panel-bd--l" aria-hidden />
-      <span className="guide-panel-bd guide-panel-bd--r" aria-hidden />
       <span className="guide-panel-ornament" aria-hidden />
       <header className="guide-section-head">
         <p className="guide-eyebrow">
@@ -27,8 +25,9 @@ export default function CharacterConstellations({ constellations }: Props) {
           Созвездие
         </h2>
       </header>
+      <div className="guide-module-line" aria-hidden />
 
-      <ol className="relative z-[1] mt-6 space-y-7">
+      <ol className="relative z-[1] mt-5 space-y-7">
         {constellations.map((c) => (
           <li key={c.id} className="flex gap-3.5 sm:gap-4">
             <div className="relative mt-0.5 h-11 w-11 shrink-0 overflow-hidden rounded-full bg-[#f0f3f6] ring-1 ring-black/[0.05] sm:h-12 sm:w-12">

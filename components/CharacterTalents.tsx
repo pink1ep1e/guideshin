@@ -28,8 +28,6 @@ export default function CharacterTalents({ talents, element }: Props) {
 
   return (
     <section className="guide-panel">
-      <span className="guide-panel-bd guide-panel-bd--l" aria-hidden />
-      <span className="guide-panel-bd guide-panel-bd--r" aria-hidden />
       <span className="guide-panel-ornament" aria-hidden />
       <header className="guide-section-head">
         <p className="guide-eyebrow">
@@ -41,8 +39,9 @@ export default function CharacterTalents({ talents, element }: Props) {
           Таланты
         </h2>
       </header>
+      <div className="guide-module-line" aria-hidden />
 
-      <div className="relative z-[1] mt-6 flex flex-wrap gap-3 sm:gap-4">
+      <div className="relative z-[1] mt-5 flex flex-wrap gap-3 sm:gap-4">
         {talents.map((item, i) => {
           const on = i === active;
           const elStyle = {

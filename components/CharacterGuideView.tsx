@@ -117,8 +117,6 @@ function SectionChrome({
 }) {
   return (
     <section className="guide-panel">
-      <span className="guide-panel-bd guide-panel-bd--l" aria-hidden />
-      <span className="guide-panel-bd guide-panel-bd--r" aria-hidden />
       <span className="guide-panel-ornament" aria-hidden />
       <header className="guide-section-head">
         {eyebrow ? (
@@ -134,6 +132,7 @@ function SectionChrome({
         {intro ? <p className="guide-intro">{intro}</p> : null}
         {pills?.length ? <ElementPills keys={pills} /> : null}
       </header>
+      <div className="guide-module-line" aria-hidden />
       <div className="relative z-[1] mt-5">{children}</div>
     </section>
   );
@@ -208,7 +207,7 @@ function RankedGear({
                 const tip = item.verdict || item.effect;
                 return (
                   <li key={item.id}>
-                    <div className={`guide-gear-card guide-gear-card--${kind}`}>
+                    <div className="guide-gear-card">
                       <ItemHoverPreview
                         name={item.name}
                         image={item.image}
@@ -237,25 +236,23 @@ function RankedGear({
                         </div>
                       </ItemHoverPreview>
                       <div className="min-w-0 flex-1 self-center">
-                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                          {item.href ? (
-                            <Link
-                              href={item.href}
-                              className="text-[15px] font-medium text-foreground hover:text-[#189b8e]"
-                            >
-                              {item.name}
-                            </Link>
-                          ) : (
-                            <span className="text-[15px] font-medium text-foreground">
-                              {item.name}
-                            </span>
-                          )}
-                          {item.subtitle ? (
-                            <span className="text-[12px] text-muted-foreground">
-                              {item.subtitle}
-                            </span>
-                          ) : null}
-                        </div>
+                        {item.subtitle ? (
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#189b8e]">
+                            {item.subtitle}
+                          </p>
+                        ) : null}
+                        {item.href ? (
+                          <Link
+                            href={item.href}
+                            className="mt-0.5 block text-[15px] font-medium text-foreground hover:text-[#189b8e]"
+                          >
+                            {item.name}
+                          </Link>
+                        ) : (
+                          <span className="mt-0.5 block text-[15px] font-medium text-foreground">
+                            {item.name}
+                          </span>
+                        )}
                         {tip ? (
                           <p className="mt-0.5 text-[13.5px] leading-snug text-muted-foreground">
                             {tip}
@@ -870,9 +867,9 @@ export default function CharacterGuideView({
                 key={id}
                 type="button"
                 onClick={() => setTab(id)}
-                className={`guide-nav-tab relative z-[1] rounded-[12px] px-3.5 py-2.5 text-[14px] transition sm:flex-1 ${
+                className={`rounded-[12px] px-3.5 py-2.5 text-[14px] transition sm:flex-1 ${
                   on
-                    ? "guide-nav-tab--on bg-[#189b8e] font-semibold text-white"
+                    ? "bg-[#189b8e] font-semibold text-white"
                     : "font-medium text-muted-foreground hover:bg-black/[0.03] hover:text-foreground"
                 }`}
               >

@@ -45,8 +45,6 @@ export default function MaterialCards({
 
   return (
     <section id="guide-materials" className="guide-panel">
-      <span className="guide-panel-bd guide-panel-bd--l" aria-hidden />
-      <span className="guide-panel-bd guide-panel-bd--r" aria-hidden />
       <span className="guide-panel-ornament" aria-hidden />
       <header className="guide-section-head">
         <p className="guide-eyebrow">
@@ -59,6 +57,7 @@ export default function MaterialCards({
         </h2>
         <p className="guide-intro">Наведите на иконку — краткая справка по материалу.</p>
       </header>
+      <div className="guide-module-line" aria-hidden />
 
       <div className="relative z-[1] mt-5 space-y-5">
         {categories.map((category) => (
