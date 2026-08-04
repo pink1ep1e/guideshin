@@ -505,6 +505,11 @@
 }
 
 .guide-title {
+  /* крути здесь: отступ текста и позиция menu-active */
+  --guide-title-text-indent: 2.15rem;
+  --guide-title-glow-left: 0.1rem;
+  --guide-title-glow-height: 0.92em;
+
   position: relative;
   z-index: 1;
   isolation: isolate;
@@ -512,6 +517,7 @@
   margin: 0;
   width: fit-content;
   max-width: 100%;
+  padding-left: var(--guide-title-text-indent);
   font-family: var(--font-genshin), Unbounded, sans-serif;
   font-size: 1.35rem;
   font-weight: 400;
@@ -522,23 +528,25 @@
 
 @media (min-width: 640px) {
   .guide-title {
+    --guide-title-text-indent: 2.4rem;
+    --guide-title-glow-left: 0.15rem;
     font-size: 1.5rem;
   }
 }
 
-/* menu-active за текстом; isolation не даёт уйти под белый фон панели */
+/* menu-active: ромб слева от первой буквы, хвост уходит под текст */
 .guide-title::before {
   content: "";
   position: absolute;
-  left: -6%;
+  left: var(--guide-title-glow-left);
   top: 50%;
   z-index: -1;
-  width: 112%;
-  min-width: 180px;
-  height: 1.05em;
-  transform: translateY(-50%);
+  width: calc(100% - var(--guide-title-glow-left));
+  min-width: 12rem;
+  height: var(--guide-title-glow-height);
+  transform: translateY(-52%);
   background: url("/images/decor/menu-active.png") left center / auto 100% no-repeat;
-  opacity: 0.75;
+  opacity: 0.8;
   pointer-events: none;
   filter: brightness(0) saturate(100%) invert(48%) sepia(55%) saturate(750%)
     hue-rotate(131deg) brightness(98%) contrast(95%);
@@ -620,8 +628,11 @@
   margin-bottom: 0;
 }
 
-/* Активный таб — menu-active по центру за текстом */
+/* Активный таб — menu-active чуть правее центра, текст чуть правее */
 .guide-nav-tab--on {
+  --guide-tab-glow-shift: 18%;
+  --guide-tab-text-nudge: 0.28rem;
+
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -633,11 +644,11 @@
   left: 50%;
   top: 50%;
   z-index: 0;
-  width: 130%;
-  height: 1.1em;
-  transform: translate(-50%, -50%);
+  width: 140%;
+  height: 1.05em;
+  transform: translate(calc(-50% + var(--guide-tab-glow-shift)), -50%);
   background: url("/images/decor/menu-active.png") center / contain no-repeat;
-  opacity: 0.65;
+  opacity: 0.7;
   pointer-events: none;
   filter: brightness(0) invert(1);
 }
@@ -645,6 +656,8 @@
 .guide-nav-tab--on > span {
   position: relative;
   z-index: 1;
+  display: inline-block;
+  padding-left: var(--guide-tab-text-nudge);
 }
 
 /* Карта на весь экран: iframe под шапкой, футер скрыт */
