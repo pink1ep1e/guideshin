@@ -44,19 +44,12 @@ export default function MaterialCards({
   }
 
   return (
-    <section
-      id="guide-materials"
-      className="rounded-[20px] bg-white p-5 shadow-panel ring-1 ring-black/[0.04] sm:p-6"
-    >
-      <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#189b8e]">
-        Прокачка
-      </p>
-      <h2 className="font-genshin text-[1.4rem] tracking-wide text-foreground sm:text-[1.55rem]">
-        {title}
-      </h2>
-      <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">
-        Наведите на иконку — краткая справка по материалу.
-      </p>
+    <section id="guide-materials" className="guide-section">
+      <header className="guide-section-head">
+        <p className="guide-eyebrow">Прокачка</p>
+        <h2 className="guide-title">{title}</h2>
+        <p className="guide-intro">Наведите на иконку — краткая справка по материалу.</p>
+      </header>
 
       <div className="mt-5 space-y-5">
         {categories.map((category) => (

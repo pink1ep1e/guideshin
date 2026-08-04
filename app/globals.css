@@ -426,7 +426,7 @@
 }
 
 .talent-hl {
-  color: #f0c75e;
+  color: #189b8e;
   font-weight: 600;
 }
 
@@ -436,6 +436,101 @@
 
 .talent-desc p:last-child {
   margin-bottom: 0;
+}
+
+/* Минималистичный каркас гайда */
+.guide-section {
+  padding: 0;
+}
+
+.guide-section-head {
+  max-width: 42rem;
+}
+
+.guide-eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #189b8e;
+}
+
+.guide-title {
+  margin: 0;
+  font-family: var(--font-genshin), Unbounded, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 640px) {
+  .guide-title {
+    font-size: 1.5rem;
+  }
+}
+
+.guide-intro {
+  margin: 0.65rem 0 0;
+  font-size: 15px;
+  line-height: 1.65;
+  color: hsl(var(--muted-foreground));
+}
+
+.guide-hl {
+  color: #189b8e;
+  font-weight: 600;
+}
+
+.guide-bullet {
+  color: #189b8e;
+  font-weight: 600;
+  margin-right: 0.15rem;
+}
+
+.constellation-desc p {
+  margin: 0 0 0.65rem;
+}
+
+.constellation-desc p:last-child {
+  margin-bottom: 0;
+}
+
+.guide-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.15rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.guide-tab {
+  position: relative;
+  padding: 0.65rem 0.9rem 0.75rem;
+  font-size: 14px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  transition: color 0.15s ease;
+}
+
+.guide-tab:hover {
+  color: hsl(var(--foreground));
+}
+
+.guide-tab--on {
+  font-weight: 600;
+  color: #189b8e;
+}
+
+.guide-tab--on::after {
+  content: "";
+  position: absolute;
+  left: 0.7rem;
+  right: 0.7rem;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: #189b8e;
 }
 
 /* Карта на весь экран: iframe под шапкой, футер скрыт */

@@ -2,6 +2,7 @@
 
 import { useState, type CSSProperties } from "react";
 import {
+  defaultTalentLevelLabels,
   renderTalentDescription,
   type CharacterTalent,
 } from "@/lib/character-talents";
@@ -21,18 +22,18 @@ export default function CharacterTalents({ talents, element }: Props) {
   const levels =
     t.levelLabels && t.levelLabels.length
       ? t.levelLabels
-      : t.stats?.[0]?.values.map((_, i) => `Ур. ${i + 1}`) || [];
+      : t.stats?.[0]?.values.length
+        ? defaultTalentLevelLabels().slice(0, t.stats[0].values.length)
+        : defaultTalentLevelLabels();
 
   return (
-    <section className="talent-panel overflow-hidden rounded-[20px] bg-[#0d1a32] p-4 text-white shadow-panel ring-1 ring-white/[0.06] sm:p-5">
-      <div className="mb-4 flex items-center gap-3">
-        <h2 className="font-genshin text-[1.25rem] tracking-wide text-white/95">
-          Таланты
-        </h2>
-        <span className="h-px flex-1 bg-gradient-to-r from-white/25 via-white/10 to-transparent" />
-      </div>
+    <section className="guide-section">
+      <header className="guide-section-head">
+        <p className="guide-eyebrow">Билд</p>
+        <h2 className="guide-title">Таланты</h2>
+      </header>
 
-      <div className="mb-5 flex flex-wrap gap-2.5 sm:gap-3">
+      <div className="mt-5 flex flex-wrap gap-2 sm:gap-2.5">
         {talents.map((item, i) => {
           const on = i === active;
           const elStyle = {
@@ -44,7 +45,7 @@ export default function CharacterTalents({ talents, element }: Props) {
               key={item.id}
               type="button"
               onClick={() => setActive(i)}
-              className={`talent-key group relative flex h-[64px] w-[64px] items-center justify-center rounded-full transition sm:h-[72px] sm:w-[72px] ${
+              className={`talent-key group relative flex h-[56px] w-[56px] items-center justify-center rounded-full transition sm:h-[64px] sm:w-[64px] ${
                 on ? "talent-key--active" : "talent-key--idle"
               }`}
               style={elStyle}
@@ -60,14 +61,14 @@ export default function CharacterTalents({ talents, element }: Props) {
               ) : (
                 <span className="talent-key-idle-ring" aria-hidden />
               )}
-              <span className="relative z-[1] flex h-[44px] w-[44px] items-center justify-center overflow-hidden rounded-full bg-[#0a1224] sm:h-[48px] sm:w-[48px]">
+              <span className="relative z-[1] flex h-[40px] w-[40px] items-center justify-center overflow-hidden rounded-full bg-[#0f172a] sm:h-[44px] sm:w-[44px]">
                 {item.icon ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={item.icon}
                     alt=""
-                    className={`h-[34px] w-[34px] object-contain transition sm:h-[38px] sm:w-[38px] ${
-                      on ? "brightness-110" : "opacity-80 group-hover:opacity-100"
+                    className={`h-[30px] w-[30px] object-contain transition sm:h-[34px] sm:w-[34px] ${
+                      on ? "brightness-110" : "opacity-75 group-hover:opacity-100"
                     }`}
                   />
                 ) : (
@@ -79,8 +80,8 @@ export default function CharacterTalents({ talents, element }: Props) {
         })}
       </div>
 
-      <div className="grid gap-4 rounded-[16px] bg-[#132238] p-3 ring-1 ring-white/[0.05] sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)] sm:p-4">
-        <div className="overflow-hidden rounded-[14px] bg-[#0a1224]">
+      <div className="mt-5 grid gap-5 border-t border-black/[0.06] pt-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)]">
+        <div className="overflow-hidden rounded-[14px] bg-[#0f172a]">
           {t.videoUrl ? (
             <video
               key={t.videoUrl}
@@ -91,29 +92,29 @@ export default function CharacterTalents({ talents, element }: Props) {
               src={t.videoUrl}
             />
           ) : (
-            <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-[#152a48] to-[#0a1224] text-sm text-white/40">
+            <div className="flex aspect-video items-center justify-center text-sm text-white/40">
               Нет видео
             </div>
           )}
-          <div className="bg-black/50 py-2 text-center text-[13px] font-medium tracking-wide text-white/75">
+          <div className="bg-black/40 py-2 text-center text-[12px] font-medium tracking-wide text-white/70">
             Просмотр
           </div>
         </div>
 
-        <div className="min-w-0 px-1 py-1 sm:px-2">
-          <h3 className="font-genshin text-[1.35rem] leading-tight tracking-wide text-white sm:text-[1.5rem]">
+        <div className="min-w-0">
+          <h3 className="text-[1.25rem] font-semibold tracking-tight text-foreground sm:text-[1.35rem]">
             {t.name}
           </h3>
           {t.description ? (
             <div
-              className="talent-desc mt-3 space-y-3 text-[14.5px] leading-relaxed text-white/85"
+              className="talent-desc mt-3 space-y-3 text-[15px] leading-relaxed text-muted-foreground"
               dangerouslySetInnerHTML={{
                 __html: `<p>${renderTalentDescription(t.description)}</p>`,
               }}
             />
           ) : null}
           {t.loreText ? (
-            <p className="mt-4 text-[13px] italic leading-relaxed text-white/45">
+            <p className="mt-4 text-[13px] italic leading-relaxed text-muted-foreground/80">
               {t.loreText}
             </p>
           ) : null}
@@ -121,15 +122,15 @@ export default function CharacterTalents({ talents, element }: Props) {
       </div>
 
       {t.stats && t.stats.length > 0 && levels.length > 0 ? (
-        <div className="mt-4 overflow-x-auto rounded-[14px] bg-[#0a1224] ring-1 ring-white/[0.05]">
-          <table className="w-full min-w-[640px] border-collapse text-[13px]">
+        <div className="mt-5 overflow-x-auto border-t border-black/[0.06] pt-4">
+          <table className="w-full min-w-[720px] border-collapse text-[12.5px]">
             <thead>
-              <tr className="border-b border-white/[0.08] text-white/55">
-                <th className="px-3 py-2.5 text-left font-medium" />
+              <tr className="border-b border-black/[0.06] text-muted-foreground">
+                <th className="px-2 py-2 text-left font-medium" />
                 {levels.map((lv) => (
                   <th
                     key={lv}
-                    className="whitespace-nowrap px-2 py-2.5 text-center font-semibold"
+                    className="whitespace-nowrap px-1.5 py-2 text-center font-semibold tabular-nums"
                   >
                     {lv}
                   </th>
@@ -140,17 +141,17 @@ export default function CharacterTalents({ talents, element }: Props) {
               {t.stats.map((row) => (
                 <tr
                   key={row.label}
-                  className="border-b border-white/[0.05] last:border-0"
+                  className="border-b border-black/[0.04] last:border-0"
                 >
-                  <td className="whitespace-nowrap px-3 py-2.5 font-medium text-white/80">
+                  <td className="whitespace-nowrap px-2 py-2 font-medium text-foreground/85">
                     {row.label}
                   </td>
                   {levels.map((_, i) => (
                     <td
                       key={i}
-                      className="px-2 py-2.5 text-center tabular-nums text-white/90"
+                      className="px-1.5 py-2 text-center tabular-nums text-muted-foreground"
                     >
-                      {row.values[i] ?? "—"}
+                      {row.values[i] || "—"}
                     </td>
                   ))}
                 </tr>

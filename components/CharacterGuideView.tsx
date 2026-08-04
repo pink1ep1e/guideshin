@@ -5,6 +5,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import GuideCalculators from "@/components/GuideCalculators";
 import MaterialCards from "@/components/MaterialCards";
 import CharacterTalents from "@/components/CharacterTalents";
+import CharacterConstellations from "@/components/CharacterConstellations";
 import ItemIconCard from "@/components/ItemIconCard";
 import ItemHoverPreview from "@/components/ItemHoverPreview";
 import {
@@ -21,6 +22,7 @@ import {
 import { ELEMENT_SVG, ELEMENT_THEME, rarityBg, type ElementKey } from "@/lib/genshin";
 import type { CharacterMaterial } from "@/lib/character-materials";
 import type { CharacterTalent } from "@/lib/character-talents";
+import type { CharacterConstellation } from "@/lib/character-constellations";
 
 const TAB_ORDER: GuideTabId[] = [
   "overview",
@@ -114,21 +116,13 @@ function SectionChrome({
   pills?: ElementKey[];
 }) {
   return (
-    <section className="rounded-[20px] bg-white p-5 shadow-panel ring-1 ring-black/[0.04] sm:p-6">
-      {eyebrow ? (
-        <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#189b8e]">
-          {eyebrow}
-        </p>
-      ) : null}
-      <h2 className="font-genshin text-[1.4rem] tracking-wide text-foreground sm:text-[1.55rem]">
-        {title}
-      </h2>
-      {intro ? (
-        <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
-          {intro}
-        </p>
-      ) : null}
-      {pills?.length ? <ElementPills keys={pills} /> : null}
+    <section className="guide-section">
+      <header className="guide-section-head">
+        {eyebrow ? <p className="guide-eyebrow">{eyebrow}</p> : null}
+        <h2 className="guide-title">{title}</h2>
+        {intro ? <p className="guide-intro">{intro}</p> : null}
+        {pills?.length ? <ElementPills keys={pills} /> : null}
+      </header>
       <div className="mt-5">{children}</div>
     </section>
   );
@@ -146,15 +140,20 @@ function StarRow({ stars }: { stars: number }) {
   );
 }
 
-function GoldSlotIcon({ slot }: { slot: string }) {
+function SlotIcon({ slot }: { slot: string }) {
   const src = SLOT_ICONS[slot] || SLOT_ICONS["Пески"];
   return (
-    <div className="guide-slot-icon" title={slot}>
-      <span className="guide-gold-ring" aria-hidden />
-      <span className="guide-slot-icon-inner">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt="" />
-      </span>
+    <div
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eef1f4]"
+      title={slot}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt=""
+        className="h-6 w-6 object-contain opacity-80"
+        style={{ filter: "brightness(0) saturate(100%)" }}
+      />
     </div>
   );
 }
@@ -386,27 +385,23 @@ function MemberPortrait({ m, role }: { m: GuideTeamMember; role?: string }) {
 function TeamVariantCard({ v }: { v: GuideTeamVariant }) {
   const roles = ["Мейн-дд", "Саппорт", "Саб-дд", "Флекс"];
   return (
-    <article className="overflow-hidden rounded-[18px] bg-white ring-1 ring-black/[0.05]">
+    <article className="border-b border-black/[0.06] pb-6 last:border-0 last:pb-0">
       {v.badge ? (
-        <div className="border-b border-black/[0.04] px-4 py-2.5">
-          <span className="rounded-md bg-[#189b8e]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#189b8e]">
-            {v.badge}
-          </span>
-        </div>
+        <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#189b8e]">
+          {v.badge}
+        </p>
       ) : null}
-      <div className="grid gap-0 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
-        <div className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-4 sm:p-4">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.75fr)]">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {v.members.map((m, i) => (
-            <div key={m.id} className="rounded-[14px] bg-[#f7f9fb] px-2 py-3">
-              <MemberPortrait m={m} role={(m.role && m.role.trim()) || roles[i]} />
-            </div>
+            <MemberPortrait key={m.id} m={m} role={(m.role && m.role.trim()) || roles[i]} />
           ))}
         </div>
-        <div className="border-t border-black/[0.04] bg-[#f7f9fb] px-4 py-4 sm:border-l sm:border-t-0">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#189b8e]">
+        <div>
+          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             Особенности
           </p>
-          <p className="text-[14px] leading-relaxed text-foreground/85">{v.features}</p>
+          <p className="text-[14.5px] leading-relaxed text-muted-foreground">{v.features}</p>
         </div>
       </div>
     </article>
@@ -491,7 +486,7 @@ function BlockView({ block }: { block: GuideBlock }) {
                   key={s.id}
                   className="flex items-center gap-3 rounded-[14px] bg-[#f7f9fb] px-3 py-2.5"
                 >
-                  <GoldSlotIcon slot={s.slot} />
+                  <SlotIcon slot={s.slot} />
                   <div className="min-w-0">
                     <p className="text-[13px] text-muted-foreground">{s.slot}</p>
                     <p className="text-[15px] font-semibold text-[#189b8e]">{s.main}</p>
@@ -809,6 +804,7 @@ export default function CharacterGuideView({
   blocks,
   materials,
   talents = [],
+  constellations = [],
   loreByName = {},
 }: {
   characterName: string;
@@ -816,6 +812,7 @@ export default function CharacterGuideView({
   blocks: GuideBlock[];
   materials: CharacterMaterial[];
   talents?: CharacterTalent[];
+  constellations?: CharacterConstellation[];
   loreByName?: Record<string, string>;
 }) {
   const grouped = useMemo(() => {
@@ -837,42 +834,34 @@ export default function CharacterGuideView({
         (id) =>
           id === "leveling" ||
           grouped[id].length > 0 ||
-          (id === "build" && talents.length > 0),
+          (id === "build" && talents.length > 0) ||
+          (id === "play" && constellations.length > 0),
       ),
-    [grouped, talents.length],
+    [grouped, talents.length, constellations.length],
   );
 
   const [tab, setTab] = useState<GuideTabId>(availableTabs[0] || "overview");
   const active = availableTabs.includes(tab) ? tab : availableTabs[0] || "overview";
 
   return (
-    <div className="space-y-4">
-      <nav
-        className="rounded-[16px] bg-white p-1.5 shadow-panel ring-1 ring-black/[0.05]"
-        aria-label="Разделы гайда"
-      >
-        <div className="flex flex-wrap gap-1">
-          {availableTabs.map((id) => {
-            const on = id === active;
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setTab(id)}
-                className={`rounded-[12px] px-3.5 py-2.5 text-[14px] transition sm:flex-1 ${
-                  on
-                    ? "bg-[#189b8e] font-semibold text-white"
-                    : "font-medium text-muted-foreground hover:bg-black/[0.03] hover:text-foreground"
-                }`}
-              >
-                {GUIDE_TAB_LABELS[id]}
-              </button>
-            );
-          })}
-        </div>
+    <div className="space-y-8 sm:space-y-10">
+      <nav className="guide-tabs" aria-label="Разделы гайда">
+        {availableTabs.map((id) => {
+          const on = id === active;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTab(id)}
+              className={`guide-tab ${on ? "guide-tab--on" : ""}`}
+            >
+              {GUIDE_TAB_LABELS[id]}
+            </button>
+          );
+        })}
       </nav>
 
-      <div className="space-y-4">
+      <div className="space-y-10 sm:space-y-12">
         {active === "leveling" ? (
           <>
             <GuideCalculators characterName={characterName} />
@@ -887,6 +876,13 @@ export default function CharacterGuideView({
               <BlockView key={b.id} block={b} />
             ))}
             <CharacterTalents talents={talents} element={element} />
+          </>
+        ) : active === "play" ? (
+          <>
+            {grouped.play.map((b) => (
+              <BlockView key={b.id} block={b} />
+            ))}
+            <CharacterConstellations constellations={constellations} />
           </>
         ) : (
           grouped[active].map((b) => <BlockView key={b.id} block={b} />)

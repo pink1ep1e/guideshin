@@ -1,6 +1,6 @@
 export type TalentStatRow = {
   label: string;
-  /** Значения по уровням (Ур.1 …) */
+  /** Значения по уровням (1…13) */
   values: string[];
 };
 
@@ -8,16 +8,24 @@ export type CharacterTalent = {
   id: string;
   name: string;
   icon: string;
-  /** Видео применения (URL после загрузки) */
   videoUrl?: string;
-  /** Описание; **текст** подсвечивается золотым */
+  /** Описание; **текст** подсвечивается */
   description: string;
-  /** Лор / курсив внизу */
   loreText?: string;
   levelLabels?: string[];
   stats?: TalentStatRow[];
   order: number;
 };
+
+export const TALENT_LEVEL_COUNT = 13;
+
+export function defaultTalentLevelLabels(): string[] {
+  return Array.from({ length: TALENT_LEVEL_COUNT }, (_, i) => String(i + 1));
+}
+
+export function emptyTalentStatValues(): string[] {
+  return Array(TALENT_LEVEL_COUNT).fill("");
+}
 
 export function talentUid() {
   return `t_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
@@ -36,11 +44,11 @@ export function parseTalents(raw: unknown): CharacterTalent[] {
           .filter((s) => s && typeof s.label === "string" && Array.isArray(s.values))
           .map((s) => ({
             label: String(s.label),
-            values: s.values.map((v) => String(v ?? "")),
+            values: padValues(s.values.map((v) => String(v ?? ""))),
           }))
       : undefined;
     const levelLabels = Array.isArray(r.levelLabels)
-      ? r.levelLabels.map((x) => String(x))
+      ? padLabels(r.levelLabels.map((x) => String(x)))
       : undefined;
     out.push({
       id: typeof r.id === "string" && r.id ? r.id : talentUid(),
@@ -57,14 +65,27 @@ export function parseTalents(raw: unknown): CharacterTalent[] {
   return out.sort((a, b) => a.order - b.order);
 }
 
-/** Подсветка **ключевых** слов золотым */
+function padValues(values: string[]): string[] {
+  const next = [...values];
+  while (next.length < TALENT_LEVEL_COUNT) next.push("");
+  return next.slice(0, TALENT_LEVEL_COUNT);
+}
+
+function padLabels(labels: string[]): string[] {
+  if (labels.length >= TALENT_LEVEL_COUNT) return labels.slice(0, TALENT_LEVEL_COUNT);
+  const next = [...labels];
+  while (next.length < TALENT_LEVEL_COUNT) next.push(String(next.length + 1));
+  return next;
+}
+
+/** Подсветка **ключевых** слов */
 export function renderTalentDescription(md: string): string {
   const esc = md
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
   return esc
-    .replace(/\*\*([^*]+)\*\*/g, '<span class="talent-hl">$1</span>')
+    .replace(/\*\*([^*]+)\*\*/g, '<span class="guide-hl">$1</span>')
     .replace(/\n\n+/g, "</p><p>")
     .replace(/\n/g, "<br/>");
 }

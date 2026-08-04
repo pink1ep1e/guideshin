@@ -14,6 +14,7 @@ import MediaUpload from "@/components/admin/MediaUpload";
 import GuideBuilder from "@/components/admin/GuideBuilder";
 import MaterialsEditor from "@/components/admin/MaterialsEditor";
 import TalentsEditor from "@/components/admin/TalentsEditor";
+import ConstellationsEditor from "@/components/admin/ConstellationsEditor";
 import AdminStickyActions from "@/components/admin/AdminStickyActions";
 import { useAdminToast } from "@/components/admin/AdminToastContext";
 import { invalidateGuideCatalog } from "@/components/admin/CatalogPicker";
@@ -28,6 +29,10 @@ import {
   parseTalents,
   type CharacterTalent,
 } from "@/lib/character-talents";
+import {
+  parseConstellations,
+  type CharacterConstellation,
+} from "@/lib/character-constellations";
 
 type CharacterFormValues = {
   id?: number;
@@ -44,6 +49,7 @@ type CharacterFormValues = {
   contentHtml: string;
   levelMaterials: CharacterMaterial[];
   talents: CharacterTalent[];
+  constellations: CharacterConstellation[];
   published: boolean;
   order: number;
 };
@@ -85,6 +91,7 @@ const DEFAULTS: CharacterFormValues = {
   contentHtml: serializeGuide(createEmptyBlocks("Персонаж")),
   levelMaterials: [],
   talents: [],
+  constellations: [],
   published: true,
   order: 0,
 };
@@ -103,6 +110,7 @@ export default function CharacterForm({
     contentHtml: initial?.contentHtml || DEFAULTS.contentHtml,
     levelMaterials: parseMaterials(initial?.levelMaterials),
     talents: parseTalents(initial?.talents),
+    constellations: parseConstellations(initial?.constellations),
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -412,6 +420,13 @@ export default function CharacterForm({
         <TalentsEditor
           value={values.talents}
           onChange={(talents) => update("talents", talents)}
+        />
+      </div>
+
+      <div className="glass-panel p-5 sm:p-6">
+        <ConstellationsEditor
+          value={values.constellations}
+          onChange={(constellations) => update("constellations", constellations)}
         />
       </div>
 
