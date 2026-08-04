@@ -28,7 +28,12 @@ const IMAGE_TYPES = new Set([
   "image/avif",
 ]);
 
-const VIDEO_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime"]);
+const VIDEO_TYPES = new Set([
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+  "image/gif",
+]);
 
 const MAX_IMAGE = 8 * 1024 * 1024;
 const MAX_VIDEO = 80 * 1024 * 1024;
@@ -73,7 +78,7 @@ export async function POST(req: NextRequest) {
   const allowed = isVideo ? VIDEO_TYPES : IMAGE_TYPES;
   if (!allowed.has(file.type)) {
     return NextResponse.json(
-      { error: isVideo ? "Нужен mp4/webm" : "Нужен jpg/png/webp/gif" },
+      { error: isVideo ? "Нужен mp4/webm/gif" : "Нужен jpg/png/webp/gif" },
       { status: 400 },
     );
   }
@@ -91,9 +96,13 @@ export async function POST(req: NextRequest) {
   let out: Buffer = raw;
   let ext =
     path.extname(file.name).toLowerCase() ||
-    (file.type === "image/png" ? ".png" : ".bin");
+    (file.type === "image/gif"
+      ? ".gif"
+      : file.type === "image/png"
+        ? ".png"
+        : ".bin");
 
-  if (!isVideo && file.type !== "image/gif") {
+  if (file.type !== "image/gif" && !isVideo) {
     try {
       const optimized = await optimizeImage(raw, kind);
       out = optimized.data;

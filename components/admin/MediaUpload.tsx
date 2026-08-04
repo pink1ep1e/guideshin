@@ -182,11 +182,20 @@ export default function MediaUpload({
         )}
 
         {preview === "video" && value && !value.includes("youtube") && !value.includes("youtu.be") && (
-          <video
-            src={value}
-            className="h-[88px] w-[140px] rounded-[14px] object-cover ring-1 ring-black/[0.06]"
-            muted
-          />
+          /\.gif(\?|$)/i.test(value) ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={value}
+              alt=""
+              className="h-[88px] w-[140px] rounded-[14px] object-cover ring-1 ring-black/[0.06]"
+            />
+          ) : (
+            <video
+              src={value}
+              className="h-[88px] w-[140px] rounded-[14px] object-cover ring-1 ring-black/[0.06]"
+              muted
+            />
+          )
         )}
 
         <div className="min-w-0 flex-1 space-y-2">
@@ -230,7 +239,7 @@ export default function MediaUpload({
         ref={inputRef}
         type="file"
         className="hidden"
-        accept={accept || (kind === "video" ? "video/mp4,video/webm" : "image/*")}
+        accept={accept || (kind === "video" ? "video/mp4,video/webm,image/gif" : "image/*")}
         onChange={(e) => void onFile(e.target.files?.[0])}
       />
     </div>

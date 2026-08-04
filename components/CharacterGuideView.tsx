@@ -554,7 +554,7 @@ function BlockView({
                           />
                         ) : null}
                       </div>
-                      <span className="font-genshin truncate text-[15px] tracking-wide text-foreground">
+                      <span className="truncate text-[15px] font-medium text-foreground">
                         {r.name}
                       </span>
                     </div>
@@ -651,48 +651,54 @@ function BlockView({
     return (
       <SectionChrome eyebrow={block.eyebrow} title={block.title} intro={block.intro}>
         <div className="space-y-2">
-          {block.rows.map((r) => (
-            <div
-              key={r.id}
-              className="flex gap-3.5 rounded-[14px] bg-[#f7f9fb] p-3"
-            >
-              <div
-                className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[14px] bg-cover bg-center ring-1 ring-black/[0.05]"
-                style={{ backgroundImage: "url(/images/legend-bg.jpg)" }}
-              >
-                {r.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={r.image} alt="" className="h-full w-full object-cover object-top" />
-                ) : null}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  {r.href ? (
-                    <Link
-                      href={r.href}
-                      className="font-genshin text-[15px] tracking-wide text-[#189b8e] hover:underline"
-                    >
-                      {r.name}
-                    </Link>
-                  ) : (
-                    <span className="font-genshin text-[15px] tracking-wide text-foreground">
-                      {r.name}
-                    </span>
-                  )}
-                  {r.elementIcon ? (
+          {block.rows.map((r) => {
+            const body = (
+              <>
+                <div
+                  className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[14px] bg-cover bg-center ring-1 ring-black/[0.05]"
+                  style={{ backgroundImage: "url(/images/legend-bg.jpg)" }}
+                >
+                  {r.image ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={r.elementIcon} alt="" className="h-4 w-4" />
+                    <img src={r.image} alt="" className="h-full w-full object-cover object-top" />
                   ) : null}
-                  <span className="text-[13px] text-muted-foreground">
-                    {r.element} · {r.weapon}
-                  </span>
                 </div>
-                <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">
-                  {r.description}
-                </p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[15px] font-medium text-foreground">{r.name}</span>
+                    {r.elementIcon ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={r.elementIcon} alt="" className="h-4 w-4" />
+                    ) : null}
+                    <span className="text-[13px] text-muted-foreground">
+                      {r.element} · {r.weapon}
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">
+                    {r.description}
+                  </p>
+                </div>
+              </>
+            );
+
+            if (r.href) {
+              return (
+                <Link
+                  key={r.id}
+                  href={r.href}
+                  className="flex gap-3.5 rounded-[14px] bg-[#f7f9fb] p-3 transition hover:bg-[#eef3f6]"
+                >
+                  {body}
+                </Link>
+              );
+            }
+
+            return (
+              <div key={r.id} className="flex gap-3.5 rounded-[14px] bg-[#f7f9fb] p-3">
+                {body}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </SectionChrome>
     );
