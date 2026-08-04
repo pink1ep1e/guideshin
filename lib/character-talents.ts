@@ -1,6 +1,6 @@
 export type TalentStatRow = {
   label: string;
-  /** Значения по уровням (1…13) */
+  /** Значения по уровням (число колонок задаётся на талант) */
   values: string[];
 };
 
@@ -17,18 +17,79 @@ export type CharacterTalent = {
   order: number;
 };
 
+/** Дефолт для новых талантов (обычные атаки / E / Q) */
 export const TALENT_LEVEL_COUNT = 13;
+export const TALENT_LEVEL_MIN = 1;
+export const TALENT_LEVEL_MAX = 20;
 
-export function defaultTalentLevelLabels(): string[] {
-  return Array.from({ length: TALENT_LEVEL_COUNT }, (_, i) => String(i + 1));
+export function defaultTalentLevelLabels(count = TALENT_LEVEL_COUNT): string[] {
+  return Array.from({ length: count }, (_, i) => String(i + 1));
 }
 
-export function emptyTalentStatValues(): string[] {
-  return Array(TALENT_LEVEL_COUNT).fill("");
+export function emptyTalentStatValues(count = TALENT_LEVEL_COUNT): string[] {
+  return Array(count).fill("");
 }
 
 export function talentUid() {
   return `t_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function valuesLen(values: string[]): number {
+  return values.length;
+}
+
+function filledLen(values: string[]): number {
+  let end = values.length;
+  while (end > 0 && !String(values[end - 1] ?? "").trim()) end -= 1;
+  return end;
+}
+
+/** Число колонок в редакторе (как сохранено, без обрезки пустых) */
+export function talentLevelCount(talent: CharacterTalent): number {
+  const fromLabels = talent.levelLabels?.length ?? 0;
+  const fromStats = (talent.stats || []).reduce(
+    (max, s) => Math.max(max, valuesLen(s.values)),
+    0,
+  );
+  const n = Math.max(fromLabels, fromStats);
+  if (n > 0) return Math.min(TALENT_LEVEL_MAX, n);
+  return TALENT_LEVEL_COUNT;
+}
+
+/** Число колонок на публичной странице — без хвостовых пустых (без прочерков) */
+export function talentDisplayLevelCount(talent: CharacterTalent): number {
+  const filled = (talent.stats || []).reduce(
+    (max, s) => Math.max(max, filledLen(s.values)),
+    0,
+  );
+  if (filled > 0) return filled;
+  const labeled = talent.levelLabels?.length ?? 0;
+  if (labeled > 0) return labeled;
+  return 0;
+}
+
+export function resizeTalentLevels(
+  talent: CharacterTalent,
+  count: number,
+): Pick<CharacterTalent, "levelLabels" | "stats"> {
+  const n = Math.max(TALENT_LEVEL_MIN, Math.min(TALENT_LEVEL_MAX, count));
+  const prevLabels = talent.levelLabels?.length
+    ? talent.levelLabels
+    : defaultTalentLevelLabels(talentLevelCount(talent));
+  const levelLabels = defaultTalentLevelLabels(n).map(
+    (fallback, i) => prevLabels[i] || fallback,
+  );
+  const stats = (talent.stats || []).map((s) => ({
+    label: s.label,
+    values: resizeValues(s.values, n),
+  }));
+  return { levelLabels, stats };
+}
+
+function resizeValues(values: string[], count: number): string[] {
+  const next = values.map((v) => String(v ?? ""));
+  while (next.length < count) next.push("");
+  return next.slice(0, count);
 }
 
 export function parseTalents(raw: unknown): CharacterTalent[] {
@@ -39,17 +100,35 @@ export function parseTalents(raw: unknown): CharacterTalent[] {
     const r = row as Record<string, unknown>;
     const name = typeof r.name === "string" ? r.name.trim() : "";
     if (!name) return;
-    const stats = Array.isArray(r.stats)
+
+    const rawStats = Array.isArray(r.stats)
       ? (r.stats as TalentStatRow[])
           .filter((s) => s && typeof s.label === "string" && Array.isArray(s.values))
           .map((s) => ({
             label: String(s.label),
-            values: padValues(s.values.map((v) => String(v ?? ""))),
+            values: s.values.map((v) => String(v ?? "")),
           }))
       : undefined;
-    const levelLabels = Array.isArray(r.levelLabels)
-      ? padLabels(r.levelLabels.map((x) => String(x)))
+
+    const rawLabels = Array.isArray(r.levelLabels)
+      ? r.levelLabels.map((x) => String(x))
       : undefined;
+
+    let count = Math.max(
+      rawLabels?.length ?? 0,
+      ...(rawStats || []).map((s) => s.values.length),
+    );
+    if (count < 1) count = TALENT_LEVEL_COUNT;
+    count = Math.min(TALENT_LEVEL_MAX, count);
+
+    const stats = rawStats?.map((s) => ({
+      label: s.label,
+      values: resizeValues(s.values, count),
+    }));
+    const levelLabels = defaultTalentLevelLabels(count).map(
+      (fb, j) => rawLabels?.[j] || fb,
+    );
+
     out.push({
       id: typeof r.id === "string" && r.id ? r.id : talentUid(),
       name,
@@ -63,19 +142,6 @@ export function parseTalents(raw: unknown): CharacterTalent[] {
     });
   });
   return out.sort((a, b) => a.order - b.order);
-}
-
-function padValues(values: string[]): string[] {
-  const next = [...values];
-  while (next.length < TALENT_LEVEL_COUNT) next.push("");
-  return next.slice(0, TALENT_LEVEL_COUNT);
-}
-
-function padLabels(labels: string[]): string[] {
-  if (labels.length >= TALENT_LEVEL_COUNT) return labels.slice(0, TALENT_LEVEL_COUNT);
-  const next = [...labels];
-  while (next.length < TALENT_LEVEL_COUNT) next.push(String(next.length + 1));
-  return next;
 }
 
 /** Подсветка **ключевых** слов */

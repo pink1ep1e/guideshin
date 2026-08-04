@@ -4,6 +4,7 @@ import { useState, type CSSProperties } from "react";
 import {
   defaultTalentLevelLabels,
   renderTalentDescription,
+  talentDisplayLevelCount,
   type CharacterTalent,
 } from "@/lib/character-talents";
 import { getElementTheme } from "@/lib/genshin";
@@ -19,12 +20,15 @@ export default function CharacterTalents({ talents, element }: Props) {
 
   const theme = getElementTheme(element);
   const t = talents[Math.min(active, talents.length - 1)];
+  const levelCount = talentDisplayLevelCount(t);
   const levels =
-    t.levelLabels && t.levelLabels.length
-      ? t.levelLabels
-      : t.stats?.[0]?.values.length
-        ? defaultTalentLevelLabels().slice(0, t.stats[0].values.length)
-        : defaultTalentLevelLabels();
+    levelCount > 0
+      ? (t.levelLabels?.length
+          ? t.levelLabels
+          : defaultTalentLevelLabels(levelCount)
+        ).slice(0, levelCount)
+      : [];
+  const hasVideo = Boolean(t.videoUrl?.trim());
 
   return (
     <section className="guide-panel">
@@ -89,26 +93,38 @@ export default function CharacterTalents({ talents, element }: Props) {
         })}
       </div>
 
-      <div className="relative z-[1] mt-6 grid items-start gap-5 border-t border-black/[0.06] pt-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)]">
-        <div className="w-full overflow-hidden rounded-[16px] bg-[#f5f7f9] ring-1 ring-black/[0.04]">
-          {t.videoUrl ? (
-            <video
-              key={t.videoUrl}
-              className="aspect-video w-full bg-black object-cover"
-              controls
-              playsInline
-              preload="metadata"
-              src={t.videoUrl}
-            />
-          ) : (
-            <div className="flex aspect-video w-full items-center justify-center text-sm text-muted-foreground">
-              Нет видео
+      <div
+        className={`relative z-[1] mt-6 grid items-start gap-5 border-t border-black/[0.06] pt-5 ${
+          hasVideo
+            ? "lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)]"
+            : ""
+        }`}
+      >
+        {hasVideo ? (
+          <div className="w-full overflow-hidden rounded-[16px] bg-[#f5f7f9] ring-1 ring-black/[0.04]">
+            {/\.gif(\?|$)/i.test(t.videoUrl!) ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={t.videoUrl}
+                src={t.videoUrl}
+                alt=""
+                className="aspect-video w-full bg-black object-cover"
+              />
+            ) : (
+              <video
+                key={t.videoUrl}
+                className="aspect-video w-full bg-black object-cover"
+                controls
+                playsInline
+                preload="metadata"
+                src={t.videoUrl}
+              />
+            )}
+            <div className="border-t border-black/[0.05] bg-white/70 py-2.5 text-center text-[13px] font-medium tracking-wide text-muted-foreground">
+              Просмотр
             </div>
-          )}
-          <div className="border-t border-black/[0.05] bg-white/70 py-2.5 text-center text-[13px] font-medium tracking-wide text-muted-foreground">
-            Просмотр
           </div>
-        </div>
+        ) : null}
 
         <div className="min-w-0">
           <h3 className="text-[1.3rem] font-semibold tracking-tight text-foreground sm:text-[1.45rem]">
@@ -160,7 +176,7 @@ export default function CharacterTalents({ talents, element }: Props) {
                       key={i}
                       className="px-1.5 py-2.5 text-center tabular-nums text-muted-foreground"
                     >
-                      {row.values[i] || "—"}
+                      {row.values[i]?.trim() || "—"}
                     </td>
                   ))}
                 </tr>
