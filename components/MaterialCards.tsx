@@ -6,6 +6,10 @@ import {
 } from "@/lib/character-materials";
 import { sortByRarityDesc } from "@/lib/genshin";
 
+function formatQty(qty: number): string {
+  return qty.toLocaleString("ru-RU");
+}
+
 export default function MaterialCards({
   materials,
   title = "Материалы для прокачки",
@@ -42,39 +46,50 @@ export default function MaterialCards({
   return (
     <section
       id="guide-materials"
-      className="overflow-hidden rounded-[20px] bg-white/95 shadow-panel ring-1 ring-black/[0.04]"
+      className="rounded-[20px] bg-white p-5 shadow-panel ring-1 ring-black/[0.04] sm:p-6"
     >
-      <div className="border-b border-black/[0.04] px-4 py-4 sm:px-5">
-        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--el-accent,#189b8e)]">
-          Прокачка
-        </p>
-        <h2 className="font-genshin text-[1.3rem] tracking-wide text-foreground sm:text-[1.45rem]">
-          {title}
-        </h2>
-        <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">
-          Полный список на 90 уровень и таланты. Наведите на карточку — краткая справка.
-        </p>
-      </div>
+      <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#189b8e]">
+        Прокачка
+      </p>
+      <h2 className="font-genshin text-[1.4rem] tracking-wide text-foreground sm:text-[1.55rem]">
+        {title}
+      </h2>
+      <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">
+        Наведите на иконку — краткая справка по материалу.
+      </p>
 
-      <div className="space-y-5 px-4 py-4 sm:px-5 sm:py-5">
+      <div className="mt-5 space-y-5">
         {categories.map((category) => (
           <div key={category}>
             <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
               {MATERIAL_CATEGORY_LABEL[category as keyof typeof MATERIAL_CATEGORY_LABEL] ??
                 category}
             </p>
-            <ul className="flex flex-wrap gap-2.5">
+            <ul className="grid gap-2 sm:grid-cols-2">
               {grouped[category].map((m) => (
-                <li key={m.id}>
+                <li
+                  key={m.id}
+                  className="flex items-center gap-3 rounded-[14px] bg-[#f7f9fb] px-2.5 py-2"
+                >
                   <ItemIconCard
                     name={m.name}
                     image={m.image}
                     rarityStars={m.rarityStars ?? 3}
-                    qty={m.qty > 0 ? m.qty : undefined}
-                    size="md"
+                    size="sm"
+                    compact
                     lore={loreOf(m.name)}
                     preview
                   />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[14px] text-foreground" title={m.name}>
+                      {m.name}
+                    </p>
+                    {m.qty > 0 ? (
+                      <p className="mt-0.5 text-[13px] font-semibold tabular-nums text-[#189b8e]">
+                        ×{formatQty(m.qty)}
+                      </p>
+                    ) : null}
+                  </div>
                 </li>
               ))}
             </ul>
