@@ -898,7 +898,10 @@ export default function CharacterGuideView({
             {grouped.play.map((b) => (
               <BlockView key={b.id} block={b} />
             ))}
-            <CharacterConstellations constellations={constellations} />
+            <CharacterConstellations
+              constellations={constellations}
+              element={element}
+            />
           </>
         ) : (
           grouped[active].map((b) => <BlockView key={b.id} block={b} />)
