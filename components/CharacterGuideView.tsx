@@ -15,7 +15,7 @@ import {
   type GuideTeamMember,
   type GuideTeamVariant,
 } from "@/lib/guide-builder";
-import { rarityBg } from "@/lib/genshin";
+import { rarityBg, ELEMENT_SVG, ELEMENT_THEME, type ElementKey } from "@/lib/genshin";
 import type { CharacterMaterial } from "@/lib/character-materials";
 
 const TAB_ORDER: GuideTabId[] = [
@@ -26,6 +26,47 @@ const TAB_ORDER: GuideTabId[] = [
   "leveling",
   "play",
 ];
+
+const ELEMENT_RU: { key: ElementKey; label: string }[] = [
+  { key: "PYRO", label: "Пиро" },
+  { key: "HYDRO", label: "Гидро" },
+  { key: "ANEMO", label: "Анемо" },
+  { key: "ELECTRO", label: "Электро" },
+  { key: "DENDRO", label: "Дендро" },
+  { key: "CRYO", label: "Крио" },
+  { key: "GEO", label: "Гео" },
+];
+
+function elementsMentioned(text: string): ElementKey[] {
+  const found: ElementKey[] = [];
+  for (const { key, label } of ELEMENT_RU) {
+    if (new RegExp(label, "i").test(text)) found.push(key);
+  }
+  return found;
+}
+
+function ElementPills({ keys }: { keys: ElementKey[] }) {
+  if (!keys.length) return null;
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {keys.map((key) => {
+        const theme = ELEMENT_THEME[key];
+        const meta = ELEMENT_RU.find((e) => e.key === key);
+        return (
+          <span
+            key={key}
+            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold text-white shadow-sm"
+            style={{ backgroundColor: theme.solid }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={ELEMENT_SVG[key]} alt="" className="h-4 w-4 drop-shadow" />
+            {meta?.label}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
 
 function tierForRank(rank: number, explicit?: string): string {
   if (explicit) return explicit;
@@ -45,7 +86,10 @@ function tierClass(tier: string) {
 function Md({ html }: { html: string }) {
   if (!html) return null;
   return (
-    <div className="guide-md" dangerouslySetInnerHTML={{ __html: html }} />
+    <div
+      className="guide-html guide-md"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
   );
 }
 
@@ -55,76 +99,128 @@ function SectionChrome({
   intro,
   children,
   accent = false,
+  rich = false,
+  pills,
 }: {
   eyebrow?: string;
   title: string;
   intro?: string;
   children: ReactNode;
   accent?: boolean;
+  /** Более выразительный хедер для текстовых блоков */
+  rich?: boolean;
+  pills?: ElementKey[];
 }) {
   return (
     <section
-      className={`rounded-[18px] border p-4 sm:p-5 ${
+      className={`overflow-hidden rounded-[20px] border ${
         accent
-          ? "border-[#189b8e]/25 bg-gradient-to-br from-[#189b8e]/[0.06] via-white to-white"
-          : "border-black/[0.045] bg-white"
+          ? "border-[#189b8e]/30 bg-gradient-to-br from-[#189b8e]/[0.08] via-white to-white"
+          : rich
+            ? "border-black/[0.06] bg-white shadow-[0_10px_30px_-18px_rgba(11,31,68,0.35)]"
+            : "border-black/[0.05] bg-white"
       }`}
     >
-      {eyebrow ? (
-        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#189b8e]">
-          {eyebrow}
-        </p>
-      ) : null}
-      <h2 className="font-genshin text-[1.25rem] tracking-wide text-foreground sm:text-[1.4rem]">
-        {title}
-      </h2>
-      {intro ? (
-        <p className="mt-2 max-w-3xl text-[14px] leading-relaxed text-muted-foreground">
-          {intro}
-        </p>
-      ) : null}
-      <div className="mt-4">{children}</div>
+      <div
+        className={`relative px-4 pt-4 sm:px-5 sm:pt-5 ${
+          rich
+            ? "border-b border-black/[0.04] bg-gradient-to-r from-[#0b1f44]/[0.06] via-[#189b8e]/[0.04] to-transparent pb-4"
+            : "pb-0"
+        }`}
+      >
+        {rich ? (
+          <span
+            aria-hidden
+            className="absolute bottom-0 left-0 top-0 w-1 bg-gradient-to-b from-[#189b8e] to-[#0b1f44]"
+          />
+        ) : null}
+        {eyebrow ? (
+          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#189b8e]">
+            {eyebrow}
+          </p>
+        ) : null}
+        <h2
+          className={`font-genshin tracking-wide text-foreground ${
+            rich
+              ? "text-[1.35rem] leading-tight sm:text-[1.55rem]"
+              : "text-[1.25rem] sm:text-[1.4rem]"
+          }`}
+        >
+          {title}
+        </h2>
+        {intro ? (
+          <p
+            className={`mt-2.5 max-w-3xl leading-relaxed text-muted-foreground ${
+              rich ? "text-[14.5px]" : "text-[14px]"
+            }`}
+          >
+            {intro}
+          </p>
+        ) : null}
+        {pills?.length ? <ElementPills keys={pills} /> : null}
+      </div>
+      <div className={`px-4 pb-4 sm:px-5 sm:pb-5 ${rich || intro ? "pt-4" : "pt-4"}`}>
+        {children}
+      </div>
     </section>
   );
 }
 
-function MemberChip({ m, role }: { m: GuideTeamMember; role?: string }) {
+function MemberPortrait({
+  m,
+  role,
+  size = "md",
+}: {
+  m: GuideTeamMember;
+  role?: string;
+  size?: "md" | "lg";
+}) {
   const bg = m.rarity === 5 ? "/images/legend-bg.jpg" : "/images/epic-bg.jpg";
-  const inner = (
-    <div className="flex min-w-0 items-center gap-2">
-      <div
-        className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-cover bg-center ring-1 ring-black/[0.06]"
-        style={{ backgroundImage: `url(${bg})` }}
-      >
-        {m.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={m.image} alt="" className="h-full w-full object-cover" />
-        ) : null}
-        {m.elementIcon ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={m.elementIcon}
-            alt=""
-            className="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 drop-shadow"
-          />
-        ) : null}
-      </div>
-      <div className="min-w-0">
+  const box = size === "lg" ? "h-[72px] w-[72px] sm:h-[84px] sm:w-[84px]" : "h-16 w-16 sm:h-[72px] sm:w-[72px]";
+  const portrait = (
+    <div
+      className={`relative shrink-0 overflow-hidden rounded-[16px] bg-cover bg-center shadow-sm ring-1 ring-black/[0.08] ${box}`}
+      style={{ backgroundImage: `url(${bg})` }}
+    >
+      {m.image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={m.image} alt="" className="h-full w-full object-cover object-top" />
+      ) : (
+        <span className="flex h-full items-center justify-center px-1 text-center text-[10px] font-semibold text-muted-foreground">
+          {m.name.slice(0, 1)}
+        </span>
+      )}
+      {m.elementIcon ? (
+        <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow ring-1 ring-black/[0.06]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={m.elementIcon} alt="" className="h-4 w-4" />
+        </span>
+      ) : null}
+    </div>
+  );
+
+  const body = (
+    <div className="flex min-w-0 flex-col items-center gap-2 text-center">
+      {portrait}
+      <div className="min-w-0 w-full">
         {role ? (
-          <p className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#189b8e]">
             {role}
           </p>
         ) : null}
-        <p className="truncate text-[12.5px] font-medium text-foreground">{m.name}</p>
+        <p className="truncate font-genshin text-[13.5px] tracking-wide text-foreground sm:text-[14.5px]">
+          {m.name}
+        </p>
       </div>
     </div>
   );
+
   return m.href ? (
-    <Link href={m.href} className="transition hover:opacity-90">
-      {inner}
+    <Link href={m.href} className="block transition hover:opacity-90">
+      {body}
     </Link>
   ) : (
-    inner
+    body
   );
 }
 
@@ -292,29 +388,41 @@ function RankedGear({
 function TeamVariantCard({ v }: { v: GuideTeamVariant }) {
   const roles = ["Мейн-дд", "Саппорт", "Саб-дд", "Флекс"];
   return (
-    <article className="overflow-hidden rounded-[16px] border border-black/[0.05] bg-white">
-      <div className="grid gap-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-        <div className="p-3.5 sm:p-4">
-          {v.badge ? (
-            <span className="mb-2.5 inline-block rounded-md bg-[#189b8e]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#189b8e]">
-              {v.badge}
-            </span>
-          ) : null}
-          <div className="grid grid-cols-2 gap-2.5">
-            {v.members.map((m, i) => (
-              <MemberChip
-                key={m.id}
+    <article className="overflow-hidden rounded-[18px] border border-black/[0.06] bg-white shadow-[0_8px_24px_-16px_rgba(11,31,68,0.4)]">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/[0.04] bg-[#0b1f44]/[0.03] px-3.5 py-2.5 sm:px-4">
+        {v.badge ? (
+          <span className="rounded-md bg-[#189b8e] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+            {v.badge}
+          </span>
+        ) : (
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            Состав
+          </span>
+        )}
+        <span className="text-[11px] text-muted-foreground">
+          {v.members.map((m) => m.name).join(" · ")}
+        </span>
+      </div>
+      <div className="grid gap-0 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+        <div className="grid grid-cols-2 gap-3 p-3.5 sm:grid-cols-4 sm:gap-2.5 sm:p-4">
+          {v.members.map((m, i) => (
+            <div
+              key={m.id}
+              className="rounded-[14px] bg-[#f5f8f9] px-2 py-2.5 sm:px-2.5 sm:py-3"
+            >
+              <MemberPortrait
                 m={m}
                 role={(m.role && m.role.trim()) || roles[i]}
+                size="lg"
               />
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-        <div className="border-t border-black/[0.04] bg-[#f4f7f8] px-3.5 py-3 sm:border-l sm:border-t-0 sm:px-4 sm:py-4">
-          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+        <div className="border-t border-black/[0.04] bg-gradient-to-br from-[#0b1f44]/[0.05] to-[#189b8e]/[0.06] px-3.5 py-3.5 sm:border-l sm:border-t-0 sm:px-4 sm:py-4">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#189b8e]">
             Особенности
           </p>
-          <p className="text-[13px] leading-relaxed text-foreground/85">{v.features}</p>
+          <p className="text-[13.5px] leading-relaxed text-foreground/90">{v.features}</p>
         </div>
       </div>
     </article>
@@ -325,8 +433,14 @@ function BlockView({ block }: { block: GuideBlock }) {
   if (block.type === "text") {
     const html = renderLiteMarkdown(block.body);
     if (!html && !block.title) return null;
+    const pills = elementsMentioned(`${block.title}\n${block.body}`);
     return (
-      <SectionChrome eyebrow={block.eyebrow} title={block.title || "Раздел"}>
+      <SectionChrome
+        eyebrow={block.eyebrow}
+        title={block.title || "Раздел"}
+        rich
+        pills={pills.slice(0, 4)}
+      >
         <Md html={html} />
       </SectionChrome>
     );
@@ -334,7 +448,7 @@ function BlockView({ block }: { block: GuideBlock }) {
 
   if (block.type === "prosCons") {
     return (
-      <SectionChrome eyebrow={block.eyebrow} title={block.title}>
+      <SectionChrome eyebrow={block.eyebrow} title={block.title} rich>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="rounded-[14px] border border-black/[0.045] border-l-[3px] border-l-[#189b8e] bg-[#f8fafb] p-4">
             <h3 className="mb-2.5 text-[13px] font-semibold text-[#189b8e]">
@@ -423,8 +537,14 @@ function BlockView({ block }: { block: GuideBlock }) {
 
   if (block.type === "teamGroup") {
     return (
-      <SectionChrome eyebrow={block.eyebrow} title={block.title} intro={block.intro}>
-        <div className="space-y-2.5">
+      <SectionChrome
+        eyebrow={block.eyebrow}
+        title={block.title}
+        intro={block.intro}
+        rich
+        pills={elementsMentioned(`${block.title}\n${block.intro}`)}
+      >
+        <div className="space-y-3">
           {block.variants.map((v) => (
             <TeamVariantCard key={v.id} v={v} />
           ))}
@@ -436,26 +556,31 @@ function BlockView({ block }: { block: GuideBlock }) {
   if (block.type === "team") {
     const roles = ["Мейн-дд", "Саппорт", "Саб-дд", "Флекс"];
     return (
-      <article className="overflow-hidden rounded-[16px] border border-black/[0.05] bg-white">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/[0.04] bg-[#f7f9fb] px-3.5 py-2.5">
+      <article className="overflow-hidden rounded-[18px] border border-black/[0.06] bg-white shadow-[0_8px_24px_-16px_rgba(11,31,68,0.35)]">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/[0.04] bg-[#0b1f44]/[0.03] px-3.5 py-2.5">
           <h3 className="font-display text-[15px] font-semibold">{block.title}</h3>
           {block.badge ? (
-            <span className="rounded-md bg-[#189b8e]/10 px-2 py-0.5 text-[11px] font-semibold text-[#189b8e]">
+            <span className="rounded-md bg-[#189b8e] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
               {block.badge}
             </span>
           ) : null}
         </div>
         <div className="grid grid-cols-2 gap-3 p-3.5 sm:grid-cols-4">
           {block.members.map((m, i) => (
-            <MemberChip
+            <div
               key={m.id}
-              m={m}
-              role={(m.role && m.role.trim()) || roles[i]}
-            />
+              className="rounded-[14px] bg-[#f5f8f9] px-2 py-2.5"
+            >
+              <MemberPortrait
+                m={m}
+                role={(m.role && m.role.trim()) || roles[i]}
+                size="lg"
+              />
+            </div>
           ))}
         </div>
         {block.note ? (
-          <p className="border-t border-black/[0.04] bg-[#f7f9fb] px-3.5 py-2.5 text-[13px] leading-relaxed text-muted-foreground">
+          <p className="border-t border-black/[0.04] bg-[#f4f7f8] px-3.5 py-3 text-[13.5px] leading-relaxed text-foreground/85">
             {block.note}
           </p>
         ) : null}
@@ -465,20 +590,29 @@ function BlockView({ block }: { block: GuideBlock }) {
 
   if (block.type === "roleTable") {
     return (
-      <SectionChrome eyebrow={block.eyebrow} title={block.title} intro={block.intro}>
-        <div className="space-y-2">
+      <SectionChrome
+        eyebrow={block.eyebrow}
+        title={block.title}
+        intro={block.intro}
+        rich
+      >
+        <div className="space-y-2.5">
           {block.rows.map((r) => (
             <div
               key={r.id}
-              className="flex gap-3 rounded-[14px] border border-black/[0.04] bg-[#f8fafb] p-3"
+              className="flex gap-3.5 rounded-[16px] border border-black/[0.05] bg-[#f7f9fb] p-3 sm:p-3.5"
             >
               <div
-                className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-cover bg-center ring-1 ring-black/[0.05]"
+                className="h-[68px] w-[68px] shrink-0 overflow-hidden rounded-[14px] bg-cover bg-center shadow-sm ring-1 ring-black/[0.06] sm:h-[76px] sm:w-[76px]"
                 style={{ backgroundImage: "url(/images/legend-bg.jpg)" }}
               >
                 {r.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={r.image} alt="" className="h-full w-full object-cover" />
+                  <img
+                    src={r.image}
+                    alt=""
+                    className="h-full w-full object-cover object-top"
+                  />
                 ) : null}
               </div>
               <div className="min-w-0 flex-1">
@@ -486,18 +620,24 @@ function BlockView({ block }: { block: GuideBlock }) {
                   {r.href ? (
                     <Link
                       href={r.href}
-                      className="font-medium text-[#189b8e] hover:underline"
+                      className="font-genshin text-[15px] tracking-wide text-[#189b8e] hover:underline"
                     >
                       {r.name}
                     </Link>
                   ) : (
-                    <span className="font-medium text-foreground">{r.name}</span>
+                    <span className="font-genshin text-[15px] tracking-wide text-foreground">
+                      {r.name}
+                    </span>
                   )}
-                  <span className="text-[11px] text-muted-foreground">
+                  {r.elementIcon ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={r.elementIcon} alt="" className="h-4 w-4" />
+                  ) : null}
+                  <span className="rounded-md bg-black/[0.04] px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                     {r.element} · {r.weapon}
                   </span>
                 </div>
-                <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+                <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted-foreground">
                   {r.description}
                 </p>
               </div>
@@ -714,10 +854,10 @@ export default function CharacterGuideView({
   return (
     <div className="space-y-4">
       <nav
-        className="sticky top-[4.5rem] z-20 -mx-1 overflow-x-auto px-1 py-1 scrollbar-thin"
+        className="sticky top-[4.25rem] z-20 -mx-1 overflow-x-auto px-1 py-1.5 scrollbar-thin"
         aria-label="Разделы гайда"
       >
-        <div className="inline-flex min-w-full gap-1 rounded-[16px] border border-black/[0.06] bg-white/95 p-1 shadow-soft backdrop-blur-md sm:min-w-0 sm:flex">
+        <div className="inline-flex min-w-full gap-1 rounded-[18px] border border-[#0b1f44]/25 bg-[#0b1f44] p-1.5 shadow-[0_12px_28px_-12px_rgba(11,31,68,0.55)] sm:min-w-0 sm:flex">
           {availableTabs.map((id) => {
             const on = id === active;
             return (
@@ -725,10 +865,10 @@ export default function CharacterGuideView({
                 key={id}
                 type="button"
                 onClick={() => setTab(id)}
-                className={`shrink-0 rounded-[12px] px-3.5 py-2 text-[13px] transition sm:flex-1 ${
+                className={`shrink-0 rounded-[12px] px-3.5 py-2.5 text-[13px] transition sm:flex-1 ${
                   on
-                    ? "bg-[#0b1f44] font-semibold text-white shadow-sm"
-                    : "font-medium text-muted-foreground hover:bg-black/[0.03] hover:text-foreground"
+                    ? "bg-[#189b8e] font-semibold text-white shadow-md"
+                    : "font-medium text-white/70 hover:bg-white/10 hover:text-white"
                 }`}
               >
                 {GUIDE_TAB_LABELS[id]}

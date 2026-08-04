@@ -127,15 +127,15 @@
   }
 
   .guide-html .guide-md-p {
-    @apply mb-2 text-[14px] leading-[1.65] text-muted-foreground last:mb-0;
+    @apply mb-2.5 text-[14.5px] leading-[1.7] text-muted-foreground last:mb-0;
   }
 
   .guide-html .guide-md-h3 {
-    @apply mb-1.5 mt-3.5 font-display text-[14px] font-semibold text-foreground first:mt-0;
+    @apply mb-2 mt-4 font-display text-[15px] font-semibold text-foreground first:mt-0;
   }
 
   .guide-html .guide-md-list {
-    @apply mb-2 list-disc space-y-1 pl-5 text-[14px] leading-[1.6] text-muted-foreground last:mb-0;
+    @apply mb-2.5 list-disc space-y-1.5 pl-5 text-[14.5px] leading-[1.65] text-muted-foreground last:mb-0;
   }
 
   .guide-html .guide-md-list li {
