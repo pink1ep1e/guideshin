@@ -404,25 +404,25 @@
   letter-spacing: 0.04em;
 }
 
-/* Таланты: idle / hover / active */
+/* Таланты: idle / hover / active (светлая тема) */
 .talent-key--idle .talent-key-idle-ring {
   position: absolute;
-  inset: 4px;
+  inset: 6px;
   border-radius: 9999px;
-  border: 1.5px solid rgba(148, 175, 210, 0.35);
+  border: 1.5px solid rgba(15, 35, 70, 0.12);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .talent-key--idle:hover .talent-key-idle-ring {
   border-color: var(--talent-el, #4cc2f1);
-  box-shadow: 0 0 14px var(--talent-glow, rgba(76, 194, 241, 0.45));
+  box-shadow: 0 0 12px var(--talent-glow, rgba(76, 194, 241, 0.35));
 }
 
 .talent-key-ring {
   background-color: currentColor;
   -webkit-mask: url("/images/talents/obvodka-talant.svg") center / contain no-repeat;
   mask: url("/images/talents/obvodka-talant.svg") center / contain no-repeat;
-  filter: drop-shadow(0 0 8px var(--talent-glow, rgba(76, 194, 241, 0.5)));
+  filter: drop-shadow(0 0 6px var(--talent-glow, rgba(76, 194, 241, 0.4)));
 }
 
 .talent-hl {
