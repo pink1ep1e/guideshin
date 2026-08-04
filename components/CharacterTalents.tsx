@@ -56,7 +56,7 @@ export default function CharacterTalents({ talents, element }: Props) {
             >
               {on ? (
                 <span
-                  className="talent-key-ring pointer-events-none absolute inset-[-4px]"
+                  className="talent-key-ring pointer-events-none absolute inset-[-8px]"
                   style={{ color: theme.solid }}
                   aria-hidden
                 />
