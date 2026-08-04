@@ -76,7 +76,7 @@ export default function MaterialCatalog({ materials }: { materials: MaterialCata
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Поиск по названию материала…"
-              className="w-full rounded-[16px] border border-black/[0.06] bg-white/90 py-3.5 pl-11 pr-11 text-sm font-medium text-foreground outline-none ring-[#189b8e]/25 placeholder:text-muted-foreground focus:ring-2"
+              className="w-full rounded-[16px] border border-white/10 bg-white/5 py-3.5 pl-11 pr-11 text-sm font-medium text-foreground outline-none ring-[#189b8e]/25 placeholder:text-muted-foreground focus:ring-2"
             />
             {query && (
               <button
@@ -113,7 +113,7 @@ export default function MaterialCatalog({ materials }: { materials: MaterialCata
                     className={`rounded-xl px-3.5 py-2 text-sm font-bold transition ${
                       rarity === value
                         ? "bg-[#189b8e] text-white shadow-sm"
-                        : "bg-white/80 text-foreground/70 ring-1 ring-black/[0.06] hover:bg-[#189b8e]/10 hover:text-[#189b8e]"
+                        : "bg-white/5 text-foreground/70 ring-1 ring-white/10 hover:bg-[#189b8e]/10 hover:text-[#189b8e]"
                     }`}
                   >
                     {label}
@@ -146,7 +146,7 @@ export default function MaterialCatalog({ materials }: { materials: MaterialCata
                   className={`rounded-xl px-3.5 py-2 text-sm font-bold transition ${
                     category === c
                       ? "bg-[#189b8e] text-white shadow-sm"
-                      : "bg-white/80 text-foreground/70 ring-1 ring-black/[0.06] hover:bg-[#189b8e]/10 hover:text-[#189b8e]"
+                      : "bg-white/5 text-foreground/70 ring-1 ring-white/10 hover:bg-[#189b8e]/10 hover:text-[#189b8e]"
                   }`}
                 >
                   {c === "ALL" ? "Все" : MATERIAL_CATEGORY_LABEL[c]}

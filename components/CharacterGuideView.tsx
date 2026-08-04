@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 import GuideCalculators from "@/components/GuideCalculators";
 import MaterialCards from "@/components/MaterialCards";
+import CharacterTalents from "@/components/CharacterTalents";
 import ItemIconCard from "@/components/ItemIconCard";
 import ItemHoverPreview from "@/components/ItemHoverPreview";
 import {
@@ -19,6 +20,7 @@ import {
 } from "@/lib/guide-builder";
 import { ELEMENT_SVG, ELEMENT_THEME, rarityBg, type ElementKey } from "@/lib/genshin";
 import type { CharacterMaterial } from "@/lib/character-materials";
+import type { CharacterTalent } from "@/lib/character-talents";
 
 const TAB_ORDER: GuideTabId[] = [
   "overview",
@@ -114,7 +116,7 @@ function SectionChrome({
   pills?: ElementKey[];
 }) {
   return (
-    <section className="rounded-[20px] bg-white p-5 shadow-panel ring-1 ring-black/[0.04] sm:p-6">
+    <section className="rounded-[20px] bg-card p-5 shadow-panel ring-1 ring-white/[0.05] sm:p-6">
       {eyebrow ? (
         <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#189b8e]">
           {eyebrow}
@@ -160,10 +162,10 @@ function GoldSlotIcon({ slot }: { slot: string }) {
 }
 
 const TIER_STYLE: Record<string, { bg: string; fg: string; band: string }> = {
-  S: { bg: "#189b8e", fg: "#fff", band: "bg-[#189b8e]/[0.07]" },
-  A: { bg: "#3d7ea6", fg: "#fff", band: "bg-[#f0f5f8]" },
-  B: { bg: "#6b7280", fg: "#fff", band: "bg-[#f7f8fa]" },
-  C: { bg: "#9ca3af", fg: "#fff", band: "bg-[#fafafa]" },
+  S: { bg: "#189b8e", fg: "#fff", band: "bg-[#189b8e]/[0.12]" },
+  A: { bg: "#3d7ea6", fg: "#fff", band: "bg-white/[0.04]" },
+  B: { bg: "#6b7280", fg: "#fff", band: "bg-white/[0.03]" },
+  C: { bg: "#9ca3af", fg: "#0b1428", band: "bg-white/[0.02]" },
 };
 
 function RankedGear({
@@ -198,7 +200,7 @@ function RankedGear({
                 const tip = item.verdict || item.effect;
                 return (
                   <li key={item.id}>
-                    <div className="flex gap-3 rounded-[14px] bg-white/80 px-2.5 py-2 ring-1 ring-black/[0.04]">
+                    <div className="flex gap-3 rounded-[14px] bg-card/80 px-2.5 py-2 ring-1 ring-white/[0.05]">
                       <ItemHoverPreview
                         name={item.name}
                         image={item.image}
@@ -208,7 +210,7 @@ function RankedGear({
                         className="shrink-0"
                       >
                         <div
-                          className="relative h-[56px] w-[56px] overflow-hidden rounded-[12px] bg-cover bg-center ring-1 ring-black/[0.06]"
+                          className="relative h-[56px] w-[56px] overflow-hidden rounded-[12px] bg-cover bg-center ring-1 ring-white/[0.08]"
                           style={{
                             backgroundImage: `url(${rarityBg(item.rarity >= 5 ? 5 : 4)})`,
                           }}
@@ -279,7 +281,7 @@ function MaterialRowList({
       {items.map((item) => (
         <li
           key={item.id}
-          className="flex items-center gap-3 rounded-[14px] bg-[#f7f9fb] px-2.5 py-2"
+          className="flex items-center gap-3 rounded-[14px] bg-white/[0.04] px-2.5 py-2"
         >
           <ItemIconCard
             name={item.name}
@@ -339,7 +341,7 @@ function OverviewFacts({ facts }: { facts: string[] }) {
       {facts.map((f, i) => (
         <li
           key={i}
-          className="flex items-start gap-3 rounded-[14px] bg-[#f7f9fb] px-3 py-2.5"
+          className="flex items-start gap-3 rounded-[14px] bg-white/[0.04] px-3 py-2.5"
         >
           <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#189b8e]/12">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -365,7 +367,7 @@ function MemberPortrait({ m, role }: { m: GuideTeamMember; role?: string }) {
   const body = (
     <div className="flex w-full flex-col items-center gap-2 text-center">
       <div
-        className="relative h-[80px] w-[80px] overflow-hidden rounded-[16px] bg-cover bg-center ring-1 ring-black/[0.06] sm:h-[88px] sm:w-[88px]"
+        className="relative h-[80px] w-[80px] overflow-hidden rounded-[16px] bg-cover bg-center ring-1 ring-white/[0.08] sm:h-[88px] sm:w-[88px]"
         style={{ backgroundImage: `url(${bg})` }}
       >
         {m.image ? (
@@ -377,7 +379,7 @@ function MemberPortrait({ m, role }: { m: GuideTeamMember; role?: string }) {
           </span>
         )}
         {m.elementIcon ? (
-          <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/[0.06]">
+          <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-card shadow-sm ring-1 ring-white/[0.08]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={m.elementIcon} alt="" className="h-4 w-4" />
           </span>
@@ -405,9 +407,9 @@ function MemberPortrait({ m, role }: { m: GuideTeamMember; role?: string }) {
 function TeamVariantCard({ v }: { v: GuideTeamVariant }) {
   const roles = ["Мейн-дд", "Саппорт", "Саб-дд", "Флекс"];
   return (
-    <article className="overflow-hidden rounded-[18px] bg-white ring-1 ring-black/[0.05]">
+    <article className="overflow-hidden rounded-[18px] bg-card ring-1 ring-white/[0.06]">
       {v.badge ? (
-        <div className="border-b border-black/[0.04] px-4 py-2.5">
+        <div className="border-b border-white/[0.06] px-4 py-2.5">
           <span className="rounded-md bg-[#189b8e]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#189b8e]">
             {v.badge}
           </span>
@@ -416,12 +418,12 @@ function TeamVariantCard({ v }: { v: GuideTeamVariant }) {
       <div className="grid gap-0 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
         <div className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-4 sm:p-4">
           {v.members.map((m, i) => (
-            <div key={m.id} className="rounded-[14px] bg-[#f6f8fa] px-2 py-3">
+            <div key={m.id} className="rounded-[14px] bg-white/[0.04] px-2 py-3">
               <MemberPortrait m={m} role={(m.role && m.role.trim()) || roles[i]} />
             </div>
           ))}
         </div>
-        <div className="border-t border-black/[0.04] bg-[#f6f8fa] px-4 py-4 sm:border-l sm:border-t-0">
+        <div className="border-t border-white/[0.06] bg-white/[0.04] px-4 py-4 sm:border-l sm:border-t-0">
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#189b8e]">
             Особенности
           </p>
@@ -456,7 +458,7 @@ function BlockView({ block }: { block: GuideBlock }) {
     return (
       <SectionChrome eyebrow={block.eyebrow} title={block.title}>
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-[14px] border-l-[3px] border-l-[#189b8e] bg-[#f8fafb] p-4">
+          <div className="rounded-[14px] border-l-[3px] border-l-[#189b8e] bg-white/[0.04] p-4">
             <h3 className="mb-2.5 text-[14px] font-semibold text-[#189b8e]">
               {block.prosTitle || "Преимущества"}
             </h3>
@@ -466,7 +468,7 @@ function BlockView({ block }: { block: GuideBlock }) {
               ))}
             </ul>
           </div>
-          <div className="rounded-[14px] border-l-[3px] border-l-[#c45c5c] bg-[#f8fafb] p-4">
+          <div className="rounded-[14px] border-l-[3px] border-l-[#c45c5c] bg-white/[0.04] p-4">
             <h3 className="mb-2.5 text-[14px] font-semibold text-[#c45c5c]">
               {block.consTitle || "Недостатки"}
             </h3>
@@ -486,7 +488,7 @@ function BlockView({ block }: { block: GuideBlock }) {
       <SectionChrome eyebrow={block.eyebrow} title={block.title} intro={block.intro}>
         <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
           {block.targets.map((t) => (
-            <div key={t.id} className="rounded-[14px] bg-[#f7f9fb] px-4 py-3.5">
+            <div key={t.id} className="rounded-[14px] bg-white/[0.04] px-4 py-3.5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 {t.label}
               </p>
@@ -508,7 +510,7 @@ function BlockView({ block }: { block: GuideBlock }) {
               {block.slots.map((s) => (
                 <div
                   key={s.id}
-                  className="flex items-center gap-3 rounded-[14px] bg-[#f7f9fb] px-3 py-2.5"
+                  className="flex items-center gap-3 rounded-[14px] bg-white/[0.04] px-3 py-2.5"
                 >
                   <GoldSlotIcon slot={s.slot} />
                   <div className="min-w-0">
@@ -550,7 +552,7 @@ function BlockView({ block }: { block: GuideBlock }) {
                   const left = (
                     <div className="flex min-w-0 items-center gap-3">
                       <div
-                        className="h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-cover bg-center ring-1 ring-black/[0.05]"
+                        className="h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-cover bg-center ring-1 ring-white/[0.06]"
                         style={{ backgroundImage: "url(/images/legend-bg.jpg)" }}
                       >
                         {r.image ? (
@@ -568,7 +570,7 @@ function BlockView({ block }: { block: GuideBlock }) {
                   return (
                     <div
                       key={r.id}
-                      className="flex items-center justify-between gap-3 rounded-[14px] bg-[#f7f9fb] px-3 py-2.5"
+                      className="flex items-center justify-between gap-3 rounded-[14px] bg-white/[0.04] px-3 py-2.5"
                     >
                       {r.href ? (
                         <Link href={r.href} className="min-w-0 hover:opacity-90">
@@ -593,7 +595,7 @@ function BlockView({ block }: { block: GuideBlock }) {
                             <img
                               src={r.setImage}
                               alt=""
-                              className="h-11 w-11 rounded-[10px] object-contain ring-1 ring-black/[0.05]"
+                              className="h-11 w-11 rounded-[10px] object-contain ring-1 ring-white/[0.06]"
                             />
                           </ItemHoverPreview>
                         ) : null}
@@ -629,8 +631,8 @@ function BlockView({ block }: { block: GuideBlock }) {
   if (block.type === "team") {
     const roles = ["Мейн-дд", "Саппорт", "Саб-дд", "Флекс"];
     return (
-      <article className="overflow-hidden rounded-[18px] bg-white ring-1 ring-black/[0.05]">
-        <div className="flex items-center gap-2 border-b border-black/[0.04] px-4 py-2.5">
+      <article className="overflow-hidden rounded-[18px] bg-card ring-1 ring-white/[0.06]">
+        <div className="flex items-center gap-2 border-b border-white/[0.06] px-4 py-2.5">
           <h3 className="text-[15px] font-semibold">{block.title}</h3>
           {block.badge ? (
             <span className="rounded-md bg-[#189b8e]/12 px-2.5 py-1 text-[11px] font-semibold uppercase text-[#189b8e]">
@@ -640,13 +642,13 @@ function BlockView({ block }: { block: GuideBlock }) {
         </div>
         <div className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-4 sm:p-4">
           {block.members.map((m, i) => (
-            <div key={m.id} className="rounded-[14px] bg-[#f6f8fa] px-2 py-3">
+            <div key={m.id} className="rounded-[14px] bg-white/[0.04] px-2 py-3">
               <MemberPortrait m={m} role={(m.role && m.role.trim()) || roles[i]} />
             </div>
           ))}
         </div>
         {block.note ? (
-          <p className="border-t border-black/[0.04] bg-[#f6f8fa] px-4 py-3 text-[14px] leading-relaxed text-muted-foreground">
+          <p className="border-t border-white/[0.06] bg-white/[0.04] px-4 py-3 text-[14px] leading-relaxed text-muted-foreground">
             {block.note}
           </p>
         ) : null}
@@ -661,10 +663,10 @@ function BlockView({ block }: { block: GuideBlock }) {
           {block.rows.map((r) => (
             <div
               key={r.id}
-              className="flex gap-3.5 rounded-[14px] bg-[#f7f9fb] p-3"
+              className="flex gap-3.5 rounded-[14px] bg-white/[0.04] p-3"
             >
               <div
-                className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[14px] bg-cover bg-center ring-1 ring-black/[0.05]"
+                className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[14px] bg-cover bg-center ring-1 ring-white/[0.06]"
                 style={{ backgroundImage: "url(/images/legend-bg.jpg)" }}
               >
                 {r.image ? (
@@ -710,7 +712,7 @@ function BlockView({ block }: { block: GuideBlock }) {
           {block.rows.map((r) => (
             <div
               key={r.id}
-              className="flex items-center gap-3 rounded-[14px] bg-[#f7f9fb] px-3 py-2.5"
+              className="flex items-center gap-3 rounded-[14px] bg-white/[0.04] px-3 py-2.5"
             >
               {r.image ? (
                 <ItemHoverPreview
@@ -749,7 +751,7 @@ function BlockView({ block }: { block: GuideBlock }) {
   if (block.type === "statsTable") {
     return (
       <SectionChrome title={block.title} intro={block.intro}>
-        <div className="overflow-x-auto rounded-[14px] ring-1 ring-black/[0.05]">
+        <div className="overflow-x-auto rounded-[14px] ring-1 ring-white/[0.06]">
           <table className="w-full min-w-[520px] text-[14px]">
             <thead>
               <tr className="bg-[#f5f7f9] text-center text-[11px] font-semibold uppercase tracking-[0.05em] text-foreground/65">
@@ -762,7 +764,7 @@ function BlockView({ block }: { block: GuideBlock }) {
             </thead>
             <tbody>
               {block.rows.map((r) => (
-                <tr key={r.id} className="border-t border-black/[0.04] text-center">
+                <tr key={r.id} className="border-t border-white/[0.06] text-center">
                   <td className="px-2 py-2.5 font-medium">{r.level}</td>
                   <td className="px-2 py-2.5 text-muted-foreground">{r.hp}</td>
                   <td className="px-2 py-2.5 text-muted-foreground">{r.atk}</td>
@@ -824,19 +826,19 @@ function BlockView({ block }: { block: GuideBlock }) {
 
 export default function CharacterGuideView({
   characterName,
-  element: _element,
+  element,
   blocks,
   materials,
+  talents = [],
   loreByName = {},
 }: {
   characterName: string;
   element: string;
   blocks: GuideBlock[];
   materials: CharacterMaterial[];
+  talents?: CharacterTalent[];
   loreByName?: Record<string, string>;
 }) {
-  void _element;
-
   const grouped = useMemo(() => {
     const map: Record<GuideTabId, GuideBlock[]> = {
       overview: [],
@@ -851,8 +853,14 @@ export default function CharacterGuideView({
   }, [blocks]);
 
   const availableTabs = useMemo(
-    () => TAB_ORDER.filter((id) => id === "leveling" || grouped[id].length > 0),
-    [grouped],
+    () =>
+      TAB_ORDER.filter(
+        (id) =>
+          id === "leveling" ||
+          grouped[id].length > 0 ||
+          (id === "play" && talents.length > 0),
+      ),
+    [grouped, talents.length],
   );
 
   const [tab, setTab] = useState<GuideTabId>(availableTabs[0] || "overview");
@@ -861,7 +869,7 @@ export default function CharacterGuideView({
   return (
     <div className="space-y-4">
       <nav
-        className="rounded-[16px] bg-white p-1.5 shadow-panel ring-1 ring-black/[0.05]"
+        className="rounded-[16px] bg-card p-1.5 shadow-panel ring-1 ring-white/[0.06]"
         aria-label="Разделы гайда"
       >
         <div className="flex flex-wrap gap-1">
@@ -875,7 +883,7 @@ export default function CharacterGuideView({
                 className={`rounded-[12px] px-3.5 py-2.5 text-[14px] transition sm:flex-1 ${
                   on
                     ? "bg-[#189b8e] font-semibold text-white"
-                    : "font-medium text-muted-foreground hover:bg-black/[0.03] hover:text-foreground"
+                    : "font-medium text-muted-foreground hover:bg-white/[0.05] hover:text-foreground"
                 }`}
               >
                 {GUIDE_TAB_LABELS[id]}
@@ -891,6 +899,13 @@ export default function CharacterGuideView({
             <GuideCalculators characterName={characterName} />
             <MaterialCards materials={materials} loreByName={loreByName} />
             {grouped.leveling.map((b) => (
+              <BlockView key={b.id} block={b} />
+            ))}
+          </>
+        ) : active === "play" ? (
+          <>
+            <CharacterTalents talents={talents} element={element} />
+            {grouped.play.map((b) => (
               <BlockView key={b.id} block={b} />
             ))}
           </>

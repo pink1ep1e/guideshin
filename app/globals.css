@@ -4,34 +4,34 @@
 
 @layer base {
   :root {
-    /* VTB-like light palette */
-    --background: 220 25% 96%;
-    --foreground: 221 72% 15%;
+    /* Dark navy — тема по умолчанию */
+    --background: 220 40% 8%;
+    --foreground: 210 25% 96%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 221 72% 15%;
+    --card: 218 35% 12%;
+    --card-foreground: 210 25% 96%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 221 72% 15%;
+    --popover: 218 38% 11%;
+    --popover-foreground: 210 25% 96%;
 
-    --primary: 224 100% 52%;
+    --primary: 174 73% 35%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 30% 94%;
-    --secondary-foreground: 221 50% 20%;
+    --secondary: 218 28% 16%;
+    --secondary-foreground: 210 20% 90%;
 
-    --muted: 220 24% 93%;
-    --muted-foreground: 218 18% 42%;
+    --muted: 218 25% 15%;
+    --muted-foreground: 215 12% 62%;
 
-    --accent: 220 40% 94%;
-    --accent-foreground: 224 80% 35%;
+    --accent: 218 30% 18%;
+    --accent-foreground: 174 60% 70%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 20% 88%;
-    --input: 220 20% 88%;
-    --ring: 224 100% 52%;
+    --border: 218 22% 22%;
+    --input: 218 22% 22%;
+    --ring: 174 73% 40%;
 
     --radius: 1rem;
   }
@@ -65,7 +65,7 @@
   }
 
   .glass-panel {
-    @apply rounded-[20px] border border-black/[0.05] bg-white/85 shadow-panel backdrop-blur-sm;
+    @apply rounded-[20px] border border-white/[0.08] bg-card/90 shadow-panel backdrop-blur-sm;
   }
 
   .ui-btn-primary {
@@ -73,7 +73,7 @@
   }
 
   .ui-btn-secondary {
-    @apply inline-flex items-center justify-center rounded-[16px] border border-black/[0.08] bg-white/80 px-6 py-3.5 text-sm font-bold text-[#189b8e] transition duration-300 hover:bg-[#189b8e]/10;
+    @apply inline-flex items-center justify-center rounded-[16px] border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-bold text-[#67d5cc] transition duration-300 hover:bg-[#189b8e]/15;
   }
 
   .section-title {
@@ -402,6 +402,40 @@
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.04em;
+}
+
+/* Таланты: idle / hover / active */
+.talent-key--idle .talent-key-idle-ring {
+  position: absolute;
+  inset: 4px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(148, 175, 210, 0.35);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.talent-key--idle:hover .talent-key-idle-ring {
+  border-color: var(--talent-el, #4cc2f1);
+  box-shadow: 0 0 14px var(--talent-glow, rgba(76, 194, 241, 0.45));
+}
+
+.talent-key-ring {
+  background-color: currentColor;
+  -webkit-mask: url("/images/talents/obvodka-talant.svg") center / contain no-repeat;
+  mask: url("/images/talents/obvodka-talant.svg") center / contain no-repeat;
+  filter: drop-shadow(0 0 8px var(--talent-glow, rgba(76, 194, 241, 0.5)));
+}
+
+.talent-hl {
+  color: #f0c75e;
+  font-weight: 600;
+}
+
+.talent-desc p {
+  margin: 0 0 0.75rem;
+}
+
+.talent-desc p:last-child {
+  margin-bottom: 0;
 }
 
 /* Карта на весь экран: iframe под шапкой, футер скрыт */

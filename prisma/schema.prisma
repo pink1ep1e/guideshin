@@ -54,6 +54,9 @@ model Character {
   /// Материалы прокачки: [{ id, name, image, qty, category }]
   levelMaterials Json?
 
+  /// Таланты: [{ id, name, icon, videoUrl, description, loreText, statsTable, order }]
+  talents     Json?
+
   shortDesc   String?
   contentHtml String   @db.Text
 
