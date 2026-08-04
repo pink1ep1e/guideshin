@@ -25,6 +25,8 @@ import { ELEMENT_LABEL, ELEMENT_SVG, type ElementKey } from "@/lib/genshin";
 import {
   type GuideBlock,
   type GuideItem,
+  type GuideSetPlanGroup,
+  type GuideSetPlanRow,
   type GuideTeamMember,
   createEmptyBlocks,
   emptyArtifactSlot,
@@ -59,6 +61,35 @@ function emptyMember(): GuideTeamMember {
     elementIcon: ELEMENT_SVG.HYDRO,
     rarity: 5,
     href: "",
+    role: "",
+  };
+}
+
+function emptyTeamVariant() {
+  return {
+    id: uid(),
+    badge: "",
+    features: "",
+    members: [emptyMember(), emptyMember(), emptyMember(), emptyMember()],
+  };
+}
+
+function emptySetPlanRow(): GuideSetPlanRow {
+  return {
+    id: uid(),
+    name: "",
+    image: "",
+    href: "",
+    setName: "",
+    setImage: "",
+  };
+}
+
+function emptySetPlanGroup(): GuideSetPlanGroup {
+  return {
+    id: uid(),
+    title: "Вариант",
+    rows: [emptySetPlanRow()],
   };
 }
 
@@ -149,6 +180,24 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
       block = { ...emptyStatTargetsBlock(), id: base.id };
     } else if (type === "rankedList") {
       block = { ...emptyRankedListBlock("weapons"), id: base.id };
+    } else if (type === "teamGroup") {
+      block = {
+        ...base,
+        type: "teamGroup",
+        eyebrow: "Отряды",
+        title: "Варианты отрядов",
+        intro: "",
+        variants: [emptyTeamVariant()],
+      };
+    } else if (type === "setPlan") {
+      block = {
+        ...base,
+        type: "setPlan",
+        eyebrow: "Артефакты",
+        title: "Как раздать сеты в отрядах",
+        intro: "",
+        groups: [emptySetPlanGroup()],
+      };
     } else {
       block = {
         ...base,
@@ -226,6 +275,8 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
             ["artifacts", "Артефакты", Gem],
             ["materials", "Материалы", Flower2],
             ["team", "Отряд", Users],
+            ["teamGroup", "Отряды×N", Users],
+            ["setPlan", "Сеты отрядов", Gem],
           ] as const
         ).map(([type, title, Icon]) => (
           <button
@@ -1480,6 +1531,302 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                 </>
               )}
 
+              {block.type === "setPlan" && (
+                <>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className={label}>Eyebrow</label>
+                      <input
+                        className={input}
+                        value={block.eyebrow}
+                        onChange={(e) => updateBlock(block.id, { eyebrow: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className={label}>Заголовок</label>
+                      <input
+                        className={input}
+                        value={block.title}
+                        onChange={(e) => updateBlock(block.id, { title: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className={label}>Вступление</label>
+                    <textarea
+                      className={`${input} min-h-[64px]`}
+                      value={block.intro}
+                      onChange={(e) => updateBlock(block.id, { intro: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    {block.groups.map((g, gIdx) => (
+                      <div
+                        key={g.id}
+                        className="rounded-[14px] border border-black/[0.05] bg-[#0b1f44]/[0.02] p-3"
+                      >
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-xs font-bold text-muted-foreground">
+                            Группа {gIdx + 1}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateBlock(block.id, {
+                                groups: block.groups.filter((x) => x.id !== g.id),
+                              })
+                            }
+                            className="text-xs font-bold text-destructive"
+                          >
+                            Удалить группу
+                          </button>
+                        </div>
+                        <div className="mb-3">
+                          <label className={label}>Название группы</label>
+                          <input
+                            className={input}
+                            value={g.title}
+                            placeholder="Лунный заряд…"
+                            onChange={(e) =>
+                              updateBlock(block.id, {
+                                groups: block.groups.map((x) =>
+                                  x.id === g.id ? { ...x, title: e.target.value } : x,
+                                ),
+                              })
+                            }
+                          />
+                        </div>
+
+                        <div className="space-y-3">
+                          {g.rows.map((r, rIdx) => (
+                            <div
+                              key={r.id}
+                              className="rounded-[12px] border border-black/[0.04] bg-white/80 p-2.5"
+                            >
+                              <div className="mb-2 flex items-center justify-between gap-2">
+                                <p className="text-[11px] font-bold text-muted-foreground">
+                                  Строка {rIdx + 1}
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateBlock(block.id, {
+                                      groups: block.groups.map((x) =>
+                                        x.id === g.id
+                                          ? {
+                                              ...x,
+                                              rows: x.rows.filter((rr) => rr.id !== r.id),
+                                            }
+                                          : x,
+                                      ),
+                                    })
+                                  }
+                                  className="text-[11px] font-bold text-destructive"
+                                >
+                                  Удалить
+                                </button>
+                              </div>
+
+                              <div className="grid gap-3 lg:grid-cols-2">
+                                <div className="space-y-2">
+                                  <CatalogPicker
+                                    label="Персонаж из базы"
+                                    kind="characters"
+                                    catalog={catalog}
+                                    onPick={(picked) =>
+                                      updateBlock(block.id, {
+                                        groups: block.groups.map((x) =>
+                                          x.id === g.id
+                                            ? {
+                                                ...x,
+                                                rows: x.rows.map((rr) =>
+                                                  rr.id === r.id
+                                                    ? {
+                                                        ...rr,
+                                                        name: picked.name,
+                                                        image: picked.image,
+                                                        href: picked.href,
+                                                      }
+                                                    : rr,
+                                                ),
+                                              }
+                                            : x,
+                                        ),
+                                      })
+                                    }
+                                  />
+                                  <MediaUpload
+                                    label="Портрет"
+                                    value={r.image}
+                                    onChange={(image) =>
+                                      updateBlock(block.id, {
+                                        groups: block.groups.map((x) =>
+                                          x.id === g.id
+                                            ? {
+                                                ...x,
+                                                rows: x.rows.map((rr) =>
+                                                  rr.id === r.id ? { ...rr, image } : rr,
+                                                ),
+                                              }
+                                            : x,
+                                        ),
+                                      })
+                                    }
+                                    kind="icon"
+                                    compact
+                                  />
+                                  <input
+                                    className={input}
+                                    value={r.name}
+                                    onChange={(e) =>
+                                      updateBlock(block.id, {
+                                        groups: block.groups.map((x) =>
+                                          x.id === g.id
+                                            ? {
+                                                ...x,
+                                                rows: x.rows.map((rr) =>
+                                                  rr.id === r.id
+                                                    ? { ...rr, name: e.target.value }
+                                                    : rr,
+                                                ),
+                                              }
+                                            : x,
+                                        ),
+                                      })
+                                    }
+                                    placeholder="Имя (заглушка, если нет в БД)"
+                                  />
+                                  <input
+                                    className={input}
+                                    value={r.href || ""}
+                                    onChange={(e) =>
+                                      updateBlock(block.id, {
+                                        groups: block.groups.map((x) =>
+                                          x.id === g.id
+                                            ? {
+                                                ...x,
+                                                rows: x.rows.map((rr) =>
+                                                  rr.id === r.id
+                                                    ? { ...rr, href: e.target.value }
+                                                    : rr,
+                                                ),
+                                              }
+                                            : x,
+                                        ),
+                                      })
+                                    }
+                                    placeholder="/wiki/characters/..."
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <CatalogPicker
+                                    label="Сет артефактов из базы"
+                                    kind="artifacts"
+                                    catalog={catalog}
+                                    onPick={(picked) =>
+                                      updateBlock(block.id, {
+                                        groups: block.groups.map((x) =>
+                                          x.id === g.id
+                                            ? {
+                                                ...x,
+                                                rows: x.rows.map((rr) =>
+                                                  rr.id === r.id
+                                                    ? {
+                                                        ...rr,
+                                                        setName: picked.name,
+                                                        setImage: picked.image,
+                                                      }
+                                                    : rr,
+                                                ),
+                                              }
+                                            : x,
+                                        ),
+                                      })
+                                    }
+                                  />
+                                  <MediaUpload
+                                    label="Иконка сета"
+                                    value={r.setImage || ""}
+                                    onChange={(setImage) =>
+                                      updateBlock(block.id, {
+                                        groups: block.groups.map((x) =>
+                                          x.id === g.id
+                                            ? {
+                                                ...x,
+                                                rows: x.rows.map((rr) =>
+                                                  rr.id === r.id ? { ...rr, setImage } : rr,
+                                                ),
+                                              }
+                                            : x,
+                                        ),
+                                      })
+                                    }
+                                    kind="icon"
+                                    compact
+                                  />
+                                  <input
+                                    className={input}
+                                    value={r.setName}
+                                    onChange={(e) =>
+                                      updateBlock(block.id, {
+                                        groups: block.groups.map((x) =>
+                                          x.id === g.id
+                                            ? {
+                                                ...x,
+                                                rows: x.rows.map((rr) =>
+                                                  rr.id === r.id
+                                                    ? { ...rr, setName: e.target.value }
+                                                    : rr,
+                                                ),
+                                              }
+                                            : x,
+                                        ),
+                                      })
+                                    }
+                                    placeholder="Название сета / «Рассвет или Серенада»"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateBlock(block.id, {
+                              groups: block.groups.map((x) =>
+                                x.id === g.id
+                                  ? { ...x, rows: [...x.rows, emptySetPlanRow()] }
+                                  : x,
+                              ),
+                            })
+                          }
+                          className="mt-2 text-xs font-bold text-[#189b8e]"
+                        >
+                          + Строка
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateBlock(block.id, {
+                        groups: [...block.groups, emptySetPlanGroup()],
+                      })
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#189b8e]/12 px-3 py-2 text-xs font-bold text-[#189b8e]"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Добавить группу
+                  </button>
+                </>
+              )}
+
               {block.type === "teamGroup" && (
                 <>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -1508,32 +1855,208 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                       onChange={(e) => updateBlock(block.id, { intro: e.target.value })}
                     />
                   </div>
-                  {block.variants.map((v, idx) => (
-                    <div
-                      key={v.id}
-                      className="rounded-[14px] border border-black/[0.05] bg-[#0b1f44]/[0.02] p-3"
-                    >
-                      <p className="mb-2 text-xs font-bold text-muted-foreground">
-                        Вариант {idx + 1}
-                        {v.badge ? ` · ${v.badge}` : ""}
-                      </p>
-                      <label className={label}>Особенности</label>
-                      <textarea
-                        className={`${input} min-h-[72px]`}
-                        value={v.features}
-                        onChange={(e) =>
-                          updateBlock(block.id, {
-                            variants: block.variants.map((x) =>
-                              x.id === v.id ? { ...x, features: e.target.value } : x,
-                            ),
-                          })
-                        }
-                      />
-                      <p className="mt-2 text-[12px] text-muted-foreground">
-                        {v.members.map((m) => m.name).join(" / ")}
-                      </p>
-                    </div>
-                  ))}
+
+                  <div className="space-y-4">
+                    {block.variants.map((v, idx) => (
+                      <div
+                        key={v.id}
+                        className="rounded-[14px] border border-black/[0.05] bg-[#0b1f44]/[0.02] p-3"
+                      >
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-xs font-bold text-muted-foreground">
+                            Вариант {idx + 1}
+                            {v.badge ? ` · ${v.badge}` : ""}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateBlock(block.id, {
+                                variants: block.variants.filter((x) => x.id !== v.id),
+                              })
+                            }
+                            className="text-xs font-bold text-destructive"
+                          >
+                            Удалить вариант
+                          </button>
+                        </div>
+
+                        <div className="mb-3 grid gap-3 sm:grid-cols-[140px_1fr]">
+                          <div>
+                            <label className={label}>Бейдж</label>
+                            <input
+                              className={input}
+                              value={v.badge || ""}
+                              placeholder="Топ / Бюджет…"
+                              onChange={(e) =>
+                                updateBlock(block.id, {
+                                  variants: block.variants.map((x) =>
+                                    x.id === v.id ? { ...x, badge: e.target.value } : x,
+                                  ),
+                                })
+                              }
+                            />
+                          </div>
+                          <div>
+                            <label className={label}>Особенности</label>
+                            <textarea
+                              className={`${input} min-h-[64px]`}
+                              value={v.features}
+                              onChange={(e) =>
+                                updateBlock(block.id, {
+                                  variants: block.variants.map((x) =>
+                                    x.id === v.id ? { ...x, features: e.target.value } : x,
+                                  ),
+                                })
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {v.members.map((m, mIdx) => (
+                            <div
+                              key={m.id}
+                              className="rounded-[12px] border border-black/[0.04] bg-white/80 p-2.5"
+                            >
+                              <p className="mb-2 text-[11px] font-bold text-muted-foreground">
+                                Слот {mIdx + 1}
+                              </p>
+                              <div className="mb-2">
+                                <label className={label}>Роль</label>
+                                <input
+                                  className={input}
+                                  value={m.role || ""}
+                                  placeholder="Мейн-дд / Саппорт…"
+                                  onChange={(e) =>
+                                    updateBlock(block.id, {
+                                      variants: block.variants.map((x) =>
+                                        x.id === v.id
+                                          ? {
+                                              ...x,
+                                              members: x.members.map((mm) =>
+                                                mm.id === m.id
+                                                  ? { ...mm, role: e.target.value }
+                                                  : mm,
+                                              ),
+                                            }
+                                          : x,
+                                      ),
+                                    })
+                                  }
+                                />
+                              </div>
+                              <CatalogPicker
+                                label="Персонаж из базы"
+                                kind="characters"
+                                catalog={catalog}
+                                onPick={(picked) =>
+                                  updateBlock(block.id, {
+                                    variants: block.variants.map((x) =>
+                                      x.id === v.id
+                                        ? {
+                                            ...x,
+                                            members: x.members.map((mm) =>
+                                              mm.id === m.id
+                                                ? {
+                                                    ...mm,
+                                                    name: picked.name,
+                                                    image: picked.image,
+                                                    rarity: picked.rarity,
+                                                    href: picked.href,
+                                                    elementIcon: picked.element
+                                                      ? ELEMENT_SVG[
+                                                          picked.element as ElementKey
+                                                        ] || mm.elementIcon
+                                                      : mm.elementIcon,
+                                                  }
+                                                : mm,
+                                            ),
+                                          }
+                                        : x,
+                                    ),
+                                  })
+                                }
+                              />
+                              <div className="mt-2 space-y-2">
+                                <MediaUpload
+                                  label="Портрет"
+                                  value={m.image}
+                                  onChange={(image) =>
+                                    updateBlock(block.id, {
+                                      variants: block.variants.map((x) =>
+                                        x.id === v.id
+                                          ? {
+                                              ...x,
+                                              members: x.members.map((mm) =>
+                                                mm.id === m.id ? { ...mm, image } : mm,
+                                              ),
+                                            }
+                                          : x,
+                                      ),
+                                    })
+                                  }
+                                  kind="icon"
+                                  compact
+                                />
+                                <input
+                                  className={input}
+                                  value={m.name}
+                                  onChange={(e) =>
+                                    updateBlock(block.id, {
+                                      variants: block.variants.map((x) =>
+                                        x.id === v.id
+                                          ? {
+                                              ...x,
+                                              members: x.members.map((mm) =>
+                                                mm.id === m.id
+                                                  ? { ...mm, name: e.target.value }
+                                                  : mm,
+                                              ),
+                                            }
+                                          : x,
+                                      ),
+                                    })
+                                  }
+                                  placeholder="Имя (заглушка, если нет в БД)"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {v.members.length < 4 ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateBlock(block.id, {
+                                variants: block.variants.map((x) =>
+                                  x.id === v.id
+                                    ? { ...x, members: [...x.members, emptyMember()] }
+                                    : x,
+                                ),
+                              })
+                            }
+                            className="mt-2 text-xs font-bold text-[#189b8e]"
+                          >
+                            + Слот
+                          </button>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateBlock(block.id, {
+                        variants: [...block.variants, emptyTeamVariant()],
+                      })
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#189b8e]/12 px-3 py-2 text-xs font-bold text-[#189b8e]"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Добавить вариант отряда
+                  </button>
                 </>
               )}
             </div>

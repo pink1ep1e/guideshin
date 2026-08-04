@@ -91,16 +91,7 @@ export default function CharacterConstellations({
         })}
       </div>
 
-      <div className="relative z-[1] mt-6 grid gap-5 border-t border-black/[0.06] pt-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)]">
-        <div className="overflow-hidden rounded-[16px] bg-[#f5f7f9] ring-1 ring-black/[0.04]">
-          <div className="flex aspect-video items-center justify-center bg-[#e8ecef] text-sm text-muted-foreground">
-            Нет видео
-          </div>
-          <div className="border-t border-black/[0.05] bg-white/70 py-2.5 text-center text-[13px] font-medium tracking-wide text-muted-foreground">
-            Просмотр
-          </div>
-        </div>
-
+      <div className="relative z-[1] mt-6 border-t border-black/[0.06] pt-5">
         <div className="min-w-0">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <span className="text-[13px] font-semibold uppercase tracking-wide text-[#189b8e]">
@@ -112,7 +103,7 @@ export default function CharacterConstellations({
           </div>
           {c.description ? (
             <div
-              className="constellation-desc mt-3 space-y-3 text-[15px] leading-relaxed text-muted-foreground"
+              className="constellation-desc mt-3 max-w-3xl space-y-3 text-[15px] leading-relaxed text-muted-foreground"
               dangerouslySetInnerHTML={{
                 __html: `<p>${renderConstellationDescription(c.description)}</p>`,
               }}
