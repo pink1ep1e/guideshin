@@ -12,6 +12,17 @@ type Props = {
   onChange: (next: CharacterConstellation[]) => void;
 };
 
+function emptyConstellation(level: number, order: number): CharacterConstellation {
+  return {
+    id: constellationUid(),
+    level,
+    name: "",
+    icon: "",
+    description: "",
+    order,
+  };
+}
+
 export default function ConstellationsEditor({ value, onChange }: Props) {
   const input =
     "w-full rounded-[12px] border border-black/[0.08] bg-white/90 px-3 py-2 text-sm font-medium outline-none ring-[#189b8e]/25 focus:ring-2";
@@ -23,18 +34,23 @@ export default function ConstellationsEditor({ value, onChange }: Props) {
   }
 
   function addRow() {
-    const level = Math.min(6, value.length + 1);
-    onChange([
-      ...value,
-      {
-        id: constellationUid(),
-        level,
-        name: "",
-        icon: "",
-        description: "",
-        order: value.length,
-      },
-    ]);
+    if (value.length >= 6) return;
+    const used = new Set(value.map((r) => r.level));
+    let level = 1;
+    while (used.has(level) && level < 6) level += 1;
+    onChange([...value, emptyConstellation(level, value.length)]);
+  }
+
+  function fillC1toC6() {
+    const byLevel = new Map(value.map((r) => [r.level, r]));
+    onChange(
+      [1, 2, 3, 4, 5, 6].map((level, order) => {
+        const existing = byLevel.get(level);
+        return existing
+          ? { ...existing, level, order }
+          : emptyConstellation(level, order);
+      }),
+    );
   }
 
   return (
@@ -45,22 +61,35 @@ export default function ConstellationsEditor({ value, onChange }: Props) {
             Созвездия
           </p>
           <p className="text-sm font-medium text-muted-foreground">
-            C1–C6: название, описание (**акцент**), иконка позже
+            C1–C6 на странице персонажа. В описании: **акцент** для бирюзовой подсветки.
+            Видео не используется.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={addRow}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-[#189b8e]/12 px-3 py-2 text-xs font-bold text-[#189b8e]"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Добавить
-        </button>
+        <div className="flex flex-wrap gap-2">
+          {value.length < 6 ? (
+            <button
+              type="button"
+              onClick={fillC1toC6}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-xs font-bold text-foreground/75 ring-1 ring-black/[0.06] hover:bg-[#189b8e]/10 hover:text-[#189b8e]"
+            >
+              Заполнить C1–C6
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={addRow}
+            disabled={value.length >= 6}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[#189b8e]/12 px-3 py-2 text-xs font-bold text-[#189b8e] disabled:opacity-40"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Добавить
+          </button>
+        </div>
       </div>
 
       {value.length === 0 && (
         <p className="rounded-[14px] border border-dashed border-black/[0.08] bg-white/60 px-4 py-6 text-center text-sm font-medium text-muted-foreground">
-          Пока пусто — добавьте созвездия по порядку.
+          Пока пусто — нажмите «Заполнить C1–C6» или добавьте созвездия по одному.
         </p>
       )}
 
@@ -73,6 +102,7 @@ export default function ConstellationsEditor({ value, onChange }: Props) {
             <div className="mb-3 flex items-center justify-between gap-2">
               <p className="text-xs font-bold text-muted-foreground">
                 Созвездие #{idx + 1}
+                {row.level ? ` · C${row.level}` : ""}
               </p>
               <button
                 type="button"
@@ -115,17 +145,19 @@ export default function ConstellationsEditor({ value, onChange }: Props) {
                       className={input}
                       value={row.name}
                       onChange={(e) => updateRow(row.id, { name: e.target.value })}
+                      placeholder="Сияние над цветами и вершинами"
                     />
                   </div>
                 </div>
                 <div>
                   <label className={label}>Описание (**акцент**)</label>
                   <textarea
-                    className={`${input} min-h-[100px]`}
+                    className={`${input} min-h-[120px]`}
                     value={row.description}
                     onChange={(e) =>
                       updateRow(row.id, { description: e.target.value })
                     }
+                    placeholder="При применении **Вечных приливов** сразу активируется…"
                   />
                 </div>
               </div>

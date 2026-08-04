@@ -89,8 +89,8 @@ export default function CharacterTalents({ talents, element }: Props) {
         })}
       </div>
 
-      <div className="relative z-[1] mt-6 grid gap-5 border-t border-black/[0.06] pt-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)]">
-        <div className="overflow-hidden rounded-[16px] bg-[#f5f7f9] ring-1 ring-black/[0.04]">
+      <div className="relative z-[1] mt-6 grid items-start gap-5 border-t border-black/[0.06] pt-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)]">
+        <div className="w-full overflow-hidden rounded-[16px] bg-[#f5f7f9] ring-1 ring-black/[0.04]">
           {t.videoUrl ? (
             <video
               key={t.videoUrl}
@@ -101,7 +101,7 @@ export default function CharacterTalents({ talents, element }: Props) {
               src={t.videoUrl}
             />
           ) : (
-            <div className="flex aspect-video items-center justify-center text-sm text-muted-foreground">
+            <div className="flex aspect-video w-full items-center justify-center text-sm text-muted-foreground">
               Нет видео
             </div>
           )}
