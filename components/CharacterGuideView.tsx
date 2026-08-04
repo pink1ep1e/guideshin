@@ -146,6 +146,220 @@ function StarRow({ stars }: { stars: number }) {
   );
 }
 
+function GoldSlotIcon({ slot }: { slot: string }) {
+  const src = SLOT_ICONS[slot] || SLOT_ICONS["Цветок"];
+  return (
+    <div className="guide-slot-icon" title={slot}>
+      <span className="guide-gold-ring" aria-hidden />
+      <span className="guide-slot-icon-inner">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt="" />
+      </span>
+    </div>
+  );
+}
+
+const TIER_STYLE: Record<string, { bg: string; fg: string; band: string }> = {
+  S: { bg: "#189b8e", fg: "#fff", band: "bg-[#189b8e]/[0.07]" },
+  A: { bg: "#3d7ea6", fg: "#fff", band: "bg-[#f0f5f8]" },
+  B: { bg: "#6b7280", fg: "#fff", band: "bg-[#f7f8fa]" },
+  C: { bg: "#9ca3af", fg: "#fff", band: "bg-[#fafafa]" },
+};
+
+function RankedGear({
+  items,
+  kind = "weapon",
+}: {
+  items: GuideRankedItem[];
+  kind?: "weapon" | "artifact";
+}) {
+  const sorted = [...items].sort((a, b) => a.rank - b.rank);
+  const tiers = ["S", "A", "B", "C"] as const;
+  const byTier = tiers.map((t) => ({
+    tier: t,
+    items: sorted.filter((it) => tierForRank(it.rank, it.tier) === t),
+  }));
+
+  return (
+    <div className="space-y-4">
+      {byTier.map(({ tier, items: group }) => {
+        if (!group.length) return null;
+        const st = TIER_STYLE[tier] || TIER_STYLE.C;
+        return (
+          <div key={tier} className={`guide-tier-band rounded-[16px] p-3 ${st.band}`}>
+            <div
+              className="guide-tier-label shrink-0"
+              style={{ backgroundColor: st.bg, color: st.fg }}
+            >
+              {tier}
+            </div>
+            <ul className="min-w-0 space-y-2">
+              {group.map((item) => {
+                const tip = item.verdict || item.effect;
+                return (
+                  <li key={item.id}>
+                    <div className="flex gap-3 rounded-[14px] bg-white/80 px-2.5 py-2 ring-1 ring-black/[0.04]">
+                      <ItemHoverPreview
+                        name={item.name}
+                        image={item.image}
+                        lore={[item.effect, item.verdict].filter(Boolean).join("\n\n")}
+                        rarityStars={item.rarity >= 5 ? 5 : 4}
+                        fit="contain"
+                        className="shrink-0"
+                      >
+                        <div
+                          className="relative h-[56px] w-[56px] overflow-hidden rounded-[12px] bg-cover bg-center ring-1 ring-black/[0.06]"
+                          style={{
+                            backgroundImage: `url(${rarityBg(item.rarity >= 5 ? 5 : 4)})`,
+                          }}
+                        >
+                          {item.image ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={item.image}
+                              alt=""
+                              className="h-full w-full object-contain p-1"
+                            />
+                          ) : null}
+                          <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2">
+                            <StarRow stars={item.rarity >= 5 ? 5 : 4} />
+                          </div>
+                        </div>
+                      </ItemHoverPreview>
+                      <div className="min-w-0 flex-1 self-center">
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                          {item.href ? (
+                            <Link
+                              href={item.href}
+                              className="text-[15px] font-medium text-foreground hover:text-[#189b8e]"
+                            >
+                              {item.name}
+                            </Link>
+                          ) : (
+                            <span className="text-[15px] font-medium text-foreground">
+                              {item.name}
+                            </span>
+                          )}
+                          {item.subtitle ? (
+                            <span className="text-[12px] text-muted-foreground">
+                              {item.subtitle}
+                            </span>
+                          ) : null}
+                        </div>
+                        {tip ? (
+                          <p className="mt-0.5 text-[13.5px] leading-snug text-muted-foreground">
+                            {tip}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        );
+      })}
+      <p className="text-[13px] text-muted-foreground">
+        {kind === "artifact"
+          ? "Тир-лист сетов: S — лучший выбор, ниже — рабочие альтернативы. Наведите на иконку."
+          : "Тир-лист оружия: S — приоритет, ниже — сильные альтернативы. Наведите на иконку."}
+      </p>
+    </div>
+  );
+}
+
+function MaterialRowList({
+  items,
+}: {
+  items: { id: string; name: string; image: string; rarity: 4 | 5; qty?: string; note: string; href?: string }[];
+}) {
+  return (
+    <ul className="grid gap-2 sm:grid-cols-2">
+      {items.map((item) => (
+        <li
+          key={item.id}
+          className="flex items-center gap-3 rounded-[14px] bg-[#f7f9fb] px-2.5 py-2"
+        >
+          <ItemIconCard
+            name={item.name}
+            image={item.image}
+            rarityStars={item.rarity >= 5 ? 5 : item.rarity >= 4 ? 4 : 3}
+            size="sm"
+            compact
+            lore={item.note || undefined}
+            href={item.href}
+            preview
+          />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[14px] text-foreground" title={item.name}>
+              {item.name}
+            </p>
+            {item.qty ? (
+              <p className="mt-0.5 text-[13px] font-semibold tabular-nums text-[#189b8e]">
+                ×{item.qty}
+              </p>
+            ) : item.note ? (
+              <p className="mt-0.5 truncate text-[12px] text-muted-foreground">{item.note}</p>
+            ) : null}
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function splitOverviewBody(body: string): { facts: string[]; rest: string } {
+  const m = body.match(/###\s*Кратко\s*\n([\s\S]*?)(?=\n###|\n##|$)/i);
+  if (!m) return { facts: [], rest: body };
+  const facts = m[1]
+    .split("\n")
+    .map((l) =>
+      l
+        .replace(/^[-*•]\s*/, "")
+        .replace(/\*\*([^*]+)\*\*/g, "$1")
+        .trim(),
+    )
+    .filter(Boolean);
+  const rest = (body.slice(0, m.index) + body.slice(m.index! + m[0].length)).trim();
+  return { facts, rest };
+}
+
+function OverviewFacts({ facts }: { facts: string[] }) {
+  if (!facts.length) return null;
+  const icons = [
+    "/images/artifact-slots/flower.svg",
+    "/images/artifact-slots/sands.svg",
+    "/images/artifact-slots/goblet.svg",
+    "/images/artifact-slots/circlet.svg",
+    "/images/artifact-slots/plume.svg",
+  ];
+  return (
+    <ul className="mb-5 grid gap-2 sm:grid-cols-2">
+      {facts.map((f, i) => (
+        <li
+          key={i}
+          className="flex items-start gap-3 rounded-[14px] bg-[#f7f9fb] px-3 py-2.5"
+        >
+          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#189b8e]/12">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={icons[i % icons.length]}
+              alt=""
+              className="h-5 w-5"
+              style={{
+                filter:
+                  "brightness(0) saturate(100%) invert(48%) sepia(42%) saturate(668%) hue-rotate(131deg) brightness(93%) contrast(91%)",
+              }}
+            />
+          </span>
+          <p className="text-[14px] leading-snug text-foreground/90">{f}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function MemberPortrait({ m, role }: { m: GuideTeamMember; role?: string }) {
   const bg = m.rarity === 5 ? "/images/legend-bg.jpg" : "/images/epic-bg.jpg";
   const body = (
@@ -218,108 +432,21 @@ function TeamVariantCard({ v }: { v: GuideTeamVariant }) {
   );
 }
 
-/** Упрощённый рейтинг: карточка + коротко «зачем» */
-function RankedGear({ items }: { items: GuideRankedItem[] }) {
-  const sorted = [...items].sort((a, b) => a.rank - b.rank);
-
-  return (
-    <div className="space-y-2.5">
-      {sorted.map((item, idx) => {
-        const tier = tierForRank(item.rank, item.tier);
-        const isTop = idx === 0;
-        const tip = item.verdict || item.effect;
-        const card = (
-          <div
-            className={`flex gap-3.5 rounded-[16px] p-3 sm:gap-4 sm:p-3.5 ${
-              isTop
-                ? "bg-[#189b8e]/[0.08] ring-1 ring-[#189b8e]/25"
-                : "bg-[#f7f9fb] ring-1 ring-black/[0.04]"
-            }`}
-          >
-            <ItemHoverPreview
-              name={item.name}
-              image={item.image}
-              lore={[item.effect, item.verdict].filter(Boolean).join("\n\n")}
-              rarityStars={item.rarity >= 5 ? 5 : 4}
-              fit="contain"
-              className="shrink-0"
-            >
-              <div
-                className="relative h-[72px] w-[72px] overflow-hidden rounded-[14px] bg-cover bg-center ring-1 ring-black/[0.06] sm:h-[80px] sm:w-[80px]"
-                style={{
-                  backgroundImage: `url(${rarityBg(item.rarity >= 5 ? 5 : 4)})`,
-                }}
-              >
-                {item.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={item.image}
-                    alt=""
-                    className="h-full w-full object-contain p-1"
-                  />
-                ) : null}
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/30 to-transparent" />
-                <div className="absolute bottom-1 left-1/2 -translate-x-1/2">
-                  <StarRow stars={item.rarity >= 5 ? 5 : 4} />
-                </div>
-              </div>
-            </ItemHoverPreview>
-
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                {isTop ? (
-                  <span className="rounded-md bg-[#189b8e] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                    Топ
-                  </span>
-                ) : (
-                  <span className="text-[12px] font-semibold tabular-nums text-muted-foreground">
-                    #{item.rank}
-                  </span>
-                )}
-                <span className="rounded bg-white px-1.5 py-0.5 text-[11px] font-semibold text-[#189b8e] ring-1 ring-black/[0.05]">
-                  {tier}
-                </span>
-                {item.href ? (
-                  <Link
-                    href={item.href}
-                    className="text-[15px] font-medium text-foreground hover:text-[#189b8e]"
-                  >
-                    {item.name}
-                  </Link>
-                ) : (
-                  <span className="text-[15px] font-medium text-foreground">{item.name}</span>
-                )}
-                {item.subtitle ? (
-                  <span className="text-[13px] text-muted-foreground">{item.subtitle}</span>
-                ) : null}
-              </div>
-              {tip ? (
-                <p className="mt-1.5 text-[14px] leading-snug text-muted-foreground">
-                  {tip}
-                </p>
-              ) : null}
-            </div>
-          </div>
-        );
-        return <div key={item.id}>{card}</div>;
-      })}
-      <p className="text-[13px] text-muted-foreground">
-        Наведите на иконку — кратко об эффекте. Приоритет сверху вниз.
-      </p>
-    </div>
-  );
-}
-
 function BlockView({ block }: { block: GuideBlock }) {
   if (block.type === "text") {
-    const html = renderLiteMarkdown(block.body);
-    if (!html && !block.title) return null;
+    const isOverview = /обзор|кратко|роль/i.test(`${block.title}\n${block.eyebrow || ""}`);
+    const { facts, rest } = isOverview
+      ? splitOverviewBody(block.body)
+      : { facts: [] as string[], rest: block.body };
+    const html = renderLiteMarkdown(rest);
+    if (!html && !block.title && !facts.length) return null;
     return (
       <SectionChrome
         eyebrow={block.eyebrow}
         title={block.title || "Раздел"}
         pills={elementsMentioned(`${block.title}\n${block.body}`).slice(0, 4)}
       >
+        <OverviewFacts facts={facts} />
         <Md html={html} />
       </SectionChrome>
     );
@@ -383,12 +510,7 @@ function BlockView({ block }: { block: GuideBlock }) {
                   key={s.id}
                   className="flex items-center gap-3 rounded-[14px] bg-[#f7f9fb] px-3 py-2.5"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={SLOT_ICONS[s.slot] || SLOT_ICONS["Цветок"]}
-                    alt=""
-                    className="h-11 w-11 shrink-0"
-                  />
+                  <GoldSlotIcon slot={s.slot} />
                   <div className="min-w-0">
                     <p className="text-[13px] text-muted-foreground">{s.slot}</p>
                     <p className="text-[15px] font-semibold text-[#189b8e]">{s.main}</p>
@@ -406,9 +528,12 @@ function BlockView({ block }: { block: GuideBlock }) {
   }
 
   if (block.type === "rankedList") {
+    const kind = /артефакт|сет/i.test(`${block.title}\n${block.eyebrow || ""}`)
+      ? "artifact"
+      : "weapon";
     return (
       <SectionChrome eyebrow={block.eyebrow} title={block.title} intro={block.intro}>
-        <RankedGear items={block.items} />
+        <RankedGear items={block.items} kind={kind} />
       </SectionChrome>
     );
   }
@@ -689,22 +814,7 @@ function BlockView({ block }: { block: GuideBlock }) {
               : "Материалы"
         }
       >
-        <ul className="flex flex-wrap gap-2.5">
-          {block.items.map((item) => (
-            <li key={item.id}>
-              <ItemIconCard
-                name={item.name}
-                image={item.image}
-                rarityStars={item.rarity >= 5 ? 5 : 4}
-                qty={item.qty}
-                href={item.href}
-                size="md"
-                lore={item.note || undefined}
-                preview
-              />
-            </li>
-          ))}
-        </ul>
+        <MaterialRowList items={block.items} />
       </SectionChrome>
     );
   }

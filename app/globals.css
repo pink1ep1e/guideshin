@@ -328,6 +328,82 @@
   }
 }
 
+@keyframes guide-gold-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes guide-gold-pulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    filter: drop-shadow(0 0 4px rgba(232, 184, 74, 0.35));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 10px rgba(246, 213, 107, 0.65));
+  }
+}
+
+.guide-gold-ring {
+  position: absolute;
+  inset: -3px;
+  background: url("/images/artifact-slots/gold-ring.svg") center / contain no-repeat;
+  animation: guide-gold-spin 10s linear infinite, guide-gold-pulse 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.guide-slot-icon {
+  position: relative;
+  display: flex;
+  height: 52px;
+  width: 52px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.guide-slot-icon-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 40px;
+  width: 40px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 40% 30%, #1a2744 0%, #0b1428 70%);
+  box-shadow: inset 0 0 0 1px rgba(255, 230, 160, 0.2);
+}
+
+.guide-slot-icon-inner img {
+  height: 26px;
+  width: 26px;
+  object-fit: contain;
+  filter: brightness(1.15) saturate(0.9);
+}
+
+.guide-tier-band {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.guide-tier-label {
+  display: flex;
+  height: 40px;
+  width: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
 /* Карта на весь экран: iframe под шапкой, футер скрыт */
 body:has(.map-page-root) {
   height: 100dvh;
