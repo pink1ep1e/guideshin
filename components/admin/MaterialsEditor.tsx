@@ -3,9 +3,11 @@
 import { Plus, Trash2 } from "lucide-react";
 import MediaUpload from "@/components/admin/MediaUpload";
 import FancySelect from "@/components/ui/FancySelect";
+import { CatalogPicker, useGuideCatalog } from "@/components/admin/CatalogPicker";
 import {
   MATERIAL_CATEGORY_LABEL,
   materialUid,
+  normalizeMaterialCategory,
   type CharacterMaterial,
   type MaterialCategory,
 } from "@/lib/character-materials";
@@ -18,24 +20,46 @@ type Props = {
 };
 
 export default function MaterialsEditor({ value, onChange }: Props) {
+  const { catalog } = useGuideCatalog();
   const input =
     "w-full rounded-[12px] border border-black/[0.08] bg-white/90 px-3 py-2 text-sm font-medium outline-none ring-[#189b8e]/25 focus:ring-2";
-  const label = "mb-1 block text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground";
+  const label =
+    "mb-1 block text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground";
 
   function updateRow(id: string, patch: Partial<CharacterMaterial>) {
     onChange(value.map((row) => (row.id === id ? { ...row, ...patch } : row)));
   }
 
+  function emptyRow(): CharacterMaterial {
+    return {
+      id: materialUid(),
+      name: "",
+      image: "",
+      qty: 0,
+      category: "ascension",
+      rarityStars: 3,
+    };
+  }
+
   function addRow() {
+    onChange([...value, emptyRow()]);
+  }
+
+  function addFromCatalog(picked: {
+    name: string;
+    image: string;
+    rarityStars?: number;
+  }) {
+    const fromDb = catalog.materials.find((m) => m.name === picked.name);
     onChange([
       ...value,
       {
         id: materialUid(),
-        name: "",
-        image: "",
+        name: picked.name,
+        image: picked.image,
         qty: 0,
-        category: "ascension",
-        rarityStars: 3,
+        category: normalizeMaterialCategory(fromDb?.category),
+        rarityStars: picked.rarityStars ?? fromDb?.rarityStars ?? 3,
       },
     ]);
   }
@@ -48,7 +72,7 @@ export default function MaterialsEditor({ value, onChange }: Props) {
             Материалы прокачки
           </p>
           <p className="text-sm font-medium text-muted-foreground">
-            Карточки с количеством — свои для каждого персонажа
+            Берите из базы или вводите вручную — количество своё для персонажа
           </p>
         </div>
         <button
@@ -57,13 +81,20 @@ export default function MaterialsEditor({ value, onChange }: Props) {
           className="inline-flex items-center gap-1.5 rounded-xl bg-[#189b8e]/12 px-3 py-2 text-xs font-bold text-[#189b8e]"
         >
           <Plus className="h-3.5 w-3.5" />
-          Добавить материал
+          Пустая строка
         </button>
       </div>
 
+      <CatalogPicker
+        label="Добавить материал из базы"
+        kind="materials"
+        catalog={catalog}
+        onPick={addFromCatalog}
+      />
+
       {value.length === 0 && (
         <p className="rounded-[14px] border border-dashed border-black/[0.08] bg-white/60 px-4 py-6 text-center text-sm font-medium text-muted-foreground">
-          Пока пусто — добавьте камни, диковинки, книги талантов и укажите количество.
+          Пока пусто — найдите материал в поиске выше или добавьте пустую строку.
         </p>
       )}
 
@@ -74,7 +105,9 @@ export default function MaterialsEditor({ value, onChange }: Props) {
             className="rounded-[16px] border border-black/[0.05] bg-[#0b1f44]/[0.02] p-3"
           >
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-xs font-bold text-muted-foreground">Материал #{idx + 1}</p>
+              <p className="text-xs font-bold text-muted-foreground">
+                Материал #{idx + 1}
+              </p>
               <button
                 type="button"
                 onClick={() => onChange(value.filter((x) => x.id !== row.id))}
@@ -83,6 +116,24 @@ export default function MaterialsEditor({ value, onChange }: Props) {
                 <Trash2 className="h-3.5 w-3.5" />
                 Удалить
               </button>
+            </div>
+            <div className="mb-3">
+              <CatalogPicker
+                label="Заменить из базы"
+                kind="materials"
+                catalog={catalog}
+                onPick={(picked) => {
+                  const fromDb = catalog.materials.find((m) => m.name === picked.name);
+                  updateRow(row.id, {
+                    name: picked.name,
+                    image: picked.image,
+                    rarityStars: picked.rarityStars ?? fromDb?.rarityStars ?? row.rarityStars,
+                    category: normalizeMaterialCategory(
+                      fromDb?.category ?? row.category,
+                    ),
+                  });
+                }}
+              />
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <MediaUpload
