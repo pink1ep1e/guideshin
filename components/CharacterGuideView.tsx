@@ -49,12 +49,9 @@ const ELEMENT_RU: { key: ElementKey; label: string }[] = [
   { key: "GEO", label: "Гео" },
 ];
 
-function elementsMentioned(text: string): ElementKey[] {
-  const found: ElementKey[] = [];
-  for (const { key, label } of ELEMENT_RU) {
-    if (new RegExp(label, "i").test(text)) found.push(key);
-  }
-  return found;
+function characterElementKey(element: string): ElementKey | null {
+  const key = element.trim().toUpperCase() as ElementKey;
+  return ELEMENT_RU.some((e) => e.key === key) ? key : null;
 }
 
 function tierForRank(rank: number, explicit?: string): string {
@@ -374,7 +371,9 @@ function MemberPortrait({ m, role }: { m: GuideTeamMember; role?: string }) {
             {role}
           </p>
         ) : null}
-        <p className="truncate text-[14px] font-medium text-foreground">{m.name}</p>
+        <p className="font-genshin truncate text-[14px] tracking-wide text-foreground">
+          {m.name}
+        </p>
       </div>
     </div>
   );
@@ -415,7 +414,13 @@ function TeamVariantCard({ v }: { v: GuideTeamVariant }) {
   );
 }
 
-function BlockView({ block }: { block: GuideBlock }) {
+function BlockView({
+  block,
+  characterElement,
+}: {
+  block: GuideBlock;
+  characterElement?: string;
+}) {
   if (block.type === "text") {
     const isOverview = /обзор|кратко|роль/i.test(`${block.title}\n${block.eyebrow || ""}`);
     const { facts, rest } = isOverview
@@ -423,11 +428,15 @@ function BlockView({ block }: { block: GuideBlock }) {
       : { facts: [] as string[], rest: block.body };
     const html = renderLiteMarkdown(rest);
     if (!html && !block.title && !facts.length) return null;
+    const elKey =
+      isOverview && characterElement
+        ? characterElementKey(characterElement)
+        : null;
     return (
       <SectionChrome
         eyebrow={block.eyebrow}
         title={block.title || "Раздел"}
-        pills={elementsMentioned(`${block.title}\n${block.body}`).slice(0, 4)}
+        pills={elKey ? [elKey] : undefined}
       >
         <OverviewFacts facts={facts} />
         <Md html={html} />
@@ -545,7 +554,9 @@ function BlockView({ block }: { block: GuideBlock }) {
                           />
                         ) : null}
                       </div>
-                      <span className="truncate text-[15px] text-foreground">{r.name}</span>
+                      <span className="font-genshin truncate text-[15px] tracking-wide text-foreground">
+                        {r.name}
+                      </span>
                     </div>
                   );
                   return (
@@ -598,7 +609,6 @@ function BlockView({ block }: { block: GuideBlock }) {
         eyebrow={block.eyebrow}
         title={block.title}
         intro={block.intro}
-        pills={elementsMentioned(`${block.title}\n${block.intro}`)}
       >
         <div className="space-y-3">
           {block.variants.map((v) => (
@@ -660,12 +670,14 @@ function BlockView({ block }: { block: GuideBlock }) {
                   {r.href ? (
                     <Link
                       href={r.href}
-                      className="text-[15px] font-medium text-[#189b8e] hover:underline"
+                      className="font-genshin text-[15px] tracking-wide text-[#189b8e] hover:underline"
                     >
                       {r.name}
                     </Link>
                   ) : (
-                    <span className="text-[15px] font-medium">{r.name}</span>
+                    <span className="font-genshin text-[15px] tracking-wide text-foreground">
+                      {r.name}
+                    </span>
                   )}
                   {r.elementIcon ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -883,20 +895,20 @@ export default function CharacterGuideView({
             <GuideCalculators characterName={characterName} />
             <MaterialCards materials={materials} loreByName={loreByName} />
             {grouped.leveling.map((b) => (
-              <BlockView key={b.id} block={b} />
+              <BlockView key={b.id} block={b} characterElement={element} />
             ))}
           </>
         ) : active === "build" ? (
           <>
             {grouped.build.map((b) => (
-              <BlockView key={b.id} block={b} />
+              <BlockView key={b.id} block={b} characterElement={element} />
             ))}
             <CharacterTalents talents={talents} element={element} />
           </>
         ) : active === "play" ? (
           <>
             {grouped.play.map((b) => (
-              <BlockView key={b.id} block={b} />
+              <BlockView key={b.id} block={b} characterElement={element} />
             ))}
             <CharacterConstellations
               constellations={constellations}
@@ -904,7 +916,9 @@ export default function CharacterGuideView({
             />
           </>
         ) : (
-          grouped[active].map((b) => <BlockView key={b.id} block={b} />)
+          grouped[active].map((b) => (
+            <BlockView key={b.id} block={b} characterElement={element} />
+          ))
         )}
       </div>
     </div>
