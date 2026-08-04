@@ -845,20 +845,29 @@ export default function CharacterGuideView({
 
   return (
     <div className="space-y-8 sm:space-y-10">
-      <nav className="guide-tabs" aria-label="Разделы гайда">
-        {availableTabs.map((id) => {
-          const on = id === active;
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setTab(id)}
-              className={`guide-tab ${on ? "guide-tab--on" : ""}`}
-            >
-              {GUIDE_TAB_LABELS[id]}
-            </button>
-          );
-        })}
+      <nav
+        className="rounded-[16px] bg-white p-1.5 shadow-panel ring-1 ring-black/[0.05]"
+        aria-label="Разделы гайда"
+      >
+        <div className="flex flex-wrap gap-1">
+          {availableTabs.map((id) => {
+            const on = id === active;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setTab(id)}
+                className={`rounded-[12px] px-3.5 py-2.5 text-[14px] transition sm:flex-1 ${
+                  on
+                    ? "bg-[#189b8e] font-semibold text-white"
+                    : "font-medium text-muted-foreground hover:bg-black/[0.03] hover:text-foreground"
+                }`}
+              >
+                {GUIDE_TAB_LABELS[id]}
+              </button>
+            );
+          })}
+        </div>
       </nav>
 
       <div className="space-y-10 sm:space-y-12">
