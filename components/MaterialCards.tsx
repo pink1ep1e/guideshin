@@ -51,10 +51,7 @@ export default function MaterialCards({
           <span className="guide-eyebrow-mark" aria-hidden />
           Прокачка
         </p>
-        <h2 className="guide-title">
-          <span className="guide-title-glow" aria-hidden />
-          {title}
-        </h2>
+        <h2 className="guide-title">{title}</h2>
         <p className="guide-intro">Наведите на иконку — краткая справка по материалу.</p>
       </header>
       <div className="guide-module-line" aria-hidden />

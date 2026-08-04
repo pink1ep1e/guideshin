@@ -125,10 +125,7 @@ function SectionChrome({
             {eyebrow}
           </p>
         ) : null}
-        <h2 className="guide-title">
-          <span className="guide-title-glow" aria-hidden />
-          {title}
-        </h2>
+        <h2 className="guide-title">{title}</h2>
         {intro ? <p className="guide-intro">{intro}</p> : null}
         {pills?.length ? <ElementPills keys={pills} /> : null}
       </header>
@@ -869,11 +866,11 @@ export default function CharacterGuideView({
                 onClick={() => setTab(id)}
                 className={`rounded-[12px] px-3.5 py-2.5 text-[14px] transition sm:flex-1 ${
                   on
-                    ? "bg-[#189b8e] font-semibold text-white"
+                    ? "guide-nav-tab--on bg-[#189b8e] font-semibold text-white"
                     : "font-medium text-muted-foreground hover:bg-black/[0.03] hover:text-foreground"
                 }`}
               >
-                {GUIDE_TAB_LABELS[id]}
+                <span>{GUIDE_TAB_LABELS[id]}</span>
               </button>
             );
           })}
