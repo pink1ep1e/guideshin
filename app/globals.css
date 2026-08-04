@@ -506,8 +506,8 @@
 
 .guide-title {
   /* крути здесь: отступ текста и позиция menu-active */
-  --guide-title-text-indent: 2.15rem;
-  --guide-title-glow-left: 0.1rem;
+  --guide-title-text-indent: calc(2.15rem - 12px);
+  --guide-title-glow-left: calc(0.1rem - 5px);
   --guide-title-glow-height: 0.92em;
 
   position: relative;
@@ -528,8 +528,8 @@
 
 @media (min-width: 640px) {
   .guide-title {
-    --guide-title-text-indent: 2.4rem;
-    --guide-title-glow-left: 0.15rem;
+    --guide-title-text-indent: calc(2.4rem - 12px);
+    --guide-title-glow-left: calc(0.15rem - 5px);
     font-size: 1.5rem;
   }
 }
