@@ -425,7 +425,7 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                   <div className="space-y-2">
                     <p className={label}>Целевые значения</p>
                     {block.targets.map((t) => (
-                      <div key={t.id} className="grid gap-2 sm:grid-cols-3">
+                      <div key={t.id} className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
                         <input
                           className={input}
                           value={t.label}
@@ -462,6 +462,18 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                             })
                           }
                         />
+                        <button
+                          type="button"
+                          title="Удалить цель"
+                          onClick={() =>
+                            updateBlock(block.id, {
+                              targets: block.targets.filter((x) => x.id !== t.id),
+                            })
+                          }
+                          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-destructive ring-1 ring-black/[0.06] hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                     ))}
                     <button
@@ -480,7 +492,7 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                   <div className="space-y-2">
                     <p className={label}>Слоты артефактов</p>
                     {block.slots.map((s) => (
-                      <div key={s.id} className="grid gap-2 sm:grid-cols-3">
+                      <div key={s.id} className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
                         <input
                           className={input}
                           value={s.slot}
@@ -517,6 +529,18 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                             })
                           }
                         />
+                        <button
+                          type="button"
+                          title="Удалить слот"
+                          onClick={() =>
+                            updateBlock(block.id, {
+                              slots: block.slots.filter((x) => x.id !== s.id),
+                            })
+                          }
+                          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-destructive ring-1 ring-black/[0.06] hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                     ))}
                     <button
