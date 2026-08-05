@@ -641,7 +641,7 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                                         ...x,
                                         name: picked.name,
                                         image: picked.image,
-                                        rarity: picked.rarity,
+                                        rarity: picked.rarity >= 5 ? 5 : 4,
                                         href: picked.href,
                                       }
                                     : x,
@@ -837,9 +837,15 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                                         ...x,
                                         name: picked.name,
                                         image: picked.image,
-                                        rarity:
-                                          picked.rarityStars ??
-                                          picked.rarity,
+                                        rarity: Math.min(
+                                          5,
+                                          Math.max(
+                                            1,
+                                            Math.round(
+                                              picked.rarityStars ?? picked.rarity,
+                                            ),
+                                          ),
+                                        ) as GuideItem["rarity"],
                                         href: picked.href,
                                       }
                                     : x,
@@ -1501,7 +1507,7 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                                         ...x,
                                         name: picked.name,
                                         image: picked.image,
-                                        rarity: picked.rarity,
+                                        rarity: picked.rarity >= 5 ? 5 : 4,
                                         href: picked.href,
                                         elementIcon: picked.element
                                           ? ELEMENT_SVG[picked.element as ElementKey] ||
@@ -2013,7 +2019,7 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                                                     ...mm,
                                                     name: picked.name,
                                                     image: picked.image,
-                                                    rarity: picked.rarity,
+                                                    rarity: picked.rarity >= 5 ? 5 : 4,
                                                     href: picked.href,
                                                     elementIcon: picked.element
                                                       ? ELEMENT_SVG[
