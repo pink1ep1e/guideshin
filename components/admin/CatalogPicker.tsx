@@ -93,11 +93,16 @@ type Picked = {
   name: string;
   image: string;
   splashImage?: string;
-  rarity: 4 | 5;
+  /** Звёзды редкости: для материалов 1–5, для оружия/сетов/персонажей обычно 4–5. */
+  rarity: 1 | 2 | 3 | 4 | 5;
   href: string;
   element?: string;
   rarityStars?: number;
 };
+
+function clampStars(n: number, min = 1, max = 5): 1 | 2 | 3 | 4 | 5 {
+  return Math.min(max, Math.max(min, Math.round(n || min))) as 1 | 2 | 3 | 4 | 5;
+}
 
 export type CatalogPickerKind =
   | "weapons"
@@ -139,19 +144,20 @@ function pickWeapon(w: CatalogWeapon): Picked {
   return {
     name: w.name,
     image: w.image,
-    rarity: (stars >= 5 ? 5 : 4) as 4 | 5,
+    rarity: clampStars(stars, 4, 5),
     rarityStars: stars,
     href: `/wiki/weapons/${w.slug}`,
   };
 }
 
 function pickMaterial(m: CatalogMaterial): Picked {
+  const stars = clampStars(m.rarityStars || 1);
   return {
     name: m.name,
     image: m.image,
-    rarity: Math.min(5, Math.max(4, m.rarityStars || 4)) as 4 | 5,
+    rarity: stars,
     href: `/wiki/materials/${m.slug}`,
-    rarityStars: m.rarityStars,
+    rarityStars: stars,
   };
 }
 
@@ -167,7 +173,7 @@ function pickFromItem(catalog: GuideCatalog, item: ListItem): Picked | null {
     return {
       name: a.name,
       image: a.image,
-      rarity: (stars >= 5 ? 5 : 4) as 4 | 5,
+      rarity: clampStars(stars, 4, 5),
       rarityStars: stars,
       href: `/wiki/artifacts/${a.slug}`,
     };

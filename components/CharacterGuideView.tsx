@@ -289,7 +289,15 @@ function RankedGear({
 function MaterialRowList({
   items,
 }: {
-  items: { id: string; name: string; image: string; rarity: 4 | 5; qty?: string; note: string; href?: string }[];
+  items: {
+    id: string;
+    name: string;
+    image: string;
+    rarity: number;
+    qty?: string;
+    note: string;
+    href?: string;
+  }[];
 }) {
   return (
     <ul className="grid gap-2 sm:grid-cols-2">
@@ -301,7 +309,7 @@ function MaterialRowList({
           <ItemIconCard
             name={item.name}
             image={item.image}
-            rarityStars={item.rarity >= 5 ? 5 : item.rarity >= 4 ? 4 : 3}
+            rarityStars={Math.min(5, Math.max(1, Math.round(item.rarity || 1)))}
             size="sm"
             compact
             lore={item.note || undefined}

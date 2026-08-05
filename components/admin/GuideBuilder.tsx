@@ -837,7 +837,9 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                                         ...x,
                                         name: picked.name,
                                         image: picked.image,
-                                        rarity: picked.rarity,
+                                        rarity:
+                                          picked.rarityStars ??
+                                          picked.rarity,
                                         href: picked.href,
                                       }
                                     : x,
@@ -880,6 +882,25 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                                 }
                               />
                             </div>
+                            {block.type === "materials" && (
+                              <div>
+                                <label className={label}>Количество</label>
+                                <input
+                                  className={input}
+                                  value={item.qty || ""}
+                                  onChange={(e) =>
+                                    updateBlock(block.id, {
+                                      items: block.items.map((x) =>
+                                        x.id === item.id
+                                          ? { ...x, qty: e.target.value }
+                                          : x,
+                                      ),
+                                    })
+                                  }
+                                  placeholder="3"
+                                />
+                              </div>
+                            )}
                             <div>
                               <label className={label}>Заметка</label>
                               <input
@@ -910,27 +931,33 @@ export default function GuideBuilder({ characterName, value, onChange }: Props) 
                                 placeholder="/wiki/weapons/..."
                               />
                             </div>
-                            <div className="flex gap-2">
-                              {([5, 4] as const).map((r) => (
-                                <button
-                                  key={r}
-                                  type="button"
-                                  onClick={() =>
-                                    updateBlock(block.id, {
-                                      items: block.items.map((x) =>
-                                        x.id === item.id ? { ...x, rarity: r } : x,
-                                      ),
-                                    })
-                                  }
-                                  className={`flex-1 rounded-xl px-2 py-2 text-xs font-bold ${
-                                    item.rarity === r
-                                      ? "bg-[#189b8e] text-white"
-                                      : "bg-white ring-1 ring-black/[0.06]"
-                                  }`}
-                                >
-                                  {r}★
-                                </button>
-                              ))}
+                            <div>
+                              <label className={label}>Редкость</label>
+                              <div className="flex flex-wrap gap-2">
+                                {(block.type === "materials"
+                                  ? ([1, 2, 3, 4, 5] as const)
+                                  : ([5, 4] as const)
+                                ).map((r) => (
+                                  <button
+                                    key={r}
+                                    type="button"
+                                    onClick={() =>
+                                      updateBlock(block.id, {
+                                        items: block.items.map((x) =>
+                                          x.id === item.id ? { ...x, rarity: r } : x,
+                                        ),
+                                      })
+                                    }
+                                    className={`min-w-[2.5rem] flex-1 rounded-xl px-2 py-2 text-xs font-bold ${
+                                      item.rarity === r
+                                        ? "bg-[#189b8e] text-white"
+                                        : "bg-white ring-1 ring-black/[0.06]"
+                                    }`}
+                                  >
+                                    {r}★
+                                  </button>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         </div>

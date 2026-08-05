@@ -1,10 +1,13 @@
 ﻿import { rarityBg } from "@/lib/genshin";
 
+export type GuideItemRarity = 1 | 2 | 3 | 4 | 5;
+
 export type GuideItem = {
   id: string;
   name: string;
   image: string;
-  rarity: 4 | 5;
+  /** Для материалов — 1–5★; для оружия/сетов обычно 4–5. */
+  rarity: GuideItemRarity;
   note: string;
   /** Where to find / quantity (for resource tables) */
   source?: string;
@@ -525,7 +528,7 @@ function visibleQty(qty?: string | number | null): string | null {
 }
 
 function itemCardHtml(item: GuideItem) {
-  const stars = item.rarity >= 5 ? 5 : item.rarity >= 4 ? 4 : item.rarity;
+  const stars = Math.min(5, Math.max(1, Math.round(Number(item.rarity) || 1))) as GuideItemRarity;
   const bg = rarityBg(stars);
   const qtyLabel = visibleQty(item.qty);
   const noteText = item.note?.trim() && !qtyLabel ? item.note.trim() : null;
