@@ -2401,8 +2401,6 @@ async function main() {
 
     {
 
-      id: uid(),
-
       id: "t_util",
 
       name: "Миниатюрный сенсор распознавания",
