@@ -5,8 +5,8 @@ export const SITE_TELEGRAM = "https://t.me/guideshin";
 
 /** PNK VPN — промо в сайдбаре */
 export const PNK_VPN_BOT = "https://t.me/pnkvpn_bot";
-/** Пусто — кнопка Boosty пока неактивна */
-export const PNK_VPN_BOOSTY = "";
+/** Тестовая ссылка Boosty */
+export const PNK_VPN_BOOSTY = "https://boosty.to/pnk";
 export const PNK_VPN_LOGO = "/images/pnk-vpn-logo.svg";
 
 export const SITE_DESCRIPTION =
