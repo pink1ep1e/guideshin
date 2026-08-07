@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowUpRight } from "lucide-react";
 import { trackEvent } from "@/components/AnalyticsProvider";
 import { TelegramIcon } from "@/components/TelegramLink";
 import {
@@ -17,124 +18,77 @@ function BoostyIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-function ShieldGlow() {
-  return (
-    <div className="pnk-vpn-glow" aria-hidden>
-      <span className="pnk-vpn-glow__ring" />
-      <span className="pnk-vpn-glow__pulse" />
-    </div>
-  );
-}
-
 export function PnkVpnPromo() {
-  const boostyHref = PNK_VPN_BOOSTY.trim();
-  const hasBoosty = Boolean(boostyHref);
-
   return (
-    <aside className="pnk-vpn panel overflow-hidden">
-      <div className="pnk-vpn__hero relative px-5 pb-6 pt-7 text-center">
-        <div className="pnk-vpn__grid" aria-hidden />
-        <div className="pnk-vpn__vignette" aria-hidden />
-
-        <div className="relative z-[1] mx-auto flex w-fit flex-col items-center">
-          <ShieldGlow />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={PNK_VPN_LOGO}
-            alt="PNK VPN"
-            className="pnk-vpn__logo relative z-[1] h-[78px] w-auto object-contain"
-          />
-        </div>
-
-        <p className="pnk-vpn__eyebrow relative z-[1] mt-4">VPN · Guideshin</p>
-        <h2 className="relative z-[1] mt-1 font-genshin text-[1.35rem] tracking-wide text-white">
-          PNK VPN
-        </h2>
-        <p className="relative z-[1] mx-auto mt-2 max-w-[15.5rem] text-[13px] font-medium leading-snug text-white/65">
-          Любимые ресурсы ждут. Анонимность в яркой упаковке.
-        </p>
-      </div>
-
-      <div className="grid gap-2.5 border-t border-black/[0.04] bg-gradient-to-b from-[#f7fafb] to-white p-4">
-        <a
-          href={PNK_VPN_BOT}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="pnk-vpn__connect group"
-          onClick={() =>
-            trackEvent("outbound", {
-              meta: { placement: "sidebar_pnk_vpn", href: PNK_VPN_BOT, label: "connect" },
-            })
-          }
-        >
-          <span className="pnk-vpn__connect-shine" aria-hidden />
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-[18px] w-[18px] shrink-0 transition group-hover:rotate-12"
-            aria-hidden
-          >
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            <path d="M9.5 12.5l1.8 1.8 3.7-3.8" />
-          </svg>
-          Подключить
-        </a>
-
-        <div className="grid grid-cols-2 gap-2">
-          {hasBoosty ? (
-            <a
-              href={boostyHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="pnk-vpn__side pnk-vpn__side--boosty"
-              onClick={() =>
-                trackEvent("outbound", {
-                  meta: {
-                    placement: "sidebar_pnk_vpn",
-                    href: boostyHref,
-                    label: "boosty",
-                  },
-                })
-              }
-            >
-              <BoostyIcon className="h-4 w-4 shrink-0" />
-              Boosty
-            </a>
-          ) : (
-            <span
-              className="pnk-vpn__side pnk-vpn__side--muted"
-              title="Скоро"
-              aria-disabled="true"
-            >
-              <BoostyIcon className="h-4 w-4 shrink-0 opacity-70" />
-              <span className="flex flex-col items-start leading-none">
-                <span>Boosty</span>
-                <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80">
-                  скоро
-                </span>
-              </span>
-            </span>
-          )}
-
+    <aside className="panel overflow-hidden bg-white p-5">
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <h2 className="font-genshin text-[1.25rem] tracking-wide text-foreground">
+            PNK VPN
+          </h2>
+          <p className="mt-1.5 text-[13px] font-medium leading-snug text-muted-foreground">
+            Любимые ресурсы ждут.
+            <br />
+            Анонимность в яркой упаковке.
+          </p>
           <a
-            href={SITE_TELEGRAM}
+            href={PNK_VPN_BOT}
             target="_blank"
             rel="noopener noreferrer"
-            className="pnk-vpn__side pnk-vpn__side--tg"
+            className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#cfe8f7] px-5 py-2.5 text-[14px] font-bold text-navy transition hover:bg-[#bddff3]"
             onClick={() =>
-              trackEvent("telegram_click", {
-                meta: { placement: "sidebar_pnk_vpn", href: SITE_TELEGRAM },
+              trackEvent("outbound", {
+                meta: { placement: "sidebar_pnk_vpn", href: PNK_VPN_BOT, label: "connect" },
               })
             }
           >
-            <TelegramIcon className="h-4 w-4 shrink-0" />
-            Telegram
+            Подключить
+            <ArrowUpRight className="h-4 w-4" />
           </a>
         </div>
+
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={PNK_VPN_LOGO}
+          alt=""
+          className="h-[72px] w-auto shrink-0 object-contain"
+        />
+      </div>
+
+      <div className="mt-4 grid gap-2">
+        <a
+          href={PNK_VPN_BOOSTY}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#f15a29]/[0.1] px-3.5 py-3 text-[14px] font-bold text-[#d14a1f] transition hover:bg-[#f15a29]/18"
+          onClick={() =>
+            trackEvent("outbound", {
+              meta: {
+                placement: "sidebar_pnk_vpn",
+                href: PNK_VPN_BOOSTY,
+                label: "boosty",
+              },
+            })
+          }
+        >
+          <BoostyIcon className="h-4 w-4 shrink-0" />
+          Boosty
+        </a>
+
+        <a
+          href={SITE_TELEGRAM}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#189b8e]/[0.1] px-3.5 py-3 text-[14px] font-bold text-[#189b8e] transition hover:bg-[#189b8e]/18"
+          onClick={() =>
+            trackEvent("telegram_click", {
+              meta: { placement: "sidebar_pnk_vpn", href: SITE_TELEGRAM },
+            })
+          }
+        >
+          <TelegramIcon className="h-4 w-4 shrink-0" />
+          Telegram
+        </a>
       </div>
     </aside>
   );
