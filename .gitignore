@@ -47,3 +47,9 @@ next-env.d.ts
 # local scrape / seed caches (may contain third-party page secrets)
 /scripts/_cache/
 /scripts/_tmp*
+
+# seed scripts — local-only, not part of the app build
+/scripts/seed-*.ts
+/scripts/lib/seed-*.ts
+/scripts/lib/extract-yatta-avatar.ts
+/scripts/templates/
