@@ -8,6 +8,7 @@ export const PNK_VPN_BOT = "https://t.me/pnkvpn_bot";
 /** Тестовая ссылка Boosty */
 export const PNK_VPN_BOOSTY = "https://boosty.to/pnk";
 export const PNK_VPN_LOGO = "/images/pnk-vpn-logo.svg";
+export const PNK_VPN_BG = "/images/pnk-vpn-bg.png";
 
 export const SITE_DESCRIPTION =
   "Гайды по Genshin Impact: билды персонажей, оружие, артефакты, материалы и карта Тейвата.";
