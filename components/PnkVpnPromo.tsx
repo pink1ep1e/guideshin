@@ -74,7 +74,7 @@ export function PnkVpnPromo() {
           <img
             src="/images/boosty-founder-light.svg"
             alt="Boosty"
-            className="h-7 w-auto"
+            className="h-5 w-auto"
           />
         </a>
 
