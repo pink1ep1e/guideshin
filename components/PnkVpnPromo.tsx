@@ -30,7 +30,7 @@ export function PnkVpnPromo() {
           <img
             src={PNK_VPN_LOGO}
             alt="PNK VPN"
-            className="h-[72px] w-auto shrink-0 object-contain"
+            className="h-[72px] w-auto shrink-0 object-contain invert"
           />
         </div>
 
@@ -59,7 +59,7 @@ export function PnkVpnPromo() {
           href={PNK_VPN_BOOSTY}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex w-full items-center justify-center rounded-xl bg-[#1a1a1a] px-3.5 py-3 transition hover:bg-[#2a2a2a]"
+          className="flex w-full items-center justify-center rounded-xl bg-[#f15a29]/[0.12] px-3.5 py-3 transition hover:bg-[#f15a29]/20"
           onClick={() =>
             trackEvent("outbound", {
               meta: {
@@ -72,7 +72,7 @@ export function PnkVpnPromo() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/boosty-founder-dark.svg"
+            src="/images/boosty-founder-light.svg"
             alt="Boosty"
             className="h-7 w-auto"
           />
