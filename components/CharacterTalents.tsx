@@ -61,15 +61,14 @@ export default function CharacterTalents({ talents, element }: Props) {
               aria-pressed={on}
               title={item.name}
             >
+              <span className="talent-key-idle-ring" aria-hidden />
               {on ? (
                 <span
                   className="talent-key-ring pointer-events-none absolute inset-[-8px]"
                   style={{ color: theme.solid }}
                   aria-hidden
                 />
-              ) : (
-                <span className="talent-key-idle-ring" aria-hidden />
-              )}
+              ) : null}
               <span className="relative z-[1] flex h-[58px] w-[58px] items-center justify-center overflow-hidden rounded-full bg-[#f0f3f6] ring-1 ring-black/[0.06] sm:h-[66px] sm:w-[66px]">
                 {item.icon ? (
                   // eslint-disable-next-line @next/next/no-img-element

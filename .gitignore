@@ -43,3 +43,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local scrape / seed caches (may contain third-party page secrets)
+/scripts/_cache/
+/scripts/_tmp*
