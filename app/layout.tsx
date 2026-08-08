@@ -8,8 +8,16 @@ import {
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
   SITE_NAME,
+  SITE_TITLE_DEFAULT,
   SITE_URL,
 } from "@/lib/site";
+import {
+  DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_ALT,
+  organizationJsonLd,
+  serializeJsonLd,
+  webSiteJsonLd,
+} from "@/lib/seo";
 
 const genshinFont = localFont({
   src: "../public/fonts/Genshin_Impact.ttf",
@@ -18,10 +26,13 @@ const genshinFont = localFont({
   preload: false,
 });
 
+const googleVerification = process.env.GOOGLE_SITE_VERIFICATION;
+const yandexVerification = process.env.YANDEX_VERIFICATION;
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: SITE_NAME,
+    default: SITE_TITLE_DEFAULT,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -38,22 +49,22 @@ export const metadata: Metadata = {
     locale: "ru_RU",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: SITE_NAME,
+    title: SITE_TITLE_DEFAULT,
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: "/logo-white.svg",
-        width: 993,
-        height: 1034,
-        alt: SITE_NAME,
+        url: DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: DEFAULT_OG_IMAGE_ALT,
       },
     ],
   },
   twitter: {
-    card: "summary",
-    title: SITE_NAME,
+    card: "summary_large_image",
+    title: SITE_TITLE_DEFAULT,
     description: SITE_DESCRIPTION,
-    images: ["/logo-white.svg"],
+    images: [DEFAULT_OG_IMAGE],
   },
   icons: {
     icon: [
@@ -74,15 +85,25 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+  verification: {
+    ...(googleVerification ? { google: googleVerification } : {}),
+    ...(yandexVerification ? { yandex: yandexVerification } : {}),
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const jsonLd = [organizationJsonLd(), webSiteJsonLd()];
+
   return (
     <html lang="ru" className={genshinFont.variable}>
       <head>
         <link rel="stylesheet" href="/fonts/fonts.css" />
         <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+        />
       </head>
       <body className="flex min-h-screen flex-col">
         <AnalyticsProvider />

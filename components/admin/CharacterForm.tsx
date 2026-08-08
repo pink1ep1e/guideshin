@@ -33,6 +33,7 @@ import {
   parseConstellations,
   type CharacterConstellation,
 } from "@/lib/character-constellations";
+import { REGION_OPTIONS } from "@/lib/regions";
 
 type CharacterFormValues = {
   id?: number;
@@ -65,17 +66,7 @@ const ELEMENTS: ElementKey[] = [
 ];
 
 const WEAPONS = ["Меч", "Двуручник", "Копьё", "Лук", "Катализатор"];
-const REGIONS = [
-  "Мондштадта",
-  "Ли Юэ",
-  "Инадзумы",
-  "Сумеру",
-  "Фонтейна",
-  "Натлана",
-  "Нод-края",
-  "Снежной",
-  "прочих регионов",
-];
+const REGIONS = REGION_OPTIONS;
 
 const DEFAULTS: CharacterFormValues = {
   name: "",

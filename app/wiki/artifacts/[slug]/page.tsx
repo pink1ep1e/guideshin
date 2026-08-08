@@ -3,7 +3,13 @@ import { notFound } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import { withPrisma } from "@/prisma/prisma-client";
 import { RARITY_LABEL, RARITY_STARS } from "@/lib/genshin";
-import { SITE_NAME } from "@/lib/site";
+import { absoluteUrl, SITE_NAME } from "@/lib/site";
+import {
+  articleJsonLd,
+  breadcrumbJsonLd,
+  serializeJsonLd,
+} from "@/lib/seo";
+import { getRegionMeta, regionHref } from "@/lib/regions";
 import type { Metadata } from "next";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -20,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description =
     item.shortDesc?.trim() ||
     `Гайд на сет артефактов ${item.name} в Genshin Impact: бонусы сета и кому подойдёт.`;
-  const url = `/wiki/artifacts/${item.slug}`;
+  const url = absoluteUrl(`/wiki/artifacts/${item.slug}`);
 
   return {
     title: { absolute: fullTitle },
@@ -28,10 +34,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     keywords: [`гайд ${item.name}`, item.name, "артефакты Genshin", "Genshin Impact", SITE_NAME],
     alternates: { canonical: url },
     openGraph: {
+      type: "article",
+      locale: "ru_RU",
+      url,
+      siteName: SITE_NAME,
       title: fullTitle,
       description,
-      url,
       images: item.image ? [{ url: item.image, alt: item.name }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: fullTitle,
+      description,
+      images: item.image ? [item.image] : undefined,
     },
   };
 }
@@ -45,9 +60,47 @@ export default async function ArtifactDetailPage({ params }: Props) {
   ).catch(() => null);
   if (!item || !item.published) notFound();
   const stars = RARITY_STARS[item.rarity] ?? 4;
+  const pageUrl = absoluteUrl(`/wiki/artifacts/${item.slug}`);
+  const description =
+    item.shortDesc?.trim() ||
+    `Гайд на сет артефактов ${item.name} в Genshin Impact.`;
+  const regionMeta = item.region ? getRegionMeta(item.region) : null;
+
+  const breadcrumbs = [
+    { name: "Главная", path: "/" },
+    { name: "Артефакты", path: "/wiki/artifacts" },
+  ];
+  if (regionMeta && regionMeta.slug !== "other") {
+    breadcrumbs.push({
+      name: regionMeta.name,
+      path: `/wiki/regions/${regionMeta.slug}`,
+    });
+  }
+  breadcrumbs.push({
+    name: item.name,
+    path: `/wiki/artifacts/${item.slug}`,
+  });
+
+  const jsonLd = [
+    articleJsonLd({
+      headline: `Гайд на ${item.name}`,
+      description,
+      url: pageUrl,
+      image: item.image,
+      datePublished: item.createdAt,
+      dateModified: item.updatedAt,
+      aboutName: item.name,
+      aboutDescription: "Сет артефактов Genshin Impact",
+    }),
+    breadcrumbJsonLd(breadcrumbs),
+  ];
 
   return (
     <div className="container-page py-7 sm:py-9">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+      />
       <div className="mb-5">
         <Link href="/wiki/artifacts" className="text-sm font-bold text-[#189b8e] hover:underline">
           ← Все артефакты
@@ -74,6 +127,14 @@ export default async function ArtifactDetailPage({ params }: Props) {
                 <h1 className="font-genshin text-3xl tracking-wide text-foreground">{item.name}</h1>
                 {item.shortDesc && (
                   <p className="mt-2 text-base font-medium text-muted-foreground">{item.shortDesc}</p>
+                )}
+                {regionMeta && regionMeta.slug !== "other" && (
+                  <Link
+                    href={regionHref(item.region)}
+                    className="mt-3 inline-flex rounded-full bg-[#189b8e]/10 px-3 py-1.5 text-xs font-bold text-[#189b8e] hover:bg-[#189b8e] hover:text-white"
+                  >
+                    {regionMeta.name}
+                  </Link>
                 )}
               </div>
             </div>

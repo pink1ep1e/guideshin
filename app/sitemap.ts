@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { withPrisma } from "@/prisma/prisma-client";
 import { absoluteUrl } from "@/lib/site";
+import { PUBLIC_REGION_SLUGS, REGIONS_META } from "@/lib/regions";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -11,6 +12,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: absoluteUrl("/wiki/characters"),
       lastModified: now,
       changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: absoluteUrl("/wiki/regions"),
+      lastModified: now,
+      changeFrequency: "weekly",
       priority: 0.9,
     },
     {
@@ -37,6 +44,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.6,
     },
+    ...PUBLIC_REGION_SLUGS.map((slug) => ({
+      url: absoluteUrl(`/wiki/regions/${slug}`),
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: REGIONS_META[slug].sitemapPriority,
+    })),
   ];
 
   const data = await withPrisma(async (prisma) => {

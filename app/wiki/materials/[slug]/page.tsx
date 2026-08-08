@@ -11,7 +11,13 @@ import {
   weaponHoverFromGuide,
   type WeaponHoverMeta,
 } from "@/lib/wiki-guide-data";
-import { SITE_NAME } from "@/lib/site";
+import { absoluteUrl, SITE_NAME } from "@/lib/site";
+import {
+  articleJsonLd,
+  breadcrumbJsonLd,
+  serializeJsonLd,
+} from "@/lib/seo";
+import { getRegionMeta, regionHref } from "@/lib/regions";
 import type { Metadata } from "next";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -28,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description =
     item.shortDesc?.trim() ||
     `Где взять ${item.name} в Genshin Impact: источники, карта и применение.`;
-  const url = `/wiki/materials/${item.slug}`;
+  const url = absoluteUrl(`/wiki/materials/${item.slug}`);
 
   return {
     title: { absolute: fullTitle },
@@ -36,10 +42,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     keywords: [item.name, `где взять ${item.name}`, "материалы Genshin", "Genshin Impact", SITE_NAME],
     alternates: { canonical: url },
     openGraph: {
+      type: "article",
+      locale: "ru_RU",
+      url,
+      siteName: SITE_NAME,
       title: fullTitle,
       description,
-      url,
       images: item.image ? [{ url: item.image, alt: item.name }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: fullTitle,
+      description,
+      images: item.image ? [item.image] : undefined,
     },
   };
 }
@@ -53,6 +68,11 @@ export default async function MaterialDetailPage({ params }: Props) {
   ).catch(() => null);
   if (!item || !item.published) notFound();
   const guide = parseMaterialGuide(item.guideData);
+  const pageUrl = absoluteUrl(`/wiki/materials/${item.slug}`);
+  const description =
+    item.shortDesc?.trim() ||
+    `Где взять ${item.name} в Genshin Impact: источники и применение.`;
+  const regionMeta = item.region ? getRegionMeta(item.region) : null;
 
   const relatedNames = [
     ...guide.alchemyUses,
@@ -97,8 +117,41 @@ export default async function MaterialDetailPage({ params }: Props) {
     }
   }
 
+  const breadcrumbs = [
+    { name: "Главная", path: "/" },
+    { name: "Материалы", path: "/wiki/materials" },
+  ];
+  if (regionMeta && regionMeta.slug !== "other") {
+    breadcrumbs.push({
+      name: regionMeta.name,
+      path: `/wiki/regions/${regionMeta.slug}`,
+    });
+  }
+  breadcrumbs.push({
+    name: item.name,
+    path: `/wiki/materials/${item.slug}`,
+  });
+
+  const jsonLd = [
+    articleJsonLd({
+      headline: item.name,
+      description,
+      url: pageUrl,
+      image: item.image,
+      datePublished: item.createdAt,
+      dateModified: item.updatedAt,
+      aboutName: item.name,
+      aboutDescription: "Материал Genshin Impact",
+    }),
+    breadcrumbJsonLd(breadcrumbs),
+  ];
+
   return (
     <div className="container-page py-7 sm:py-9">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+      />
       <div className="mb-5">
         <Link href="/wiki/materials" className="text-sm font-bold text-[#189b8e] hover:underline">
           ← Все материалы
@@ -115,6 +168,14 @@ export default async function MaterialDetailPage({ params }: Props) {
             <h1 className="font-genshin mt-1 text-3xl tracking-wide text-foreground">{item.name}</h1>
             {item.shortDesc && (
               <p className="mt-1 text-sm font-medium text-muted-foreground">{item.shortDesc}</p>
+            )}
+            {regionMeta && regionMeta.slug !== "other" && (
+              <Link
+                href={regionHref(item.region)}
+                className="mt-3 inline-flex rounded-full bg-[#189b8e]/10 px-3 py-1.5 text-xs font-bold text-[#189b8e] hover:bg-[#189b8e] hover:text-white"
+              >
+                {regionMeta.name}
+              </Link>
             )}
           </div>
 

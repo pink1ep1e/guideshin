@@ -7,6 +7,7 @@ const footerLinks = [
   { href: "/wiki/artifacts", label: "Артефакты" },
   { href: "/wiki/weapons", label: "Оружие" },
   { href: "/wiki/materials", label: "Материалы" },
+  { href: "/wiki/regions", label: "Регионы" },
   { href: "/map", label: "Карта" },
 ];
 

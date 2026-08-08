@@ -10,7 +10,12 @@ import {
   materialPreviewLore,
   parseWeaponGuide,
 } from "@/lib/wiki-guide-data";
-import { SITE_NAME } from "@/lib/site";
+import { absoluteUrl, SITE_NAME } from "@/lib/site";
+import {
+  articleJsonLd,
+  breadcrumbJsonLd,
+  serializeJsonLd,
+} from "@/lib/seo";
 import type { Metadata } from "next";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -27,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description =
     item.shortDesc?.trim() ||
     `Гайд на оружие ${item.name} в Genshin Impact: характеристики, материалы возвышения и кому подойдёт.`;
-  const url = `/wiki/weapons/${item.slug}`;
+  const url = absoluteUrl(`/wiki/weapons/${item.slug}`);
 
   return {
     title: { absolute: fullTitle },
@@ -35,10 +40,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     keywords: [`гайд ${item.name}`, item.name, "оружие Genshin", "Genshin Impact", SITE_NAME],
     alternates: { canonical: url },
     openGraph: {
+      type: "article",
+      locale: "ru_RU",
+      url,
+      siteName: SITE_NAME,
       title: fullTitle,
       description,
-      url,
       images: item.image ? [{ url: item.image, alt: item.name }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: fullTitle,
+      description,
+      images: item.image ? [item.image] : undefined,
     },
   };
 }
@@ -53,6 +67,10 @@ export default async function WeaponPage({ params }: Props) {
   if (!item || !item.published) notFound();
   const stars = rarityStarsFromEnum(item.rarity);
   const rawGuide = parseWeaponGuide(item.guideData);
+  const pageUrl = absoluteUrl(`/wiki/weapons/${item.slug}`);
+  const description =
+    item.shortDesc?.trim() ||
+    `Гайд на оружие ${item.name} в Genshin Impact: характеристики и материалы возвышения.`;
 
   const catalog = await withPrisma((prisma) =>
     prisma.material.findMany({
@@ -86,8 +104,30 @@ export default async function WeaponPage({ params }: Props) {
     if (text) loreByName[row.name.trim().toLowerCase()] = text;
   }
 
+  const jsonLd = [
+    articleJsonLd({
+      headline: `Гайд на ${item.name}`,
+      description,
+      url: pageUrl,
+      image: item.image,
+      datePublished: item.createdAt,
+      dateModified: item.updatedAt,
+      aboutName: item.name,
+      aboutDescription: `Оружие Genshin Impact — ${item.weaponType}`,
+    }),
+    breadcrumbJsonLd([
+      { name: "Главная", path: "/" },
+      { name: "Оружие", path: "/wiki/weapons" },
+      { name: item.name, path: `/wiki/weapons/${item.slug}` },
+    ]),
+  ];
+
   return (
     <div className="container-page py-7 sm:py-9">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+      />
       <div className="mb-5">
         <Link href="/wiki/weapons" className="text-sm font-bold text-[#189b8e] hover:underline">
           ← Все оружие
