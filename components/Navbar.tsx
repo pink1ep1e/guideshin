@@ -25,6 +25,7 @@ const wikiItems = [
   { href: "/wiki/weapons", label: "Оружие" },
   { href: "/wiki/artifacts", label: "Артефакты" },
   { href: "/wiki/materials", label: "Материалы" },
+  { href: "/wiki/regions", label: "Регионы" },
 ];
 
 function isLinkActive(pathname: string, href: string) {

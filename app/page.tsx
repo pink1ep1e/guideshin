@@ -3,12 +3,45 @@ import type { Metadata } from "next";
 import BannerSlider from "@/components/BannerSlider";
 import { HOME_ASSETS, PRODUCTS, REGIONS } from "@/lib/home-content";
 import { loadHomeBanners } from "@/lib/home-data";
-import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
+import {
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_NAME,
+  SITE_TITLE_DEFAULT,
+  absoluteUrl,
+} from "@/lib/site";
+import {
+  DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_ALT,
+} from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: SITE_NAME },
+  title: { absolute: SITE_TITLE_DEFAULT },
   description: SITE_DESCRIPTION,
+  keywords: SITE_KEYWORDS,
   alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "ru_RU",
+    url: absoluteUrl("/"),
+    siteName: SITE_NAME,
+    title: SITE_TITLE_DEFAULT,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: DEFAULT_OG_IMAGE_ALT,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE_DEFAULT,
+    description: SITE_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
 
 export const dynamic = "force-dynamic";
@@ -20,6 +53,9 @@ export default async function Home() {
     <div className="pb-4">
       {/* Hero full-bleed vibe */}
       <div className="container-page pt-7 sm:pt-9">
+        <h1 className="sr-only">
+          Guideshin — гайды Genshin Impact: билды персонажей, Нод-Край и Снежная
+        </h1>
         <BannerSlider slides={banners} />
       </div>
 
@@ -129,6 +165,12 @@ export default async function Home() {
             </p>
             <h2 className="section-title">Регионы</h2>
           </div>
+          <Link
+            href="/wiki/regions"
+            className="ui-btn-secondary hidden sm:inline-flex"
+          >
+            Все регионы
+          </Link>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {REGIONS.map((region) => (

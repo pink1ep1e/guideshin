@@ -4,14 +4,40 @@ import CharacterCatalog from "@/components/CharacterCatalog";
 import { withPrisma } from "@/prisma/prisma-client";
 import { HOME_ASSETS } from "@/lib/home-content";
 import { SITE_NAME } from "@/lib/site";
+import { faqPageJsonLd, serializeJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
+
+const CHARACTER_FAQS = [
+  {
+    question: "Где найти гайды на персонажей Нод-Края?",
+    answer:
+      "Откройте раздел регионов → Нод-Край или фильтруйте каталог персонажей. У каждого героя есть страница с билдом, оружием и артефактами.",
+  },
+  {
+    question: "Как выбрать билд персонажа?",
+    answer:
+      "На странице гайда указаны рекомендуемое оружие, сеты артефактов, приоритет талантов и материалы прокачки. Начните с основного DPS или саппорта вашей команды.",
+  },
+  {
+    question: "Готовите ли вы гайды к Снежной?",
+    answer:
+      "Да. Раздел Снежная уже есть в каталоге регионов — публикуем гайды по мере анонсов и выхода персонажей.",
+  },
+];
 
 export const metadata: Metadata = {
   title: { absolute: `Персонажи | ${SITE_NAME}` },
   description:
-    "Все персонажи Genshin Impact — гайды, билды, оружие, артефакты и материалы прокачки.",
+    "Все персонажи Genshin Impact — гайды, билды, оружие, артефакты и материалы прокачки. Нод-Край и подготовка к Снежной.",
   alternates: { canonical: "/wiki/characters" },
-  keywords: ["персонажи Genshin", "гайды персонажей", "билды Genshin Impact", "Guideshin"],
+  keywords: [
+    "персонажи Genshin",
+    "гайды персонажей",
+    "билды Genshin Impact",
+    "Нод-Край персонажи",
+    "Снежная персонажи",
+    "Guideshin",
+  ],
 };
 
 export const dynamic = "force-dynamic";
@@ -47,6 +73,10 @@ export default async function CharactersPage() {
 
   return (
     <div className="pb-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(faqPageJsonLd(CHARACTER_FAQS)) }}
+      />
       <section className="container-page pt-7 sm:pt-9">
         <div className="glass-panel relative overflow-hidden p-6 sm:p-8 lg:p-10">
           <div className="absolute inset-0 opacity-[0.18]">
@@ -72,11 +102,14 @@ export default async function CharactersPage() {
               Билды, таланты и материалы для прокачки. Найдите героя по имени или стихии.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/wiki/artifacts" className="ui-btn-secondary">
-                Артефакты
+              <Link href="/wiki/regions/nod-krai" className="ui-btn-primary">
+                Нод-Край
               </Link>
-              <Link href="/" className="ui-btn-primary">
-                На главную
+              <Link href="/wiki/regions/snezhnaya" className="ui-btn-secondary">
+                Снежная
+              </Link>
+              <Link href="/wiki/regions" className="ui-btn-secondary">
+                Все регионы
               </Link>
             </div>
           </div>
@@ -100,19 +133,27 @@ export default async function CharactersPage() {
               <span className="pointer-events-none absolute -bottom-12 left-1/3 h-40 w-40 rounded-full bg-[#189b8e]/10 blur-2xl" />
               <div className="relative">
                 <p className="mb-1 text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">
-                  Справка
+                  FAQ
                 </p>
-                <h2 className="section-title mb-4">Как получить персонажей</h2>
-                <div className="space-y-3 text-base font-medium leading-relaxed text-muted-foreground">
+                <h2 className="section-title mb-4">Частые вопросы</h2>
+                <div className="space-y-4">
+                  {CHARACTER_FAQS.map((faq) => (
+                    <div key={faq.question}>
+                      <h3 className="text-base font-bold text-foreground">{faq.question}</h3>
+                      <p className="mt-1 text-base font-medium leading-relaxed text-muted-foreground">
+                        {faq.answer}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-6 space-y-3 text-base font-medium leading-relaxed text-muted-foreground">
                   <p>
-                    В игре Геншин Импакт присутствует большое количество самых разных персонажей. В
-                    этом разделе вы найдете актуальный список персонажей, доступных для игры, а также
-                    тех, кого уже совсем скоро добавят в игру.
+                    В игре Genshin Impact много персонажей. В этом разделе — актуальный список с
+                    гайдами и тех, кого скоро добавят.
                   </p>
                   <p>
-                    Часть персонажей открываются по мере прохождения сюжетной линии — Кейа, Лиза,
-                    Сян Лин и Эмбер. Некоторых можно получить за активности: Коллеи за Витую бездну,
-                    Барбару по спец. квесту. Во время событий тоже часто раздают героев.
+                    Часть героев открывается по сюжету — Кейа, Лиза, Сян Лин и Эмбер. Других дают за
+                    активности и события.
                   </p>
                 </div>
               </div>

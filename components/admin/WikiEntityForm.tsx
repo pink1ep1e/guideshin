@@ -124,7 +124,7 @@ export default function WikiEntityForm(props: Props) {
     sticker: "",
     shortDesc: "",
     contentHtml: "",
-    region: "Нодкрай",
+    region: "Нод-Край",
     published: true,
     order: 0,
   };
@@ -137,7 +137,7 @@ export default function WikiEntityForm(props: Props) {
     sticker: "",
     shortDesc: "",
     contentHtml: "",
-    region: "Нодкрай",
+    region: "Нод-Край",
     guideData: emptyMaterialGuide(),
     published: true,
     order: 0,

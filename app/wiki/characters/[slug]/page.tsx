@@ -10,7 +10,13 @@ import { ELEMENT_LABEL } from "@/lib/genshin";
 import { materialPreviewLore } from "@/lib/wiki-guide-data";
 import { parseGuideBlocks } from "@/lib/guide-builder";
 import { withPrisma } from "@/prisma/prisma-client";
-import { absoluteUrl, SITE_NAME, SITE_URL } from "@/lib/site";
+import { absoluteUrl, SITE_NAME } from "@/lib/site";
+import {
+  articleJsonLd,
+  breadcrumbJsonLd,
+  serializeJsonLd,
+} from "@/lib/seo";
+import { getRegionMeta } from "@/lib/regions";
 import type { Metadata } from "next";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -80,6 +86,7 @@ export default async function CharacterPage({ params }: Props) {
   const description =
     character.shortDesc?.trim() ||
     `Гайд на ${character.name} в Genshin Impact: билд, оружие, артефакты и материалы.`;
+  const regionMeta = character.region ? getRegionMeta(character.region) : null;
 
   const materialNames = [
     ...new Set(materials.map((m) => m.name.trim()).filter(Boolean)),
@@ -106,34 +113,40 @@ export default async function CharacterPage({ params }: Props) {
     "",
   );
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: `Гайд на ${character.name}`,
-    description,
-    image: image ? [image.startsWith("http") ? image : absoluteUrl(image)] : undefined,
-    author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
-    publisher: {
-      "@type": "Organization",
-      name: SITE_NAME,
-      url: SITE_URL,
-      logo: { "@type": "ImageObject", url: absoluteUrl("/logo.svg") },
-    },
-    mainEntityOfPage: { "@type": "WebPage", "@id": pageUrl },
-    dateModified: character.updatedAt.toISOString(),
-    datePublished: character.createdAt.toISOString(),
-    about: {
-      "@type": "Thing",
-      name: character.name,
-      description: `${element}-персонаж Genshin Impact`,
-    },
-  };
+  const breadcrumbs = [
+    { name: "Главная", path: "/" },
+    { name: "Персонажи", path: "/wiki/characters" },
+  ];
+  if (regionMeta && regionMeta.slug !== "other") {
+    breadcrumbs.push({
+      name: regionMeta.name,
+      path: `/wiki/regions/${regionMeta.slug}`,
+    });
+  }
+  breadcrumbs.push({
+    name: character.name,
+    path: `/wiki/characters/${character.slug}`,
+  });
+
+  const jsonLd = [
+    articleJsonLd({
+      headline: `Гайд на ${character.name}`,
+      description,
+      url: pageUrl,
+      image,
+      datePublished: character.createdAt,
+      dateModified: character.updatedAt,
+      aboutName: character.name,
+      aboutDescription: `${element}-персонаж Genshin Impact`,
+    }),
+    breadcrumbJsonLd(breadcrumbs),
+  ];
 
   return (
     <div className="container-page py-6 sm:py-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
 
       <div className="mb-6">

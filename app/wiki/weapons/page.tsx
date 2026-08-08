@@ -9,8 +9,10 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: { absolute: `Оружие | ${SITE_NAME}` },
-  description: "Оружие Genshin Impact — гайды, редкость, типы и материалы возвышения.",
+  description:
+    "Оружие Genshin Impact — гайды, редкость, типы и материалы возвышения. Кому подходит каждое оружие.",
   alternates: { canonical: "/wiki/weapons" },
+  keywords: ["оружие Genshin", "гайды оружия", "возвышение оружия", "Guideshin"],
 };
 
 export const dynamic = "force-dynamic";
