@@ -4,14 +4,38 @@ export const GACHA_TYPES = {
   character: "301",
   character2: "400",
   weapon: "302",
+  /** Баннер хроник */
+  chronicled: "500",
 } as const;
 
-export type GachaBannerKey = "character" | "weapon" | "permanent" | "novice";
+export type GachaBannerKey =
+  | "character"
+  | "weapon"
+  | "permanent"
+  | "chronicled"
+  | "novice";
+
+/** Основные баннеры в кабинете (без новичка). */
+export const DASHBOARD_BANNERS: GachaBannerKey[] = [
+  "character",
+  "weapon",
+  "permanent",
+  "chronicled",
+];
 
 export const BANNER_LABELS: Record<GachaBannerKey, string> = {
+  character: "Персонажи",
+  weapon: "Оружие",
+  permanent: "Стандарт",
+  chronicled: "Хроники",
+  novice: "Новичок",
+};
+
+export const BANNER_SHORT: Record<GachaBannerKey, string> = {
   character: "Ивент персонажей",
   weapon: "Ивент оружия",
-  permanent: "Стандарт",
+  permanent: "Стандартная молитва",
+  chronicled: "Молитва хроник",
   novice: "Новичок",
 };
 
@@ -19,7 +43,23 @@ export function bannerKeyFromGachaType(gachaType: string): GachaBannerKey {
   if (gachaType === GACHA_TYPES.weapon) return "weapon";
   if (gachaType === GACHA_TYPES.permanent) return "permanent";
   if (gachaType === GACHA_TYPES.novice) return "novice";
+  if (gachaType === GACHA_TYPES.chronicled) return "chronicled";
   return "character";
+}
+
+export function gachaTypesForBanner(key: GachaBannerKey): string[] {
+  switch (key) {
+    case "character":
+      return [GACHA_TYPES.character, GACHA_TYPES.character2];
+    case "weapon":
+      return [GACHA_TYPES.weapon];
+    case "permanent":
+      return [GACHA_TYPES.permanent];
+    case "chronicled":
+      return [GACHA_TYPES.chronicled];
+    case "novice":
+      return [GACHA_TYPES.novice];
+  }
 }
 
 export type WishPullLike = {
@@ -51,6 +91,8 @@ export type BannerPityStats = {
   count5: number;
   count4: number;
   count3: number;
+  count5Char: number;
+  count5Weapon: number;
   rate5: number;
   rate4: number;
   avgPity5: number | null;
@@ -82,15 +124,7 @@ export function computeBannerStats(
   pulls: WishPullLike[],
   key: GachaBannerKey,
 ): BannerPityStats {
-  const types: string[] =
-    key === "character"
-      ? [GACHA_TYPES.character, GACHA_TYPES.character2]
-      : key === "weapon"
-        ? [GACHA_TYPES.weapon]
-        : key === "permanent"
-          ? [GACHA_TYPES.permanent]
-          : [GACHA_TYPES.novice];
-
+  const types = gachaTypesForBanner(key);
   const pity5Max = key === "weapon" ? 80 : 90;
   const pity4Max = 10;
 
@@ -104,13 +138,15 @@ export function computeBannerStats(
 
   let pity4 = 0;
   let pity5 = 0;
-  let guaranteed5 = false;
+  const guaranteed5 = false;
   let last5Star: string | null = null;
   const fiveStars: BannerPityStats["fiveStars"] = [];
   const fourPities: number[] = [];
   let count5 = 0;
   let count4 = 0;
   let count3 = 0;
+  let count5Char = 0;
+  let count5Weapon = 0;
 
   for (const pull of filtered) {
     pity4 += 1;
@@ -125,6 +161,8 @@ export function computeBannerStats(
     }
     if (rank === "5") {
       count5 += 1;
+      if (/weapon|оруж/i.test(pull.itemType)) count5Weapon += 1;
+      else count5Char += 1;
       fiveStars.push({
         name: pull.itemName,
         pity: pity5,
@@ -134,9 +172,6 @@ export function computeBannerStats(
       last5Star = pull.itemName;
       pity5 = 0;
       pity4 = 0;
-      if (key === "character") {
-        guaranteed5 = false;
-      }
     }
   }
 
@@ -158,6 +193,8 @@ export function computeBannerStats(
     count5,
     count4,
     count3,
+    count5Char,
+    count5Weapon,
     rate5: total ? (count5 / total) * 100 : 0,
     rate4: total ? (count4 / total) * 100 : 0,
     avgPity5: avg(fiveStars.map((f) => f.pity)),
@@ -167,9 +204,7 @@ export function computeBannerStats(
 }
 
 export function computeAllBannerStats(pulls: WishPullLike[]) {
-  return (["character", "weapon", "permanent"] as GachaBannerKey[]).map(
-    (key) => computeBannerStats(pulls, key),
-  );
+  return DASHBOARD_BANNERS.map((key) => computeBannerStats(pulls, key));
 }
 
 export function computeWishOverview(pulls: WishPullLike[]): WishOverview {
@@ -193,9 +228,16 @@ export function computeWishOverview(pulls: WishPullLike[]): WishOverview {
 }
 
 /** Точки для графика pity 5★ (по времени). */
-export function buildPityChart(pulls: WishPullLike[]): PityChartPoint[] {
+export function buildPityChart(
+  pulls: WishPullLike[],
+  bannerFilter?: GachaBannerKey | "all",
+): PityChartPoint[] {
+  const keys =
+    bannerFilter && bannerFilter !== "all"
+      ? [bannerFilter]
+      : DASHBOARD_BANNERS;
   const points: PityChartPoint[] = [];
-  for (const key of ["character", "weapon", "permanent"] as GachaBannerKey[]) {
+  for (const key of keys) {
     const stats = computeBannerStats(pulls, key);
     const chrono = [...stats.fiveStars].reverse();
     for (const f of chrono) {
@@ -349,6 +391,7 @@ export async function fetchAllWishesFromAuthUrl(
     GACHA_TYPES.character2,
     GACHA_TYPES.weapon,
     GACHA_TYPES.permanent,
+    GACHA_TYPES.chronicled,
     GACHA_TYPES.novice,
   ];
 

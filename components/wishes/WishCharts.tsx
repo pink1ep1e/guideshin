@@ -12,12 +12,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { PityChartPoint } from "@/lib/wishes";
+import { motion } from "framer-motion";
+import type { GachaBannerKey, PityChartPoint } from "@/lib/wishes";
 import { BANNER_LABELS } from "@/lib/wishes";
 
 const TEAL = "#189b8e";
-const GOLD = "#d4a017";
-const PURPLE = "#7c5cbf";
+const GOLD = "#c99212";
+const VIOLET = "#6b5b95";
 
 type ChartPoint = PityChartPoint & { guideHref?: string | null };
 
@@ -31,47 +32,84 @@ function ChartTooltip({
   if (!active || !payload?.[0]) return null;
   const p = payload[0].payload;
   return (
-    <div className="rounded-xl border border-black/[0.06] bg-white px-3 py-2 text-xs shadow-panel">
+    <div className="rounded-2xl border border-black/[0.06] bg-white/95 px-3.5 py-2.5 text-xs shadow-panel backdrop-blur">
       <p className="font-bold text-foreground">{p.name}</p>
-      <p className="text-muted-foreground">
-        Pity {p.pity} · {BANNER_LABELS[p.banner]}
+      <p className="mt-0.5 text-muted-foreground">
+        Pity <span className="font-bold text-foreground">{p.pity}</span>
+        {" · "}
+        {BANNER_LABELS[p.banner]}
       </p>
       <p className="text-muted-foreground">
-        {new Date(p.time).toLocaleDateString("ru-RU")}
+        {new Date(p.time).toLocaleDateString("ru-RU", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })}
       </p>
     </div>
   );
 }
 
-export function WishPityAreaChart({ data }: { data: ChartPoint[] }) {
-  if (data.length === 0) {
+export function WishPityAreaChart({
+  data,
+  banner,
+}: {
+  data: ChartPoint[];
+  banner: GachaBannerKey | "all";
+}) {
+  const filtered =
+    banner === "all" ? data : data.filter((d) => d.banner === banner);
+  const chartData = filtered.map((d, i) => ({ ...d, index: i + 1 }));
+
+  if (chartData.length === 0) {
     return (
-      <div className="flex h-[240px] items-center justify-center text-sm font-medium text-muted-foreground">
-        Импортируйте молитвы — здесь появится график pity 5★
+      <div className="flex h-[300px] items-center justify-center rounded-2xl bg-black/[0.02] text-sm font-medium text-muted-foreground">
+        Нет 5★ на этом баннере — импортируйте историю
       </div>
     );
   }
 
   return (
-    <div className="h-[260px] w-full">
+    <motion.div
+      key={banner}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      className="h-[300px] w-full"
+    >
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+        <AreaChart
+          data={chartData}
+          margin={{ top: 16, right: 12, left: -8, bottom: 4 }}
+        >
           <defs>
-            <linearGradient id="pityFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={TEAL} stopOpacity={0.35} />
-              <stop offset="100%" stopColor={TEAL} stopOpacity={0.02} />
+            <linearGradient id="wishPityGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={TEAL} stopOpacity={0.4} />
+              <stop offset="70%" stopColor={TEAL} stopOpacity={0.08} />
+              <stop offset="100%" stopColor={TEAL} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 6" stroke="rgba(0,0,0,0.06)" vertical={false} />
+          <CartesianGrid
+            strokeDasharray="4 8"
+            stroke="rgba(0,0,0,0.05)"
+            vertical={false}
+          />
           <XAxis
             dataKey="index"
-            tick={{ fontSize: 11, fill: "#6b7280" }}
+            tick={{ fontSize: 11, fill: "#6b7280", fontWeight: 600 }}
             axisLine={false}
             tickLine={false}
+            label={{
+              value: "№ 5★",
+              position: "insideBottomRight",
+              offset: -2,
+              style: { fill: "#9ca3af", fontSize: 10 },
+            }}
           />
           <YAxis
             domain={[0, 90]}
-            tick={{ fontSize: 11, fill: "#6b7280" }}
+            ticks={[0, 30, 60, 90]}
+            tick={{ fontSize: 11, fill: "#6b7280", fontWeight: 600 }}
             axisLine={false}
             tickLine={false}
           />
@@ -80,18 +118,20 @@ export function WishPityAreaChart({ data }: { data: ChartPoint[] }) {
             type="monotone"
             dataKey="pity"
             stroke={TEAL}
-            strokeWidth={2.5}
-            fill="url(#pityFill)"
-            dot={{ r: 3, fill: TEAL, strokeWidth: 0 }}
-            activeDot={{ r: 5, fill: TEAL }}
+            strokeWidth={3}
+            fill="url(#wishPityGrad)"
+            dot={{ r: 4, fill: "#fff", stroke: TEAL, strokeWidth: 2 }}
+            activeDot={{ r: 6, fill: TEAL, stroke: "#fff", strokeWidth: 2 }}
+            animationDuration={900}
+            animationEasing="ease-out"
           />
         </AreaChart>
       </ResponsiveContainer>
-    </div>
+    </motion.div>
   );
 }
 
-export function WishRateBars({
+export function WishRateCompare({
   rate5,
   rate4,
 }: {
@@ -99,32 +139,84 @@ export function WishRateBars({
   rate4: number;
 }) {
   const rows = [
-    { name: "5★", value: Number(rate5.toFixed(2)), fill: GOLD, expect: 1.6 },
-    { name: "4★", value: Number(rate4.toFixed(2)), fill: PURPLE, expect: 13 },
+    {
+      name: "5★",
+      actual: Number(rate5.toFixed(2)),
+      expected: 1.6,
+      fill: GOLD,
+    },
+    {
+      name: "4★",
+      actual: Number(rate4.toFixed(2)),
+      expected: 13,
+      fill: VIOLET,
+    },
   ];
 
   return (
-    <div className="h-[180px] w-full">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1, duration: 0.4 }}
+      className="h-[220px] w-full"
+    >
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
-          <CartesianGrid strokeDasharray="3 6" stroke="rgba(0,0,0,0.05)" horizontal={false} />
-          <XAxis type="number" domain={[0, 20]} tick={{ fontSize: 11, fill: "#6b7280" }} unit="%" />
-          <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: "#111" }} width={36} />
+        <BarChart
+          data={rows}
+          margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+          barGap={8}
+        >
+          <CartesianGrid
+            strokeDasharray="4 8"
+            stroke="rgba(0,0,0,0.05)"
+            vertical={false}
+          />
+          <XAxis
+            dataKey="name"
+            tick={{ fontSize: 12, fill: "#111", fontWeight: 700 }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis
+            domain={[0, 20]}
+            tick={{ fontSize: 11, fill: "#6b7280" }}
+            axisLine={false}
+            tickLine={false}
+            unit="%"
+          />
           <Tooltip
-            formatter={(value: number) => [`${value}%`, "Шанс"]}
+            formatter={(value: number, name: string) => [
+              `${value}%`,
+              name === "actual" ? "У вас" : "Ожидание",
+            ]}
             contentStyle={{
-              borderRadius: 12,
+              borderRadius: 16,
               border: "1px solid rgba(0,0,0,0.06)",
               fontSize: 12,
+              fontWeight: 600,
             }}
           />
-          <Bar dataKey="value" radius={[0, 10, 10, 0]} barSize={22}>
+          <Bar
+            dataKey="expected"
+            name="expected"
+            fill="rgba(0,0,0,0.08)"
+            radius={[10, 10, 0, 0]}
+            barSize={28}
+            animationDuration={800}
+          />
+          <Bar
+            dataKey="actual"
+            name="actual"
+            radius={[10, 10, 0, 0]}
+            barSize={28}
+            animationDuration={900}
+          >
             {rows.map((r) => (
               <Cell key={r.name} fill={r.fill} />
             ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-    </div>
+    </motion.div>
   );
 }
