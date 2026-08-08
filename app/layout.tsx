@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
+import { AuthSessionProvider } from "@/components/shared";
 import {
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
@@ -106,10 +107,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="flex min-h-screen flex-col">
-        <AnalyticsProvider />
-        <Navbar />
-        <main className="flex min-h-0 flex-1 flex-col">{children}</main>
-        <Footer />
+        <AuthSessionProvider>
+          <AnalyticsProvider />
+          <Navbar />
+          <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+          <Footer />
+        </AuthSessionProvider>
       </body>
     </html>
   );

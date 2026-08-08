@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { TelegramLink } from "@/components/TelegramLink";
 
 const navLinks = [
@@ -164,6 +165,8 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const { data: session, status } = useSession();
+  const isWishUser = session?.user?.kind === "user";
   const navRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLElement | null)[]>([]);
   const [hoverPill, setHoverPill] = useState<Pill>({
@@ -345,10 +348,14 @@ export default function Navbar() {
                 className="ui-btn-primary h-auto flex-1 px-5 py-3.5 text-[15px] lg:flex-none"
                 onClick={() => {
                   closeMenu();
-                  router.push("/wiki/characters");
+                  if (status === "authenticated" && isWishUser) {
+                    router.push("/wishes");
+                  } else {
+                    router.push("/auth/login?callbackUrl=/wishes");
+                  }
                 }}
               >
-                Смотреть гайды
+                {status === "authenticated" && isWishUser ? "Мои молитвы" : "Молитвы"}
               </button>
             </div>
           </nav>

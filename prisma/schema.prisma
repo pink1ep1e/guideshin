@@ -230,3 +230,81 @@ model AnalyticsEvent {
   @@index([ip, createdAt])
   @@index([countryCode, createdAt])
 }
+
+/// Публичный пользователь (счётчик молитв)
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  emailVerified DateTime?
+  name         String?
+  image        String?
+  /// bcrypt; null если только Google
+  passwordHash String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  accounts     Account[]
+  wishAccounts WishAccount[]
+}
+
+/// OAuth-аккаунты (Google и др.)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+/// Игровой профиль / слот истории молитв
+model WishAccount {
+  id        String   @id @default(cuid())
+  userId    String
+  /// UID из игры, если известен
+  uid       String?
+  label     String   @default("Основной")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pulls WishPull[]
+
+  @@index([userId])
+}
+
+/// Одна молитва (pull)
+model WishPull {
+  id        String   @id @default(cuid())
+  accountId String
+  /// Уникальный id из API Hoyoverse / экспорта
+  hoyoId    String
+  /// 100 novice | 200 permanent | 301/400 character | 302 weapon
+  gachaType String
+  itemName  String
+  /// Character | Weapon
+  itemType  String
+  /// 3 | 4 | 5
+  rankType  String
+  wishTime  DateTime
+  raw       Json?
+
+  createdAt DateTime @default(now())
+
+  account WishAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, hoyoId])
+  @@index([accountId, gachaType, wishTime])
+  @@index([accountId, wishTime])
+}

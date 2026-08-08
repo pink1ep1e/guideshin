@@ -4,6 +4,9 @@ export default withAuth({
   pages: {
     signIn: "/admin/login",
   },
+  callbacks: {
+    authorized: ({ token }) => token?.kind === "admin",
+  },
 });
 
 export const config = {

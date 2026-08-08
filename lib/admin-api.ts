@@ -6,7 +6,7 @@ import { withPrisma } from "@/prisma/prisma-client";
 
 export async function requireAdmin() {
   const session = await getServerSession(authOptions);
-  if (!session) return null;
+  if (!session?.user || session.user.kind !== "admin") return null;
   return session;
 }
 
