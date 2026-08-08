@@ -9,33 +9,32 @@ import type { Metadata } from "next";
 
 const CHARACTER_FAQS = [
   {
-    question: "Где найти гайды на персонажей Нод-Края?",
+    question: "Как найти гайд на персонажа?",
     answer:
-      "Откройте раздел регионов → Нод-Край или фильтруйте каталог персонажей. У каждого героя есть страница с билдом, оружием и артефактами.",
+      "Откройте каталог персонажей и выберите героя. На странице гайда — билд, оружие, артефакты, приоритет талантов и материалы прокачки.",
   },
   {
     question: "Как выбрать билд персонажа?",
     answer:
-      "На странице гайда указаны рекомендуемое оружие, сеты артефактов, приоритет талантов и материалы прокачки. Начните с основного DPS или саппорта вашей команды.",
+      "На странице гайда указаны рекомендуемое оружие, сеты артефактов и приоритет талантов. Начните с основного DPS или саппорта вашей команды.",
   },
   {
-    question: "Готовите ли вы гайды к Снежной?",
+    question: "Почему Guideshin?",
     answer:
-      "Да. Раздел Снежная уже есть в каталоге регионов — публикуем гайды по мере анонсов и выхода персонажей.",
+      "Мы собираем актуальные гайды без воды: понятные билды, материалы и рекомендации, чтобы быстрее собрать рабочую команду.",
   },
 ];
 
 export const metadata: Metadata = {
   title: { absolute: `Персонажи | ${SITE_NAME}` },
   description:
-    "Все персонажи Genshin Impact — гайды, билды, оружие, артефакты и материалы прокачки. Нод-Край и подготовка к Снежной.",
+    "Все персонажи Genshin Impact — гайды, билды, оружие, артефакты и материалы прокачки.",
   alternates: { canonical: "/wiki/characters" },
   keywords: [
     "персонажи Genshin",
     "гайды персонажей",
+    "гайд на персонажа",
     "билды Genshin Impact",
-    "Нод-Край персонажи",
-    "Снежная персонажи",
     "Guideshin",
   ],
 };
@@ -102,14 +101,14 @@ export default async function CharactersPage() {
               Билды, таланты и материалы для прокачки. Найдите героя по имени или стихии.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/wiki/regions/nod-krai" className="ui-btn-primary">
-                Нод-Край
+              <Link href="/wiki/artifacts" className="ui-btn-secondary">
+                Артефакты
               </Link>
-              <Link href="/wiki/regions/snezhnaya" className="ui-btn-secondary">
-                Снежная
+              <Link href="/wiki/weapons" className="ui-btn-secondary">
+                Оружие
               </Link>
-              <Link href="/wiki/regions" className="ui-btn-secondary">
-                Все регионы
+              <Link href="/" className="ui-btn-primary">
+                На главную
               </Link>
             </div>
           </div>

@@ -16,7 +16,6 @@ import {
   breadcrumbJsonLd,
   serializeJsonLd,
 } from "@/lib/seo";
-import { getRegionMeta } from "@/lib/regions";
 import type { Metadata } from "next";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -86,7 +85,6 @@ export default async function CharacterPage({ params }: Props) {
   const description =
     character.shortDesc?.trim() ||
     `Гайд на ${character.name} в Genshin Impact: билд, оружие, артефакты и материалы.`;
-  const regionMeta = character.region ? getRegionMeta(character.region) : null;
 
   const materialNames = [
     ...new Set(materials.map((m) => m.name.trim()).filter(Boolean)),
@@ -116,17 +114,11 @@ export default async function CharacterPage({ params }: Props) {
   const breadcrumbs = [
     { name: "Главная", path: "/" },
     { name: "Персонажи", path: "/wiki/characters" },
+    {
+      name: character.name,
+      path: `/wiki/characters/${character.slug}`,
+    },
   ];
-  if (regionMeta && regionMeta.slug !== "other") {
-    breadcrumbs.push({
-      name: regionMeta.name,
-      path: `/wiki/regions/${regionMeta.slug}`,
-    });
-  }
-  breadcrumbs.push({
-    name: character.name,
-    path: `/wiki/characters/${character.slug}`,
-  });
 
   const jsonLd = [
     articleJsonLd({

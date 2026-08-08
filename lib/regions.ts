@@ -1,4 +1,4 @@
-/** Канонические слаги регионов (URL: /wiki/regions/[slug]). */
+/** Таксономия регионов для каталогов и админки (группировка, aliases). */
 export const REGION_SLUGS = [
   "nod-krai",
   "snezhnaya",
@@ -232,10 +232,6 @@ export function slugToRegion(slug: string): RegionMeta | null {
     return REGIONS_META[key as RegionSlug];
   }
   return null;
-}
-
-export function regionHref(raw?: string | null): string {
-  return `/wiki/regions/${regionToSlug(raw)}`;
 }
 
 export function regionSeoTitle(meta: RegionMeta): string {

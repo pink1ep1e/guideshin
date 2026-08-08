@@ -3,12 +3,7 @@
 import { ArrowUpRight } from "lucide-react";
 import { trackEvent } from "@/components/AnalyticsProvider";
 import { TelegramIcon } from "@/components/TelegramLink";
-import {
-  PNK_VPN_BOOSTY,
-  PNK_VPN_BOT,
-  PNK_VPN_LOGO,
-  SITE_TELEGRAM,
-} from "@/lib/site";
+import { PNK_VPN_BOT, PNK_VPN_LOGO, SITE_TELEGRAM } from "@/lib/site";
 
 export function PnkVpnPromo() {
   return (
@@ -54,30 +49,7 @@ export function PnkVpnPromo() {
         </a>
       </div>
 
-      <div className="grid gap-2 border-t border-black/[0.04] px-4 pb-4 pt-3">
-        <a
-          href={PNK_VPN_BOOSTY}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex w-full items-center justify-center rounded-xl bg-[#f15a29]/[0.12] px-3.5 py-3 transition hover:bg-[#f15a29]/20"
-          onClick={() =>
-            trackEvent("outbound", {
-              meta: {
-                placement: "sidebar_pnk_vpn",
-                href: PNK_VPN_BOOSTY,
-                label: "boosty",
-              },
-            })
-          }
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/boosty-founder-light.svg"
-            alt="Boosty"
-            className="h-5 w-auto"
-          />
-        </a>
-
+      <div className="border-t border-black/[0.04] px-4 pb-4 pt-3">
         <a
           href={SITE_TELEGRAM}
           target="_blank"

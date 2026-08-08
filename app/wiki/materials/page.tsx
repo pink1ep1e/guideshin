@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: { absolute: `Материалы | ${SITE_NAME}` },
   description:
-    "Материалы Genshin Impact — где взять диковинки, книги талантов и ресурсы прокачки по регионам.",
+    "Материалы Genshin Impact — где взять диковинки, книги талантов и ресурсы прокачки.",
   alternates: { canonical: "/wiki/materials" },
   keywords: ["материалы Genshin", "где взять", "диковинки", "книги талантов", "Guideshin"],
 };
@@ -77,9 +77,6 @@ export default async function MaterialsCatalogPage() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/wiki/weapons" className="ui-btn-secondary">
                 Оружие
-              </Link>
-              <Link href="/wiki/regions/nod-krai" className="ui-btn-secondary">
-                Нод-Край
               </Link>
               <Link href="/wiki/characters" className="ui-btn-primary">
                 Персонажи

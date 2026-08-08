@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: { absolute: `Артефакты | ${SITE_NAME}` },
   description:
-    "Сеты артефактов Genshin Impact — гайды, бонусы и рекомендации по ролям. Нод-Край и другие регионы.",
+    "Сеты артефактов Genshin Impact — гайды, бонусы и рекомендации по ролям.",
   alternates: { canonical: "/wiki/artifacts" },
   keywords: ["артефакты Genshin", "сеты артефактов", "гайды артефактов", "Guideshin"],
 };
@@ -72,11 +72,8 @@ export default async function ArtifactsPage() {
               <Link href="/wiki/characters" className="ui-btn-secondary">
                 Персонажи
               </Link>
-              <Link href="/wiki/regions/nod-krai" className="ui-btn-secondary">
-                Нод-Край
-              </Link>
-              <Link href="/wiki/regions" className="ui-btn-primary">
-                Регионы
+              <Link href="/wiki/weapons" className="ui-btn-primary">
+                Оружие
               </Link>
             </div>
           </div>

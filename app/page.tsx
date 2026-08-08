@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import BannerSlider from "@/components/BannerSlider";
-import { HOME_ASSETS, PRODUCTS, REGIONS } from "@/lib/home-content";
+import { HOME_ASSETS, PRODUCTS } from "@/lib/home-content";
 import { loadHomeBanners } from "@/lib/home-data";
 import {
   SITE_DESCRIPTION,
@@ -54,7 +54,7 @@ export default async function Home() {
       {/* Hero full-bleed vibe */}
       <div className="container-page pt-7 sm:pt-9">
         <h1 className="sr-only">
-          Guideshin — гайды Genshin Impact: билды персонажей, Нод-Край и Снежная
+          Guideshin — гайды на персонажей Genshin Impact: билды, оружие и артефакты
         </h1>
         <BannerSlider slides={banners} />
       </div>
@@ -153,51 +153,6 @@ export default async function Home() {
               />
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Regions */}
-      <section className="container-page mt-12">
-        <div className="mb-5 flex items-end justify-between gap-4">
-          <div>
-            <p className="mb-1 text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">
-              Тейват
-            </p>
-            <h2 className="section-title">Регионы</h2>
-          </div>
-          <Link
-            href="/wiki/regions"
-            className="ui-btn-secondary hidden sm:inline-flex"
-          >
-            Все регионы
-          </Link>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {REGIONS.map((region) => (
-            <Link
-              key={region.name}
-              href={region.href}
-              className="group relative min-h-[220px] overflow-hidden rounded-[20px] bg-white/80 text-foreground shadow-panel transition hover:-translate-y-1"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={region.asset}
-                alt={region.name}
-                loading="lazy"
-                decoding="async"
-                className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/55 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-4">
-                <h3 className="font-genshin text-lg tracking-wide">
-                  {region.name}
-                </h3>
-                <p className="mt-1 text-xs font-medium text-foreground/75">
-                  {region.desc}
-                </p>
-              </div>
-            </Link>
-          ))}
         </div>
       </section>
 

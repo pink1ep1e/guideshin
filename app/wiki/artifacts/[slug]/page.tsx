@@ -9,7 +9,6 @@ import {
   breadcrumbJsonLd,
   serializeJsonLd,
 } from "@/lib/seo";
-import { getRegionMeta, regionHref } from "@/lib/regions";
 import type { Metadata } from "next";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -64,22 +63,15 @@ export default async function ArtifactDetailPage({ params }: Props) {
   const description =
     item.shortDesc?.trim() ||
     `Гайд на сет артефактов ${item.name} в Genshin Impact.`;
-  const regionMeta = item.region ? getRegionMeta(item.region) : null;
 
   const breadcrumbs = [
     { name: "Главная", path: "/" },
     { name: "Артефакты", path: "/wiki/artifacts" },
+    {
+      name: item.name,
+      path: `/wiki/artifacts/${item.slug}`,
+    },
   ];
-  if (regionMeta && regionMeta.slug !== "other") {
-    breadcrumbs.push({
-      name: regionMeta.name,
-      path: `/wiki/regions/${regionMeta.slug}`,
-    });
-  }
-  breadcrumbs.push({
-    name: item.name,
-    path: `/wiki/artifacts/${item.slug}`,
-  });
 
   const jsonLd = [
     articleJsonLd({
@@ -128,14 +120,6 @@ export default async function ArtifactDetailPage({ params }: Props) {
                 {item.shortDesc && (
                   <p className="mt-2 text-base font-medium text-muted-foreground">{item.shortDesc}</p>
                 )}
-                {regionMeta && regionMeta.slug !== "other" && (
-                  <Link
-                    href={regionHref(item.region)}
-                    className="mt-3 inline-flex rounded-full bg-[#189b8e]/10 px-3 py-1.5 text-xs font-bold text-[#189b8e] hover:bg-[#189b8e] hover:text-white"
-                  >
-                    {regionMeta.name}
-                  </Link>
-                )}
               </div>
             </div>
           </section>
@@ -153,3 +137,4 @@ export default async function ArtifactDetailPage({ params }: Props) {
     </div>
   );
 }
+

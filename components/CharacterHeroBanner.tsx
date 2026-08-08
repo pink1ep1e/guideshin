@@ -1,5 +1,4 @@
 import type { CSSProperties } from "react";
-import Link from "next/link";
 import {
   ELEMENT_LABEL,
   ELEMENT_SVG,
@@ -12,7 +11,7 @@ import { HOME_ASSETS } from "@/lib/home-content";
 import CharacterSplashArt from "@/components/CharacterSplashArt";
 import StickerBadge from "@/components/StickerBadge";
 import { CharacterPortraitCard } from "@/components/GuideSections";
-import { getRegionMeta, regionHref } from "@/lib/regions";
+import { getRegionMeta } from "@/lib/regions";
 
 type CharacterHeroBannerProps = {
   name: string;
@@ -57,7 +56,8 @@ export default function CharacterHeroBanner({
     ELEMENT_LABEL[element.toUpperCase()] || null,
   ].filter(Boolean);
   const regionMeta = region ? getRegionMeta(region) : null;
-  const showRegionLink = regionMeta && regionMeta.slug !== "other";
+  const regionLabel =
+    regionMeta && regionMeta.slug !== "other" ? regionMeta.name : region;
 
   return (
     <section
@@ -154,19 +154,10 @@ export default function CharacterHeroBanner({
                     {weaponType}
                   </span>
                 )}
-                {showRegionLink ? (
-                  <Link
-                    href={regionHref(region)}
-                    className="rounded-full bg-[var(--el-soft)] px-3 py-1.5 text-xs font-bold text-[var(--el-accent)] transition hover:bg-[var(--el-solid)] hover:text-[var(--el-on-solid)]"
-                  >
-                    {regionMeta.name}
-                  </Link>
-                ) : (
-                  region && (
-                    <span className="rounded-full bg-[var(--el-soft)] px-3 py-1.5 text-xs font-bold text-[var(--el-accent)]">
-                      {region}
-                    </span>
-                  )
+                {regionLabel && (
+                  <span className="rounded-full bg-[var(--el-soft)] px-3 py-1.5 text-xs font-bold text-[var(--el-accent)]">
+                    {regionLabel}
+                  </span>
                 )}
               </div>
             </div>

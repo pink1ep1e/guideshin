@@ -69,57 +69,6 @@ export const OFFERS = [
   },
 ] as const;
 
-export const REGIONS = [
-  {
-    name: "Нод-Край",
-    desc: "Новый регион на севере",
-    href: "/wiki/regions/nod-krai",
-    asset: HOME_ASSETS.regions.nodkrai,
-  },
-  {
-    name: "Снежная",
-    desc: "Крио, Царица и Фатуи",
-    href: "/wiki/regions/snezhnaya",
-    asset: HOME_ASSETS.regions.snezhnaya,
-  },
-  {
-    name: "Натлан",
-    desc: "Пиро, племена и война",
-    href: "/wiki/regions/natlan",
-    asset: HOME_ASSETS.regions.natlan,
-  },
-  {
-    name: "Фонтейн",
-    desc: "Гидро, механика и суд",
-    href: "/wiki/regions/fontaine",
-    asset: HOME_ASSETS.regions.fontaine,
-  },
-  {
-    name: "Сумеру",
-    desc: "Дендро, реакции и Академия",
-    href: "/wiki/regions/sumeru",
-    asset: HOME_ASSETS.regions.sumeru,
-  },
-  {
-    name: "Инадзума",
-    desc: "Электро, острова и сложный мир",
-    href: "/wiki/regions/inazuma",
-    asset: HOME_ASSETS.regions.inazuma,
-  },
-  {
-    name: "Ли Юэ",
-    desc: "Гео, контракты и сильные саппорты",
-    href: "/wiki/regions/liyue",
-    asset: HOME_ASSETS.regions.liyue,
-  },
-  {
-    name: "Мондштадт",
-    desc: "Анемо, свобода и ранний прогресс",
-    href: "/wiki/regions/mondstadt",
-    asset: HOME_ASSETS.regions.mondstadt,
-  },
-] as const;
-
 export const QUICK_GUIDES = [
   {
     title: "С чего начать новичку",

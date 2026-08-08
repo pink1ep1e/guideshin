@@ -4,29 +4,25 @@ export const SITE_URL = "https://guideshin.ru";
 export const SITE_TELEGRAM = "https://t.me/guideshin";
 
 /** PNK VPN — промо в сайдбаре */
-export const PNK_VPN_BOT = "https://t.me/pnkvpn_bot";
-/** Тестовая ссылка Boosty */
-export const PNK_VPN_BOOSTY = "https://boosty.to/pnk";
+export const PNK_VPN_BOT = "https://t.me/pnkvpn_bot?start=guideshin";
 export const PNK_VPN_LOGO = "/images/pnk-vpn-logo.svg";
 export const PNK_VPN_BG = "/images/pnk-vpn-bg.png";
 
 export const SITE_DESCRIPTION =
-  "Гайды по Genshin Impact: билды персонажей, оружие, артефакты, материалы. Нод-Край и подготовка к Снежной — актуальные гайды на Guideshin.";
+  "Гайды на персонажей Genshin Impact: лучшие билды, оружие, артефакты, таланты и материалы прокачки. Актуальные гайды на Guideshin.";
 
 export const SITE_TITLE_DEFAULT =
-  "Guideshin — гайды Genshin Impact: билды и прокачка";
+  "Guideshin — гайды на персонажей Genshin Impact";
 
 export const SITE_KEYWORDS = [
   "Genshin Impact",
   "гайды Genshin",
-  "билды персонажей",
   "гайд на персонажа",
+  "билды персонажей",
   "билд",
   "артефакты",
   "оружие",
   "материалы",
-  "Нод-Край",
-  "Снежная",
   "Guideshin",
   "guideshin.ru",
 ];

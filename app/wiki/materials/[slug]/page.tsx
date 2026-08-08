@@ -17,7 +17,6 @@ import {
   breadcrumbJsonLd,
   serializeJsonLd,
 } from "@/lib/seo";
-import { getRegionMeta, regionHref } from "@/lib/regions";
 import type { Metadata } from "next";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -72,7 +71,6 @@ export default async function MaterialDetailPage({ params }: Props) {
   const description =
     item.shortDesc?.trim() ||
     `Где взять ${item.name} в Genshin Impact: источники и применение.`;
-  const regionMeta = item.region ? getRegionMeta(item.region) : null;
 
   const relatedNames = [
     ...guide.alchemyUses,
@@ -120,17 +118,11 @@ export default async function MaterialDetailPage({ params }: Props) {
   const breadcrumbs = [
     { name: "Главная", path: "/" },
     { name: "Материалы", path: "/wiki/materials" },
+    {
+      name: item.name,
+      path: `/wiki/materials/${item.slug}`,
+    },
   ];
-  if (regionMeta && regionMeta.slug !== "other") {
-    breadcrumbs.push({
-      name: regionMeta.name,
-      path: `/wiki/regions/${regionMeta.slug}`,
-    });
-  }
-  breadcrumbs.push({
-    name: item.name,
-    path: `/wiki/materials/${item.slug}`,
-  });
 
   const jsonLd = [
     articleJsonLd({
@@ -168,14 +160,6 @@ export default async function MaterialDetailPage({ params }: Props) {
             <h1 className="font-genshin mt-1 text-3xl tracking-wide text-foreground">{item.name}</h1>
             {item.shortDesc && (
               <p className="mt-1 text-sm font-medium text-muted-foreground">{item.shortDesc}</p>
-            )}
-            {regionMeta && regionMeta.slug !== "other" && (
-              <Link
-                href={regionHref(item.region)}
-                className="mt-3 inline-flex rounded-full bg-[#189b8e]/10 px-3 py-1.5 text-xs font-bold text-[#189b8e] hover:bg-[#189b8e] hover:text-white"
-              >
-                {regionMeta.name}
-              </Link>
             )}
           </div>
 
