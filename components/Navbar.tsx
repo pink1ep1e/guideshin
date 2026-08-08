@@ -355,7 +355,9 @@ export default function Navbar() {
                   }
                 }}
               >
-                {status === "authenticated" && isWishUser ? "Мои молитвы" : "Молитвы"}
+                {status === "authenticated" && isWishUser
+                  ? "Мои молитвы"
+                  : "Счётчик молитв"}
               </button>
             </div>
           </nav>
