@@ -37,9 +37,44 @@ export type BannerPityStats = {
   total: number;
   pity4: number;
   pity5: number;
+  /** Soft pity cap for UI progress (90 character/standard, 80 weapon). */
+  pity5Max: number;
+  pity4Max: number;
   guaranteed5: boolean;
   last5Star: string | null;
-  fiveStars: { name: string; pity: number; time: string }[];
+  fiveStars: {
+    name: string;
+    pity: number;
+    time: string;
+    itemType: string;
+  }[];
+  count5: number;
+  count4: number;
+  count3: number;
+  rate5: number;
+  rate4: number;
+  avgPity5: number | null;
+  avgPity4: number | null;
+  /** Primogems spent (total * 160). */
+  primogems: number;
+};
+
+export type PityChartPoint = {
+  index: number;
+  name: string;
+  pity: number;
+  banner: GachaBannerKey;
+  time: string;
+};
+
+export type WishOverview = {
+  total: number;
+  primogems: number;
+  count5: number;
+  count4: number;
+  rate5: number;
+  rate4: number;
+  avgPity5: number | null;
 };
 
 /** Считает pity по баннеру (хронология от старых к новым). */
@@ -56,6 +91,9 @@ export function computeBannerStats(
           ? [GACHA_TYPES.permanent]
           : [GACHA_TYPES.novice];
 
+  const pity5Max = key === "weapon" ? 80 : 90;
+  const pity4Max = 10;
+
   const filtered = pulls
     .filter((p) => types.includes(p.gachaType))
     .slice()
@@ -69,41 +107,62 @@ export function computeBannerStats(
   let guaranteed5 = false;
   let last5Star: string | null = null;
   const fiveStars: BannerPityStats["fiveStars"] = [];
+  const fourPities: number[] = [];
+  let count5 = 0;
+  let count4 = 0;
+  let count3 = 0;
 
   for (const pull of filtered) {
     pity4 += 1;
     pity5 += 1;
     const rank = String(pull.rankType);
 
+    if (rank === "3") count3 += 1;
     if (rank === "4") {
+      count4 += 1;
+      fourPities.push(pity4);
       pity4 = 0;
     }
     if (rank === "5") {
+      count5 += 1;
       fiveStars.push({
         name: pull.itemName,
         pity: pity5,
         time: new Date(pull.wishTime).toISOString(),
+        itemType: pull.itemType,
       });
       last5Star = pull.itemName;
       pity5 = 0;
       pity4 = 0;
-      // Упрощённо: после стандартного 5★ на ивенте — гарант (эвристика)
       if (key === "character") {
-        // Не знаем featured без баннер-календаря; оставляем false по умолчанию
         guaranteed5 = false;
       }
     }
   }
 
+  const total = filtered.length;
+  const avg = (arr: number[]) =>
+    arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+
   return {
     key,
     label: BANNER_LABELS[key],
-    total: filtered.length,
+    total,
     pity4,
     pity5,
+    pity5Max,
+    pity4Max,
     guaranteed5,
     last5Star,
     fiveStars: fiveStars.slice().reverse(),
+    count5,
+    count4,
+    count3,
+    rate5: total ? (count5 / total) * 100 : 0,
+    rate4: total ? (count4 / total) * 100 : 0,
+    avgPity5: avg(fiveStars.map((f) => f.pity)),
+    avgPity4: avg(fourPities),
+    primogems: total * 160,
   };
 }
 
@@ -111,6 +170,53 @@ export function computeAllBannerStats(pulls: WishPullLike[]) {
   return (["character", "weapon", "permanent"] as GachaBannerKey[]).map(
     (key) => computeBannerStats(pulls, key),
   );
+}
+
+export function computeWishOverview(pulls: WishPullLike[]): WishOverview {
+  const total = pulls.length;
+  const count5 = pulls.filter((p) => String(p.rankType) === "5").length;
+  const count4 = pulls.filter((p) => String(p.rankType) === "4").length;
+  const chart = buildPityChart(pulls);
+  const avgPity5 = chart.length
+    ? chart.reduce((a, b) => a + b.pity, 0) / chart.length
+    : null;
+
+  return {
+    total,
+    primogems: total * 160,
+    count5,
+    count4,
+    rate5: total ? (count5 / total) * 100 : 0,
+    rate4: total ? (count4 / total) * 100 : 0,
+    avgPity5,
+  };
+}
+
+/** Точки для графика pity 5★ (по времени). */
+export function buildPityChart(pulls: WishPullLike[]): PityChartPoint[] {
+  const points: PityChartPoint[] = [];
+  for (const key of ["character", "weapon", "permanent"] as GachaBannerKey[]) {
+    const stats = computeBannerStats(pulls, key);
+    const chrono = [...stats.fiveStars].reverse();
+    for (const f of chrono) {
+      points.push({
+        index: 0,
+        name: f.name,
+        pity: f.pity,
+        banner: key,
+        time: f.time,
+      });
+    }
+  }
+  points.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+  return points.map((p, i) => ({ ...p, index: i + 1 }));
+}
+
+export function pityChipTone(pity: number, max = 90): "good" | "mid" | "bad" {
+  const t = pity / max;
+  if (t <= 0.45) return "good";
+  if (t <= 0.75) return "mid";
+  return "bad";
 }
 
 export type NormalizedWish = {
