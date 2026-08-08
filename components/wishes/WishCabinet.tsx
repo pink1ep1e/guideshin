@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Gem, LogOut, Sparkles, Star, TrendingUp } from "lucide-react";
+import { motion } from "framer-motion";
+import { LogOut } from "lucide-react";
 import type {
   BannerPityStats,
   GachaBannerKey,
@@ -16,11 +17,12 @@ import {
   BANNER_SHORT,
   DASHBOARD_BANNERS,
   bannerKeyFromGachaType,
+  fetchAllWishesFromAuthUrl,
   pityChipTone,
 } from "@/lib/wishes";
 import WishImportWizard from "@/components/wishes/WishImportWizard";
 import { WishPityAreaChart, WishRateCompare } from "@/components/wishes/WishCharts";
-import { AnimatedNumber, PityRing } from "@/components/wishes/WishMotion";
+import { AnimatedNumber } from "@/components/wishes/WishMotion";
 
 type FiveStar = BannerPityStats["fiveStars"][number] & {
   guideHref?: string | null;
@@ -54,11 +56,31 @@ const chipClass = {
   bad: "bg-rose-500/12 text-rose-800 ring-rose-500/25",
 } as const;
 
+const bannerAccent: Record<GachaBannerKey, string> = {
+  character: "#189b8e",
+  weapon: "#c99212",
+  permanent: "#5b7cfa",
+  chronicled: "#9b6bff",
+  novice: "#888",
+};
+
 function fmtPct(n: number, d = 2) {
   return n.toLocaleString("ru-RU", {
     maximumFractionDigits: d,
     minimumFractionDigits: d,
   });
+}
+
+function Primogem({ className = "" }: { className?: string }) {
+  return (
+    <Image
+      src="/images/primogem.png"
+      alt=""
+      width={20}
+      height={20}
+      className={`inline-block ${className}`}
+    />
+  );
 }
 
 export default function WishCabinet({ userName }: { userName?: string | null }) {
@@ -67,7 +89,6 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [banner, setBanner] = useState<GachaBannerKey>("character");
   const [chartFilter, setChartFilter] = useState<GachaBannerKey | "all">("all");
 
   const load = useCallback(async () => {
@@ -92,8 +113,80 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
     setMessage(null);
   }, []);
 
-  const runImport = useCallback(
-    async (body: Record<string, unknown>) => {
+  const savePulls = useCallback(
+    async (pulls: unknown) => {
+      const res = await fetch("/api/wishes/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "pulls", pulls }),
+      });
+      const json = (await res.json()) as {
+        error?: string;
+        inserted?: number;
+        totalParsed?: number;
+      };
+      if (!res.ok) throw new Error(json.error || "Ошибка импорта");
+      setMessage(
+        `Готово: разобрано ${json.totalParsed}, добавлено новых ${json.inserted}`,
+      );
+      await load();
+    },
+    [load],
+  );
+
+  const importFromUrl = useCallback(
+    async (url: string) => {
+      setBusy(true);
+      setError(null);
+      setMessage(null);
+      try {
+        // Клиентский fetch к Hoyoverse (как paimon.moe)
+        const result = await fetchAllWishesFromAuthUrl(url);
+        if (result.error) {
+          const isNetwork = /связаться|VPN|сеть|Failed to fetch|NetworkError/i.test(
+            result.error,
+          );
+          if (isNetwork) {
+            // Fallback: сервер тянет историю сам
+            const res = await fetch("/api/wishes/import", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ mode: "url", url }),
+            });
+            const json = (await res.json()) as {
+              error?: string;
+              inserted?: number;
+              totalParsed?: number;
+            };
+            if (!res.ok) throw new Error(json.error || result.error);
+            setMessage(
+              `Готово: разобрано ${json.totalParsed}, добавлено новых ${json.inserted}`,
+            );
+            await load();
+            return;
+          }
+          throw new Error(result.error);
+        }
+        const serializable = result.pulls.map((p) => ({
+          id: p.hoyoId,
+          gacha_type: p.gachaType,
+          name: p.itemName,
+          item_type: p.itemType,
+          rank_type: p.rankType,
+          time: p.wishTime.toISOString(),
+        }));
+        await savePulls(serializable);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Ошибка импорта");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [load, savePulls],
+  );
+
+  const importFromJson = useCallback(
+    async (payload: unknown) => {
       setBusy(true);
       setError(null);
       setMessage(null);
@@ -101,7 +194,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
         const res = await fetch("/api/wishes/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
+          body: JSON.stringify({ mode: "json", payload }),
         });
         const json = (await res.json()) as {
           error?: string;
@@ -128,426 +221,388 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
     return map;
   }, [data?.stats]);
 
-  const active = statsByKey.get(banner);
+  const hasPulls = (data?.total ?? 0) > 0;
 
   return (
     <div className="pb-14">
-      {/* Hero */}
-      <section className="container-page pt-7 sm:pt-9">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#0f766e] via-[#189b8e] to-[#67d5cc] p-6 text-white shadow-panel sm:p-9"
-        >
-          <div className="pointer-events-none absolute -right-10 top-0 h-64 w-64 rounded-full bg-white/15 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-20 left-1/3 h-48 w-48 rounded-full bg-black/10 blur-2xl" />
-
-          <div className="relative flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.12em] text-white/75">
-                Личный кабинет
-              </p>
-              <h1 className="mt-1 font-genshin text-4xl tracking-wide sm:text-5xl">
-                Счётчик молитв
-              </h1>
-              <p className="mt-2 max-w-lg text-sm font-medium text-white/85 sm:text-base">
-                {userName ? `${userName} · ` : ""}
-                Персонажи, оружие, стандарт и хроники — pity, шансы и история в одном месте.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="inline-flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2.5 text-sm font-bold backdrop-blur transition hover:bg-white/25"
-            >
-              <LogOut className="h-4 w-4" />
-              Выйти
-            </button>
+      <section className="container-page-wide pt-6 sm:pt-8">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#189b8e]">
+              {userName || "Кабинет"}
+            </p>
+            <h1 className="font-genshin text-3xl tracking-wide text-foreground sm:text-4xl">
+              Счётчик молитв
+            </h1>
           </div>
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="inline-flex items-center gap-2 rounded-xl border border-black/[0.08] bg-white px-3.5 py-2 text-sm font-bold text-foreground/80 transition hover:bg-black/[0.03]"
+          >
+            <LogOut className="h-4 w-4" />
+            Выйти
+          </button>
+        </div>
 
-          {!loading && data?.overview && (
-            <div className="relative mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <HeroMetric
-                icon={<Sparkles className="h-4 w-4" />}
-                label="Молитв"
-                value={data.overview.total}
+        {loading ? (
+          <div className="rounded-2xl border border-black/[0.06] bg-white p-12 text-center text-sm text-muted-foreground">
+            Загружаем…
+          </div>
+        ) : !hasPulls ? (
+          <div className="mx-auto max-w-2xl">
+            <WishImportWizard
+              busy={busy}
+              error={error}
+              message={message}
+              onImportUrl={importFromUrl}
+              onImportJson={importFromJson}
+              onClearFeedback={clearFeedback}
+            />
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Overview strip */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+            >
+              <OverviewTile
+                label="Всего молитв"
+                value={data!.overview.total}
               />
-              <HeroMetric
-                icon={<Gem className="h-4 w-4" />}
+              <OverviewTile
                 label="Примогемы"
-                value={data.overview.primogems}
+                value={data!.overview.primogems}
+                primogem
               />
-              <HeroMetric
-                icon={<Star className="h-4 w-4" />}
+              <OverviewTile
                 label="Шанс 5★"
-                value={data.overview.rate5}
+                value={data!.overview.rate5}
                 format={(n) => `${fmtPct(n)}%`}
-                hint={`${data.overview.count5} пятизвёздных`}
+                hint={`${data!.overview.count5} пятизвёздных`}
               />
-              <HeroMetric
-                icon={<TrendingUp className="h-4 w-4" />}
-                label="Средний pity"
-                value={data.overview.avgPity5 ?? 0}
+              <OverviewTile
+                label="Средний гарант 5★"
+                value={data!.overview.avgPity5 ?? 0}
                 format={(n) =>
-                  data.overview.avgPity5 == null ? "—" : fmtPct(n, 1)
+                  data!.overview.avgPity5 == null ? "—" : fmtPct(n, 1)
                 }
-                hint="чем ниже, тем удачнее"
               />
-            </div>
-          )}
-        </motion.div>
-      </section>
+            </motion.div>
 
-      <section className="container-page mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="space-y-6">
-          {loading ? (
-            <div className="glass-panel p-10 text-center text-sm text-muted-foreground">
-              Собираем кабинет…
+            {/* Banner cards — paimon-style grid */}
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {DASHBOARD_BANNERS.map((key, i) => {
+                const s = statsByKey.get(key);
+                if (!s) return null;
+                return (
+                  <BannerCard key={key} stat={s} delay={i * 0.05} />
+                );
+              })}
             </div>
-          ) : (
-            <>
-              {/* Banner switcher + detail — one composition */}
-              <motion.section
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.08, duration: 0.45 }}
-                className="glass-panel overflow-hidden p-5 sm:p-7"
-              >
-                <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+
+            {/* Charts */}
+            <div className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
+              <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-6">
+                <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                   <div>
-                    <p className="text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">
-                      Баннеры
+                    <h2 className="font-genshin text-xl text-foreground">
+                      Гарант 5★ по времени
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      Чем ниже точка — тем раньше выпал 5★
                     </p>
-                    <h2 className="section-title text-[26px]">Текущий pity</h2>
                   </div>
-                </div>
-
-                <div className="mb-6 flex flex-wrap gap-2">
-                  {DASHBOARD_BANNERS.map((key) => {
-                    const s = statsByKey.get(key);
-                    const activeTab = banner === key;
-                    return (
+                  <div className="flex flex-wrap gap-1.5">
+                    {(
+                      ["all", ...DASHBOARD_BANNERS] as (GachaBannerKey | "all")[]
+                    ).map((key) => (
                       <button
                         key={key}
                         type="button"
-                        onClick={() => setBanner(key)}
-                        className={`rounded-2xl px-4 py-2.5 text-left transition ${
-                          activeTab
-                            ? "bg-[#189b8e] text-white shadow-soft"
-                            : "bg-black/[0.04] text-foreground/80 hover:bg-black/[0.07]"
+                        onClick={() => setChartFilter(key)}
+                        className={`rounded-lg px-2.5 py-1 text-[11px] font-bold ${
+                          chartFilter === key
+                            ? "bg-[#189b8e] text-white"
+                            : "bg-black/[0.05] text-foreground/70"
                         }`}
                       >
-                        <span className="block text-sm font-bold">
-                          {BANNER_LABELS[key]}
-                        </span>
-                        <span
-                          className={`block text-[11px] font-medium ${
-                            activeTab ? "text-white/80" : "text-muted-foreground"
-                          }`}
-                        >
-                          {s?.total ?? 0} молитв · pity {s?.pity5 ?? 0}
-                        </span>
+                        {key === "all" ? "Все" : BANNER_LABELS[key]}
                       </button>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
+                <WishPityAreaChart
+                  data={data?.pityChart ?? []}
+                  banner={chartFilter}
+                />
+              </section>
 
-                <AnimatePresence mode="wait">
-                  {active && (
-                    <motion.div
-                      key={active.key}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.35 }}
-                    >
-                      <p className="mb-5 text-sm font-medium text-muted-foreground">
-                        {BANNER_SHORT[active.key]}
+              <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-6">
+                <h2 className="mb-1 font-genshin text-xl text-foreground">
+                  Ваши шансы
+                </h2>
+                <p className="mb-3 text-xs text-muted-foreground">
+                  Цвет — факт · серый — ожидание игры
+                </p>
+                <WishRateCompare
+                  rate5={data?.overview.rate5 ?? 0}
+                  rate4={data?.overview.rate4 ?? 0}
+                />
+              </section>
+            </div>
+
+            {/* 5★ history per banner */}
+            <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-6">
+              <h2 className="mb-4 font-genshin text-xl text-foreground">
+                История 5★
+              </h2>
+              <div className="grid gap-5 lg:grid-cols-2">
+                {DASHBOARD_BANNERS.map((key) => {
+                  const s = statsByKey.get(key);
+                  if (!s || s.fiveStars.length === 0) return null;
+                  return (
+                    <div key={key}>
+                      <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        {BANNER_LABELS[key]}
                       </p>
-
-                      <div className="grid gap-6 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-center">
-                        <div className="flex flex-wrap justify-center gap-8 lg:justify-start">
-                          <PityRing
-                            value={active.pity5}
-                            max={active.pity5Max}
-                            label="5★ pity"
-                            accent="#c99212"
-                          />
-                          <PityRing
-                            value={active.pity4}
-                            max={active.pity4Max}
-                            label="4★ pity"
-                            accent="#6b5b95"
-                          />
-                        </div>
-
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <StatCell
-                            label="Всего молитв"
-                            value={String(active.total)}
-                            sub={`≈ ${active.primogems.toLocaleString("ru-RU")} примо`}
-                          />
-                          <StatCell
-                            label="Шанс 5★"
-                            value={`${fmtPct(active.rate5)}%`}
-                            sub={`${active.count5} шт · ожидание ~1.6%`}
-                            accent="text-[#c99212]"
-                          />
-                          <StatCell
-                            label="Шанс 4★"
-                            value={`${fmtPct(active.rate4)}%`}
-                            sub={`${active.count4} шт · ожидание ~13%`}
-                            accent="text-[#6b5b95]"
-                          />
-                          <StatCell
-                            label="Средний pity 5★"
-                            value={
-                              active.avgPity5 != null
-                                ? fmtPct(active.avgPity5, 1)
-                                : "—"
-                            }
-                            sub={
-                              active.last5Star
-                                ? `Последний: ${active.last5Star}`
-                                : "Ещё не выпадал 5★"
-                            }
-                          />
-                        </div>
+                      <div className="flex flex-wrap gap-2">
+                        {s.fiveStars.map((f, i) => {
+                          const tone = pityChipTone(f.pity, s.pity5Max);
+                          const cls = `inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ring-1 ${chipClass[tone]}`;
+                          const body = (
+                            <>
+                              <span>{f.name}</span>
+                              <span className="opacity-70">{f.pity}</span>
+                            </>
+                          );
+                          return f.guideHref ? (
+                            <Link
+                              key={`${f.name}-${f.time}-${i}`}
+                              href={f.guideHref}
+                              className={`${cls} transition hover:brightness-95`}
+                            >
+                              {body}
+                            </Link>
+                          ) : (
+                            <span
+                              key={`${f.name}-${f.time}-${i}`}
+                              className={cls}
+                            >
+                              {body}
+                            </span>
+                          );
+                        })}
                       </div>
-
-                      {active.fiveStars.length > 0 && (
-                        <div className="mt-6 border-t border-black/[0.05] pt-5">
-                          <p className="mb-3 text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
-                            История 5★ · цвет = удача pity
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {active.fiveStars.map((f, i) => {
-                              const tone = pityChipTone(f.pity, active.pity5Max);
-                              const cls = `inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ring-1 ${chipClass[tone]}`;
-                              const body = (
-                                <>
-                                  <span>{f.name}</span>
-                                  <span className="opacity-70">{f.pity}</span>
-                                </>
-                              );
-                              return f.guideHref ? (
-                                <Link
-                                  key={`${f.name}-${f.time}-${i}`}
-                                  href={f.guideHref}
-                                  className={`${cls} transition hover:brightness-95`}
-                                >
-                                  {body}
-                                </Link>
-                              ) : (
-                                <span key={`${f.name}-${f.time}-${i}`} className={cls}>
-                                  {body}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.section>
-
-              {/* Charts */}
-              <div className="grid gap-6 lg:grid-cols-[1.4fr_0.9fr]">
-                <motion.section
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.12, duration: 0.45 }}
-                  className="glass-panel p-5 sm:p-7"
-                >
-                  <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">
-                        Аналитика
-                      </p>
-                      <h2 className="section-title text-[24px]">Pity 5★ во времени</h2>
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {(
-                        ["all", ...DASHBOARD_BANNERS] as (GachaBannerKey | "all")[]
-                      ).map((key) => (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => setChartFilter(key)}
-                          className={`rounded-full px-3 py-1.5 text-[11px] font-bold ${
-                            chartFilter === key
-                              ? "bg-[#189b8e] text-white"
-                              : "bg-black/[0.05] text-foreground/70"
-                          }`}
-                        >
-                          {key === "all" ? "Все" : BANNER_LABELS[key]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <WishPityAreaChart
-                    data={data?.pityChart ?? []}
-                    banner={chartFilter}
-                  />
-                </motion.section>
-
-                <motion.section
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.16, duration: 0.45 }}
-                  className="glass-panel p-5 sm:p-7"
-                >
-                  <p className="text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">
-                    Сравнение
-                  </p>
-                  <h2 className="section-title mb-1 text-[24px]">Ваши шансы</h2>
-                  <p className="mb-3 text-xs font-medium text-muted-foreground">
-                    Цветной столбец — факт · серый — ожидание игры
-                  </p>
-                  <WishRateCompare
-                    rate5={data?.overview.rate5 ?? 0}
-                    rate4={data?.overview.rate4 ?? 0}
-                  />
-                </motion.section>
+                  );
+                })}
               </div>
+            </section>
 
-              {/* History */}
-              <motion.section
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.45 }}
-                className="glass-panel p-5 sm:p-7"
-              >
+            {/* Recent + re-import */}
+            <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+              <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-6">
                 <div className="mb-4 flex items-end justify-between">
-                  <div>
-                    <p className="text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">
-                      Лента
-                    </p>
-                    <h2 className="section-title text-[24px]">Последние молитвы</h2>
-                  </div>
+                  <h2 className="font-genshin text-xl text-foreground">
+                    Последние молитвы
+                  </h2>
                   <p className="text-sm font-bold text-muted-foreground">
                     {(data?.total ?? 0).toLocaleString("ru-RU")} всего
                   </p>
                 </div>
-                {(data?.recent.length ?? 0) === 0 ? (
-                  <p className="text-sm font-medium text-muted-foreground">
-                    История пуста — импортируйте молитвы справа.
-                  </p>
-                ) : (
-                  <ul className="divide-y divide-black/[0.05]">
-                    {data!.recent.map((pull, idx) => (
-                      <motion.li
-                        key={pull.id}
-                        initial={{ opacity: 0, x: -6 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: Math.min(idx * 0.015, 0.3) }}
-                        className="flex flex-wrap items-center justify-between gap-2 py-3.5"
-                      >
-                        <div>
-                          <p className="font-bold text-foreground">
-                            <span
-                              className={
-                                pull.rankType === "5"
-                                  ? "text-[#c99212]"
-                                  : pull.rankType === "4"
-                                    ? "text-[#6b5b95]"
-                                    : "text-muted-foreground"
-                              }
-                            >
-                              {pull.rankType}★
-                            </span>{" "}
-                            {pull.itemName}
-                          </p>
-                          <p className="text-xs font-medium text-muted-foreground">
-                            {BANNER_LABELS[bannerKeyFromGachaType(pull.gachaType)]} ·{" "}
-                            {new Date(pull.wishTime).toLocaleString("ru-RU")}
-                          </p>
-                        </div>
-                        {pull.guideHref && (
-                          <Link
-                            href={pull.guideHref}
-                            className="text-xs font-bold text-[#189b8e] hover:underline"
+                <ul className="divide-y divide-black/[0.05]">
+                  {data!.recent.map((pull) => (
+                    <li
+                      key={pull.id}
+                      className="flex flex-wrap items-center justify-between gap-2 py-3"
+                    >
+                      <div>
+                        <p className="font-bold text-foreground">
+                          <span
+                            className={
+                              pull.rankType === "5"
+                                ? "text-[#c99212]"
+                                : pull.rankType === "4"
+                                  ? "text-[#6b5b95]"
+                                  : "text-muted-foreground"
+                            }
                           >
-                            Гайд →
-                          </Link>
-                        )}
-                      </motion.li>
-                    ))}
-                  </ul>
-                )}
-              </motion.section>
-            </>
-          )}
-        </div>
+                            {pull.rankType}★
+                          </span>{" "}
+                          {pull.itemName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {BANNER_LABELS[bannerKeyFromGachaType(pull.gachaType)]} ·{" "}
+                          {new Date(pull.wishTime).toLocaleString("ru-RU")}
+                        </p>
+                      </div>
+                      {pull.guideHref && (
+                        <Link
+                          href={pull.guideHref}
+                          className="text-xs font-bold text-[#189b8e] hover:underline"
+                        >
+                          Гайд →
+                        </Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
 
-        <aside className="space-y-5 xl:sticky xl:top-24 xl:self-start">
-          <WishImportWizard
-            busy={busy}
-            error={error}
-            message={message}
-            onImportUrl={(url) => runImport({ mode: "url", url })}
-            onImportJson={(payload) => runImport({ mode: "json", payload })}
-            onClearFeedback={clearFeedback}
-          />
-        </aside>
+              <aside className="xl:sticky xl:top-24">
+                <WishImportWizard
+                  busy={busy}
+                  error={error}
+                  message={message}
+                  onImportUrl={importFromUrl}
+                  onImportJson={importFromJson}
+                  onClearFeedback={clearFeedback}
+                />
+              </aside>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );
 }
 
-function HeroMetric({
-  icon,
+function OverviewTile({
   label,
   value,
   format,
   hint,
+  primogem,
 }: {
-  icon: React.ReactNode;
   label: string;
   value: number;
   format?: (n: number) => string;
   hint?: string;
+  primogem?: boolean;
 }) {
   return (
-    <div className="rounded-2xl bg-white/12 px-4 py-3 backdrop-blur-sm">
-      <div className="mb-1 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-white/75">
-        {icon}
+    <div className="rounded-2xl border border-black/[0.06] bg-white px-4 py-3.5">
+      <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
         {label}
+      </p>
+      <div className="mt-1 flex items-center gap-1.5">
+        {primogem ? <Primogem className="h-5 w-5" /> : null}
+        <AnimatedNumber
+          value={value}
+          format={format ?? ((n) => Math.round(n).toLocaleString("ru-RU"))}
+          className="font-genshin text-2xl tracking-wide text-foreground"
+        />
       </div>
-      <AnimatedNumber
-        value={value}
-        format={format ?? ((n) => Math.round(n).toLocaleString("ru-RU"))}
-        className="font-genshin text-3xl tracking-wide text-white"
-      />
       {hint ? (
-        <p className="mt-0.5 text-[11px] font-medium text-white/70">{hint}</p>
+        <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p>
       ) : null}
     </div>
   );
 }
 
-function StatCell({
-  label,
-  value,
-  sub,
-  accent,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  accent?: string;
-}) {
+function BannerCard({ stat, delay }: { stat: Stat; delay: number }) {
+  const accent = bannerAccent[stat.key];
+  const progress = Math.min(1, stat.pity5 / stat.pity5Max);
+
   return (
-    <div className="rounded-2xl bg-black/[0.03] px-4 py-3">
-      <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
-        {label}
-      </p>
-      <p className={`mt-1 font-genshin text-2xl text-foreground ${accent ?? ""}`}>
-        {value}
-      </p>
-      <p className="mt-0.5 text-xs font-medium text-muted-foreground">{sub}</p>
-    </div>
+    <motion.article
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.4 }}
+      className="rounded-2xl border border-black/[0.06] bg-white p-4 sm:p-5"
+    >
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <div>
+          <h3 className="font-genshin text-lg text-foreground">{stat.label}</h3>
+          <p className="text-[11px] text-muted-foreground">
+            {BANNER_SHORT[stat.key]}
+          </p>
+        </div>
+        <span
+          className="rounded-lg px-2 py-1 text-[11px] font-bold text-white"
+          style={{ backgroundColor: accent }}
+        >
+          {stat.total} молитв
+        </span>
+      </div>
+
+      <div className="mb-3">
+        <div className="mb-1 flex items-baseline justify-between">
+          <span className="text-xs font-bold text-muted-foreground">
+            Гарант 5★
+          </span>
+          <span className="font-genshin text-2xl" style={{ color: accent }}>
+            {stat.pity5}
+            <span className="text-sm text-muted-foreground">
+              /{stat.pity5Max}
+            </span>
+          </span>
+        </div>
+        <div className="h-2 overflow-hidden rounded-full bg-black/[0.06]">
+          <div
+            className="h-full rounded-full transition-all"
+            style={{
+              width: `${progress * 100}%`,
+              backgroundColor: accent,
+            }}
+          />
+        </div>
+        <p className="mt-1.5 text-xs text-muted-foreground">
+          До гаранта: <strong className="text-foreground">{stat.remaining5}</strong>
+          {stat.pity5 >= stat.softPityAt ? (
+            <span className="ml-2 font-bold text-amber-700">soft pity</span>
+          ) : (
+            <span className="ml-2">
+              soft с {stat.softPityAt}
+            </span>
+          )}
+        </p>
+      </div>
+
+      <div className="mb-3 grid grid-cols-2 gap-2 text-center">
+        <div className="rounded-xl bg-black/[0.03] px-2 py-2">
+          <p className="text-[10px] font-bold uppercase text-muted-foreground">
+            Гарант 4★
+          </p>
+          <p className="font-genshin text-lg text-foreground">
+            {stat.pity4}
+            <span className="text-xs text-muted-foreground">/{stat.pity4Max}</span>
+          </p>
+          <p className="text-[10px] text-muted-foreground">
+            осталось {stat.remaining4}
+          </p>
+        </div>
+        <div className="rounded-xl bg-black/[0.03] px-2 py-2">
+          <p className="text-[10px] font-bold uppercase text-muted-foreground">
+            Потрачено
+          </p>
+          <p className="flex items-center justify-center gap-1 font-genshin text-lg text-foreground">
+            <Primogem className="h-4 w-4" />
+            {stat.primogems.toLocaleString("ru-RU")}
+          </p>
+        </div>
+      </div>
+
+      {stat.last5Star ? (
+        <p className="truncate text-xs text-muted-foreground">
+          Последний 5★:{" "}
+          {stat.last5StarHref ? (
+            <Link
+              href={stat.last5StarHref}
+              className="font-bold text-[#189b8e] hover:underline"
+            >
+              {stat.last5Star}
+            </Link>
+          ) : (
+            <span className="font-bold text-foreground">{stat.last5Star}</span>
+          )}
+        </p>
+      ) : (
+        <p className="text-xs text-muted-foreground">Ещё не было 5★</p>
+      )}
+    </motion.article>
   );
 }

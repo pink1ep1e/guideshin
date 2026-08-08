@@ -1,9 +1,11 @@
-# Guideshin — извлечение ссылки истории молитв Genshin Impact (PC)
-# Запуск: irm https://guideshin.ru/scripts/get-wish-url.ps1 | iex
-# Перед запуском откройте в игре «История молитв» и дождитесь загрузки.
+# Guideshin — extract Genshin wish history URL (PC)
+# Run: irm https://guideshin.ru/scripts/get-wish-url.ps1 | iex
+# Open Wish History in game first and wait until it loads.
 
 $ErrorActionPreference = "Continue"
+try { chcp 65001 | Out-Null } catch {}
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 
 function Write-Ok($msg) { Write-Host $msg -ForegroundColor Green }
 function Write-Warn($msg) { Write-Host $msg -ForegroundColor Yellow }
@@ -11,7 +13,6 @@ function Write-Err($msg) { Write-Host $msg -ForegroundColor Red }
 
 function Find-AuthUrlInText([string]$text) {
   if ([string]::IsNullOrWhiteSpace($text)) { return $null }
-  # Полный URL с authkey (API или web-страница истории)
   $m = [regex]::Match(
     $text,
     'https://[^\s"''<>]+authkey=[^\s"''<>]+',
@@ -33,7 +34,6 @@ function Read-FileAsLatin1([string]$path) {
 
 $candidates = New-Object System.Collections.Generic.List[string]
 
-# Логи клиента
 @(
   "$env:USERPROFILE\AppData\LocalLow\miHoYo\Genshin Impact\output_log.txt",
   "$env:USERPROFILE\AppData\LocalLow\HoYoverse\Genshin Impact\output_log.txt",
@@ -42,7 +42,6 @@ $candidates = New-Object System.Collections.Generic.List[string]
   if (Test-Path -LiteralPath $_) { [void]$candidates.Add($_) }
 }
 
-# Chromium cache data_2 (актуальный способ после обновлений клиента)
 $cacheRoots = @(
   "$env:USERPROFILE\AppData\LocalLow\miHoYo",
   "$env:USERPROFILE\AppData\LocalLow\HoYoverse"
@@ -55,7 +54,6 @@ foreach ($root in $cacheRoots) {
     ForEach-Object { [void]$candidates.Add($_.FullName) }
 }
 
-# Также ищем webCaches рядом с типовыми путями установки
 $installHints = @(
   "C:\Program Files\Genshin Impact",
   "C:\Program Files\HoYoPlay\games\Genshin Impact game",
@@ -73,8 +71,8 @@ foreach ($hint in $installHints) {
 }
 
 if ($candidates.Count -eq 0) {
-  Write-Err "Не найден лог Genshin Impact."
-  Write-Warn "Откройте игру → История молитв → дождитесь загрузки → запустите скрипт снова."
+  Write-Err "Genshin log not found."
+  Write-Warn "Open game -> Wish History -> wait for load -> run again."
   exit 1
 }
 
@@ -84,27 +82,27 @@ foreach ($path in ($candidates | Select-Object -Unique)) {
   $found = Find-AuthUrlInText $text
   if ($found) {
     $url = $found
-    Write-Host "Источник: $path" -ForegroundColor DarkGray
+    Write-Host "Source: $path" -ForegroundColor DarkGray
     break
   }
 }
 
 if (-not $url) {
-  Write-Err "Ссылка с authkey не найдена."
-  Write-Warn "1) Откройте историю молитв в игре и подождите загрузки"
-  Write-Warn "2) Закройте окно истории"
-  Write-Warn "3) Запустите эту команду снова"
+  Write-Err "authkey URL not found."
+  Write-Warn "1) Open Wish History in game and wait"
+  Write-Warn "2) Close the history window"
+  Write-Warn "3) Run this command again"
   exit 1
 }
 
 try {
   Set-Clipboard -Value $url
-  Write-Ok "Готово! Ссылка скопирована в буфер обмена."
+  Write-Ok "OK! Link copied to clipboard."
   Write-Host ""
-  Write-Host "Вернитесь на Guideshin → кабинет молитв → «Вставить из буфера»." -ForegroundColor Cyan
+  Write-Host "Back to Guideshin -> paste from clipboard." -ForegroundColor Cyan
   Write-Host ""
   Write-Host $url -ForegroundColor DarkGray
 } catch {
-  Write-Warn "Не удалось записать в буфер. Скопируйте ссылку вручную:"
+  Write-Warn "Clipboard failed. Copy the link manually:"
   Write-Host $url
 }

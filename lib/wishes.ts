@@ -99,6 +99,12 @@ export type BannerPityStats = {
   avgPity4: number | null;
   /** Primogems spent (total * 160). */
   primogems: number;
+  /** Сколько молитв до жёсткого гаранта 5★. */
+  remaining5: number;
+  /** Сколько молитв до гаранта 4★. */
+  remaining4: number;
+  /** Порог soft pity (для подсказки в UI). */
+  softPityAt: number;
 };
 
 export type PityChartPoint = {
@@ -127,6 +133,7 @@ export function computeBannerStats(
   const types = gachaTypesForBanner(key);
   const pity5Max = key === "weapon" ? 80 : 90;
   const pity4Max = 10;
+  const softPityAt = key === "weapon" ? 63 : 74;
 
   const filtered = pulls
     .filter((p) => types.includes(p.gachaType))
@@ -200,6 +207,9 @@ export function computeBannerStats(
     avgPity5: avg(fiveStars.map((f) => f.pity)),
     avgPity4: avg(fourPities),
     primogems: total * 160,
+    remaining5: Math.max(0, pity5Max - pity5),
+    remaining4: Math.max(0, pity4Max - pity4),
+    softPityAt,
   };
 }
 
@@ -332,60 +342,121 @@ export function parseWishImportPayload(payload: unknown): NormalizedWish[] {
   return out;
 }
 
-/** Собирает рабочий URL getGachaLog из вставленной ссылки пользователя. */
-export function buildGachaLogUrl(rawInput: string, gachaType: string, endId = "0"): string | null {
+/**
+ * Достаёт query-параметр из сырой строки URL.
+ * Нельзя использовать URLSearchParams.get для authkey: `+` превращается в пробел.
+ */
+export function extractQueryParam(rawUrl: string, key: string): string | null {
+  const m = rawUrl.match(new RegExp(`[?&#]${key}=([^&]*)`, "i"));
+  if (!m) return null;
+  const encoded = m[1].replace(/\+/g, "%2B");
+  try {
+    return decodeURIComponent(encoded);
+  } catch {
+    return m[1];
+  }
+}
+
+export function resolveGachaApiHosts(rawUrl: string): string[] {
+  const gameBiz = (
+    extractQueryParam(rawUrl, "game_biz") || "hk4e_global"
+  ).toLowerCase();
+  const isCn = gameBiz.includes("cn") || /mihoyo\.com/i.test(rawUrl);
+
+  if (isCn) {
+    return [
+      "https://public-operation-hk4e.mihoyo.com/gacha_info/api/getGachaLog",
+      "https://hk4e-api.mihoyo.com/gacha_info/api/getGachaLog",
+      "https://public-operation-hk4e.hoyoverse.com/gacha_info/api/getGachaLog",
+    ];
+  }
+
+  return [
+    "https://public-operation-hk4e-sg.hoyoverse.com/gacha_info/api/getGachaLog",
+    "https://public-operation-hk4e.hoyoverse.com/gacha_info/api/getGachaLog",
+    "https://hk4e-api-os.hoyoverse.com/gacha_info/api/getGachaLog",
+    "https://hk4e-api-os.mihoyo.com/gacha_info/api/getGachaLog",
+  ];
+}
+
+/** Собирает рабочий URL getGachaLog из страницы истории или API-ссылки. */
+export function buildGachaLogUrl(
+  rawInput: string,
+  gachaType: string,
+  endId = "0",
+  apiBase?: string,
+): string | null {
   const trimmed = rawInput.trim();
   if (!trimmed) return null;
 
-  let url: URL;
-  try {
-    url = new URL(trimmed);
-  } catch {
-    return null;
-  }
+  const authkey =
+    extractQueryParam(trimmed, "authkey") ||
+    extractQueryParam(trimmed, "auth_key");
+  if (!authkey) return null;
 
-  // Если это страница истории — пытаемся вытащить authkey из query
-  const authkey = url.searchParams.get("authkey") || url.searchParams.get("auth_key");
-  if (!authkey && !url.pathname.includes("getGachaLog")) {
-    return null;
-  }
+  const gameBiz = extractQueryParam(trimmed, "game_biz") || "hk4e_global";
+  const lang = extractQueryParam(trimmed, "lang") || "ru";
+  const region = extractQueryParam(trimmed, "region");
+  const authkeyVer = extractQueryParam(trimmed, "authkey_ver") || "1";
+  const signType = extractQueryParam(trimmed, "sign_type") || "2";
 
-  // Нормализуем host/path под публичный API
-  const hosts = [
-    "public-operation-hk4e-sg.hoyoverse.com",
-    "public-operation-hk4e.hoyoverse.com",
-    "hk4e-api-os.hoyoverse.com",
-    "hk4e-api.hoyoverse.com",
-    "hk4e-api-os.mihoyo.com",
-    "hk4e-api.mihoyo.com",
-  ];
-
-  if (!hosts.some((h) => url.hostname.includes("hoyoverse") || url.hostname.includes("mihoyo"))) {
-    // всё равно пробуем, если authkey есть
-  }
-
-  if (!url.pathname.includes("getGachaLog")) {
-    url.hostname = url.hostname.includes("mihoyo") && !url.hostname.includes("os")
-      ? "public-operation-hk4e.hoyoverse.com"
-      : "public-operation-hk4e-sg.hoyoverse.com";
-    url.pathname = "/gacha_info/api/getGachaLog";
-  }
-
-  url.searchParams.set("authkey_ver", url.searchParams.get("authkey_ver") || "1");
-  url.searchParams.set("sign_type", url.searchParams.get("sign_type") || "2");
-  url.searchParams.set("lang", url.searchParams.get("lang") || "ru");
-  url.searchParams.set("game_biz", url.searchParams.get("game_biz") || "hk4e_global");
+  const base = apiBase || resolveGachaApiHosts(trimmed)[0];
+  const url = new URL(base);
+  url.searchParams.set("authkey_ver", authkeyVer);
+  url.searchParams.set("sign_type", signType);
+  url.searchParams.set("auth_appid", "webview_gacha");
+  url.searchParams.set("lang", lang);
+  url.searchParams.set("game_biz", gameBiz);
+  if (region) url.searchParams.set("region", region);
+  url.searchParams.set("authkey", authkey);
   url.searchParams.set("gacha_type", gachaType);
+  url.searchParams.set("page", "1");
   url.searchParams.set("size", "20");
   url.searchParams.set("end_id", endId);
-  if (authkey) url.searchParams.set("authkey", decodeURIComponent(authkey));
 
   return url.toString();
+}
+
+type GachaLogJson = {
+  retcode?: number;
+  message?: string;
+  data?: { list?: Record<string, unknown>[] };
+};
+
+async function fetchGachaPage(
+  apiUrl: string,
+): Promise<{ json?: GachaLogJson; error?: string; network?: boolean }> {
+  try {
+    const res = await fetch(apiUrl, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      return {
+        error: `Hoyoverse API ответил ${res.status}. Откройте историю молитв в игре заново.`,
+      };
+    }
+    return { json: (await res.json()) as GachaLogJson };
+  } catch {
+    return {
+      network: true,
+      error:
+        "Не удалось связаться с Hoyoverse. Проверьте VPN/сеть или попробуйте ещё раз.",
+    };
+  }
 }
 
 export async function fetchAllWishesFromAuthUrl(
   rawUrl: string,
 ): Promise<{ pulls: NormalizedWish[]; error?: string }> {
+  const trimmed = rawUrl.trim();
+  if (!extractQueryParam(trimmed, "authkey") && !extractQueryParam(trimmed, "auth_key")) {
+    return {
+      pulls: [],
+      error: "Не удалось разобрать ссылку. Вставьте полный URL с authkey.",
+    };
+  }
+
   const types = [
     GACHA_TYPES.character,
     GACHA_TYPES.character2,
@@ -395,33 +466,58 @@ export async function fetchAllWishesFromAuthUrl(
     GACHA_TYPES.novice,
   ];
 
+  const hosts = resolveGachaApiHosts(trimmed);
+  let workingHost = hosts[0];
+
+  {
+    let lastError = "Не удалось подключиться к API Hoyoverse.";
+    let found = false;
+    for (const host of hosts) {
+      const probe = buildGachaLogUrl(trimmed, GACHA_TYPES.character, "0", host);
+      if (!probe) continue;
+      const { json, error, network } = await fetchGachaPage(probe);
+      if (network || !json) {
+        lastError = error || lastError;
+        continue;
+      }
+      if (json.retcode === 0) {
+        workingHost = host;
+        found = true;
+        break;
+      }
+      lastError =
+        json.message ||
+        `Ошибка API (${json.retcode}). Ссылка устарела — откройте историю молитв снова.`;
+      // authkey / permission — другой хост не поможет
+      if (
+        json.retcode === -101 ||
+        json.retcode === -100 ||
+        /authkey|login|invalid/i.test(json.message || "")
+      ) {
+        return { pulls: [], error: lastError };
+      }
+    }
+    if (!found) return { pulls: [], error: lastError };
+  }
+
   const all: NormalizedWish[] = [];
   const seen = new Set<string>();
 
   for (const gachaType of types) {
     let endId = "0";
-    for (let page = 0; page < 50; page++) {
-      const apiUrl = buildGachaLogUrl(rawUrl, gachaType, endId);
+    for (let page = 0; page < 80; page++) {
+      const apiUrl = buildGachaLogUrl(trimmed, gachaType, endId, workingHost);
       if (!apiUrl) {
-        return { pulls: [], error: "Не удалось разобрать ссылку. Вставьте полный URL с authkey." };
-      }
-
-      const res = await fetch(apiUrl, {
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      });
-      if (!res.ok) {
         return {
           pulls: [],
-          error: `Hoyoverse API ответил ${res.status}. Откройте историю молитв в игре заново и скопируйте свежую ссылку.`,
+          error: "Не удалось разобрать ссылку. Вставьте полный URL с authkey.",
         };
       }
 
-      const json = (await res.json()) as {
-        retcode?: number;
-        message?: string;
-        data?: { list?: Record<string, unknown>[] };
-      };
+      const { json, error } = await fetchGachaPage(apiUrl);
+      if (!json) {
+        return { pulls: [], error: error || "Ошибка запроса к Hoyoverse." };
+      }
 
       if (json.retcode !== 0) {
         return {
@@ -443,8 +539,16 @@ export async function fetchAllWishesFromAuthUrl(
       }
 
       endId = String(list[list.length - 1]?.id ?? "0");
-      await new Promise((r) => setTimeout(r, 220));
+      await new Promise((r) => setTimeout(r, 180));
     }
+  }
+
+  if (all.length === 0) {
+    return {
+      pulls: [],
+      error:
+        "Молитв не найдено. Откройте историю в игре, дождитесь загрузки и получите свежую ссылку.",
+    };
   }
 
   return { pulls: all };
