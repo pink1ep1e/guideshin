@@ -12,6 +12,7 @@ import {
   Smartphone,
   Monitor,
   Cloud,
+  Terminal,
 } from "lucide-react";
 import { looksLikeWishAuthUrl } from "@/lib/wishes-client";
 import type { WishImportProgress } from "@/lib/wishes";
@@ -436,29 +437,57 @@ export default function WishImportWizard({
               Молитва → История молитв → дождитесь загрузки → закройте окно.
             </Step>
             <Step n={2} title="Команда в PowerShell">
-              Win+R → <code className="rounded bg-black/[0.06] px-1">powershell</code> →
-              вставьте команду:
-              <div className="mt-2 rounded-xl bg-[#0d1f1c] p-2.5">
-                <p className="break-all font-mono text-[10px] leading-relaxed text-[#9be8df]">
-                  {oneLiner || "Загрузка…"}
-                </p>
+              Win+R →{" "}
+              <code className="rounded-md bg-black/[0.06] px-1.5 py-0.5 text-[13px] font-semibold">
+                powershell
+              </code>{" "}
+              → вставьте команду:
+              <div className="mt-3 overflow-hidden rounded-2xl border border-[#1a3d38] bg-gradient-to-b from-[#122824] to-[#0b1a17] shadow-[0_12px_28px_-16px_rgba(15,70,60,0.55)]">
+                <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] px-3.5 py-2.5">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#189b8e]/20 ring-1 ring-[#189b8e]/35">
+                      <Terminal className="h-4 w-4 text-[#7dede2]" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold tracking-wide text-[#c8f5f0]">
+                        PowerShell
+                      </p>
+                      <p className="truncate text-[11px] text-white/45">
+                        get-wish-url.ps1
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={!oneLiner || blocked}
+                    onClick={() => void copyScript()}
+                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition disabled:opacity-40 ${
+                      copied
+                        ? "bg-emerald-400/20 text-emerald-200 ring-1 ring-emerald-300/30"
+                        : "bg-white/[0.08] text-[#9be8df] ring-1 ring-white/10 hover:bg-[#189b8e]/35 hover:text-white"
+                    }`}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="h-3.5 w-3.5" />
+                        Скопировано
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5" />
+                        Копировать
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className="relative px-3.5 py-3.5">
+                  <pre className="max-h-36 overflow-auto whitespace-pre-wrap break-all font-mono text-[12px] leading-relaxed text-[#a8f0e8] [scrollbar-width:thin]">
+                    {oneLiner || (
+                      <span className="text-white/40">Загрузка команды…</span>
+                    )}
+                  </pre>
+                </div>
               </div>
-              <button
-                type="button"
-                disabled={!oneLiner || blocked}
-                onClick={() => void copyScript()}
-                className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#189b8e] px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
-              >
-                {copied ? (
-                  <>
-                    <Check className="h-3.5 w-3.5" /> Скопировано
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-3.5 w-3.5" /> Скопировать
-                  </>
-                )}
-              </button>
             </Step>
             <Step n={3} title="Импорт">
               <ImportActions

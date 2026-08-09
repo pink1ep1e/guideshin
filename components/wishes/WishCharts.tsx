@@ -26,24 +26,17 @@ function MonthTooltip({
   label,
 }: {
   active?: boolean;
-  payload?: { dataKey?: string | number; value?: number; name?: string; color?: string }[];
+  payload?: { dataKey?: string | number; value?: number; name?: string }[];
   label?: string;
 }) {
-  if (!active || !payload?.length) return null;
-  const total = payload.reduce((s, p) => s + (Number(p.value) || 0), 0);
+  if (!active || !payload?.[0]) return null;
+  const value = Number(payload[0].value) || 0;
   return (
     <div className="rounded-2xl border border-black/[0.08] bg-white px-3.5 py-2.5 text-xs shadow-panel">
       <p className="font-bold text-foreground">{label}</p>
       <p className="mt-1 font-bold text-[#189b8e]">
-        {total.toLocaleString("ru-RU")} молитв
+        {value.toLocaleString("ru-RU")} молитв
       </p>
-      {payload.map((p) =>
-        p.value ? (
-          <p key={String(p.dataKey)} className="mt-0.5 text-foreground/75">
-            {p.name}: {Number(p.value).toLocaleString("ru-RU")}
-          </p>
-        ) : null,
-      )}
     </div>
   );
 }
@@ -55,9 +48,8 @@ export function WishMonthlyPullChart({
   data: MonthlyPullPoint[];
   banner: GachaBannerKey | "all";
 }) {
-  const chartData = data.map((d) => ({
-    label: d.label,
-    value:
+  const chartData = data.map((d) => {
+    const value =
       banner === "all"
         ? d.total
         : banner === "character"
@@ -68,12 +60,9 @@ export function WishMonthlyPullChart({
               ? d.permanent
               : banner === "chronicled"
                 ? d.chronicled
-                : d.total,
-    character: d.character,
-    weapon: d.weapon,
-    permanent: d.permanent,
-    chronicled: d.chronicled,
-  }));
+                : d.total;
+    return { label: d.label, value };
+  });
 
   if (chartData.length === 0 || chartData.every((d) => d.value === 0)) {
     return (
@@ -83,15 +72,24 @@ export function WishMonthlyPullChart({
     );
   }
 
+  const barColor =
+    banner === "weapon"
+      ? GOLD
+      : banner === "permanent"
+        ? VIOLET
+        : banner === "chronicled"
+          ? CHRONICLE
+          : TEAL;
+
   return (
     <motion.div
       key={banner}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      className="h-[300px] w-full"
+      className="h-[300px] w-full min-h-[300px]"
     >
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minHeight={300}>
         <BarChart
           data={chartData}
           margin={{ top: 16, right: 12, left: -8, bottom: 8 }}
@@ -116,48 +114,14 @@ export function WishMonthlyPullChart({
             tickLine={false}
           />
           <Tooltip content={<MonthTooltip />} />
-          {banner === "all" ? (
-            <>
-              <Bar
-                dataKey="character"
-                name="Персонажи"
-                stackId="a"
-                fill={TEAL}
-                radius={[0, 0, 0, 0]}
-                maxBarSize={42}
-              />
-              <Bar
-                dataKey="weapon"
-                name="Оружие"
-                stackId="a"
-                fill={GOLD}
-                maxBarSize={42}
-              />
-              <Bar
-                dataKey="permanent"
-                name="Стандарт"
-                stackId="a"
-                fill={VIOLET}
-                maxBarSize={42}
-              />
-              <Bar
-                dataKey="chronicled"
-                name="Хроники"
-                stackId="a"
-                fill={CHRONICLE}
-                radius={[8, 8, 0, 0]}
-                maxBarSize={42}
-              />
-            </>
-          ) : (
-            <Bar
-              dataKey="value"
-              name="Молитвы"
-              fill={TEAL}
-              radius={[8, 8, 0, 0]}
-              maxBarSize={42}
-            />
-          )}
+          <Bar
+            dataKey="value"
+            name="Молитвы"
+            fill={barColor}
+            radius={[6, 6, 0, 0]}
+            maxBarSize={48}
+            isAnimationActive={false}
+          />
         </BarChart>
       </ResponsiveContainer>
     </motion.div>

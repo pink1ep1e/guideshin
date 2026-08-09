@@ -284,10 +284,16 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
             /связаться|VPN|сеть|Failed to fetch|NetworkError/i.test(
               result.error,
             );
-          if (isNetwork) {
+          const softRetry =
+            /Не удалось загрузить историю|visit too frequently/i.test(
+              result.error,
+            );
+          if (isNetwork || softRetry) {
             setProgress({
               phase: "saving",
-              label: "Сеть блокирует браузер — пробуем через сервер…",
+              label: isNetwork
+                ? "Сеть блокирует браузер — пробуем через сервер…"
+                : "Повторяем загрузку через сервер…",
               step: 6,
               steps: 6,
               page: 0,
@@ -470,7 +476,12 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
         </div>
 
         {/* Game accounts */}
-        {!loading && data && (
+        {loading ? (
+          <div className="mb-6 flex flex-wrap items-stretch gap-2.5">
+            <SkeletonBone className="h-[3.25rem] w-28" />
+            <SkeletonBone className="h-[3.25rem] w-24" />
+          </div>
+        ) : data ? (
           <div className="mb-6 flex flex-wrap items-stretch gap-2.5">
             {data.accounts.map((a) => {
               const active = a.id === data.account.id;
@@ -505,12 +516,10 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
               Аккаунт
             </button>
           </div>
-        )}
+        ) : null}
 
         {loading ? (
-          <div className="rounded-2xl border border-black/[0.06] bg-white p-14 text-center text-base text-muted-foreground">
-            Загружаем…
-          </div>
+          <WishCabinetSkeleton />
         ) : !hasPulls ? (
           <div className="mx-auto max-w-2xl">{wizard}</div>
         ) : (
@@ -939,6 +948,129 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function SkeletonBone({ className = "" }: { className?: string }) {
+  return (
+    <motion.div
+      className={`rounded-xl bg-gradient-to-r from-black/[0.06] via-black/[0.1] to-black/[0.06] ${className}`}
+      animate={{ opacity: [0.45, 0.9, 0.45] }}
+      transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+    />
+  );
+}
+
+function WishCabinetSkeleton() {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-7"
+    >
+      {/* Overview tiles */}
+      <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-2xl border border-black/[0.06] bg-white p-5"
+          >
+            <SkeletonBone className="h-3 w-24" />
+            <SkeletonBone className="mt-3 h-9 w-28" />
+            <SkeletonBone className="mt-2 h-3 w-16" />
+          </div>
+        ))}
+      </div>
+
+      {/* Banner pity cards */}
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-2xl border border-black/[0.06] bg-white p-5"
+          >
+            <SkeletonBone className="h-4 w-28" />
+            <SkeletonBone className="mt-4 h-3 w-full" />
+            <SkeletonBone className="mt-2 h-3 w-[70%]" />
+            <div className="mt-5 flex justify-between gap-3">
+              <SkeletonBone className="h-10 w-16" />
+              <SkeletonBone className="h-10 w-16" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts row */}
+      <div className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
+        <div className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+          <SkeletonBone className="h-7 w-56" />
+          <SkeletonBone className="mt-2 h-4 w-72 max-w-full" />
+          <div className="mt-4 flex gap-2">
+            <SkeletonBone className="h-7 w-14" />
+            <SkeletonBone className="h-7 w-24" />
+            <SkeletonBone className="h-7 w-20" />
+            <SkeletonBone className="h-7 w-20" />
+          </div>
+          <SkeletonBone className="mt-5 h-[280px] w-full rounded-2xl" />
+        </div>
+        <div className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+          <SkeletonBone className="h-7 w-40" />
+          <SkeletonBone className="mt-2 h-4 w-52 max-w-full" />
+          <SkeletonBone className="mt-5 h-[220px] w-full rounded-2xl" />
+        </div>
+      </div>
+
+      {/* Luck section */}
+      <div className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+        <SkeletonBone className="h-7 w-64" />
+        <SkeletonBone className="mt-2 h-4 w-full max-w-xl" />
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-xl border border-black/[0.05] bg-black/[0.02] p-4"
+            >
+              <SkeletonBone className="h-3 w-20" />
+              <SkeletonBone className="mt-3 h-6 w-24" />
+              <SkeletonBone className="mt-2 h-3 w-28" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 5★ history cards */}
+      <div className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+        <SkeletonBone className="h-7 w-40" />
+        <SkeletonBone className="mt-4 h-3 w-24" />
+        <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="overflow-hidden rounded-[12px]">
+              <SkeletonBone className="aspect-square w-full rounded-none" />
+              <SkeletonBone className="mt-1 h-4 w-full rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent pulls */}
+      <div className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+        <div className="mb-4 flex items-end justify-between">
+          <SkeletonBone className="h-7 w-48" />
+          <SkeletonBone className="h-4 w-20" />
+        </div>
+        <div className="divide-y divide-black/[0.05]">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 py-3.5">
+              <SkeletonBone className="h-11 w-11 shrink-0 rounded-lg" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <SkeletonBone className="h-4 w-48 max-w-full" />
+                <SkeletonBone className="h-3 w-40 max-w-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
   );
 }
 

@@ -2,6 +2,10 @@
 export function friendlyWishImportError(err: unknown): string {
   const raw = err instanceof Error ? err.message : String(err ?? "");
 
+  // Сырой ответ Hoyoverse не показываем
+  if (/visit too frequently/i.test(raw)) {
+    return "Не удалось загрузить историю. Подождите немного и попробуйте ещё раз.";
+  }
   if (/Foreign key|WishAccount_userId_fkey/i.test(raw)) {
     return "Сессия не привязана к аккаунту. Выйдите и войдите снова, затем повторите импорт.";
   }

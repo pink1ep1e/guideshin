@@ -591,6 +591,43 @@ async function fetchGachaPage(
   }
 }
 
+function isTransientHoyoverse(json: GachaLogJson | undefined): boolean {
+  if (!json) return false;
+  const msg = json.message || "";
+  return (
+    /visit too frequently/i.test(msg) ||
+    json.retcode === -110 ||
+    json.retcode === 10001
+  );
+}
+
+async function fetchGachaPageWithRetry(
+  apiUrl: string,
+  onWait?: () => void,
+): Promise<{ json?: GachaLogJson; error?: string; network?: boolean }> {
+  let last:
+    | { json?: GachaLogJson; error?: string; network?: boolean }
+    | undefined;
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const result = await fetchGachaPage(apiUrl);
+    last = result;
+    if (result.network) return result;
+    if (result.json && isTransientHoyoverse(result.json)) {
+      onWait?.();
+      await new Promise((r) => setTimeout(r, 1200 + attempt * 800));
+      continue;
+    }
+    return result;
+  }
+  // Не отдаём сырое visit too frequently наружу
+  return {
+    json: last?.json,
+    error:
+      last?.error ||
+      "Не удалось загрузить историю. Откройте молитвы в игре и попробуйте ещё раз.",
+  };
+}
+
 export type WishImportProgress = {
   phase: "connecting" | "banner" | "saving" | "done";
   /** Человекочитаемый статус */
@@ -648,12 +685,22 @@ export async function fetchAllWishesFromAuthUrl(
   let workingHost = hosts[0];
 
   {
-    let lastError = "Не удалось подключиться к API Hoyoverse.";
+    let lastError =
+      "Не удалось подключиться к API. Откройте историю молитв в игре и попробуйте снова.";
     let found = false;
     for (const host of hosts) {
       const probe = buildGachaLogUrl(trimmed, GACHA_TYPES.character, "0", host);
       if (!probe) continue;
-      const { json, error, network } = await fetchGachaPage(probe);
+      const { json, error, network } = await fetchGachaPageWithRetry(probe, () => {
+        onProgress?.({
+          phase: "connecting",
+          label: "Подключаемся к Hoyoverse…",
+          step: 0,
+          steps: types.length,
+          page: 0,
+          totalPulled: 0,
+        });
+      });
       if (network || !json) {
         lastError = error || lastError;
         continue;
@@ -663,9 +710,14 @@ export async function fetchAllWishesFromAuthUrl(
         found = true;
         break;
       }
+      if (isTransientHoyoverse(json)) {
+        // уже ретраили — пробуем другой хост без показа сырой ошибки
+        continue;
+      }
       lastError =
-        json.message ||
-        `Ошибка API (${json.retcode}). Ссылка устарела — откройте историю молитв снова.`;
+        /authkey|login|invalid|expired/i.test(json.message || "")
+          ? "Ссылка устарела — откройте историю молитв в игре снова и скопируйте новую."
+          : lastError;
       if (
         json.retcode === -101 ||
         json.retcode === -100 ||
@@ -703,17 +755,39 @@ export async function fetchAllWishesFromAuthUrl(
         };
       }
 
-      const { json, error } = await fetchGachaPage(apiUrl);
+      const { json, error } = await fetchGachaPageWithRetry(apiUrl, () => {
+        onProgress?.({
+          phase: "banner",
+          label: `Импорт: ${bannerLabel}…`,
+          step: ti + 1,
+          steps: types.length,
+          page: page + 1,
+          totalPulled: all.length,
+        });
+      });
       if (!json) {
-        return { pulls: [], error: error || "Ошибка запроса к Hoyoverse." };
-      }
-
-      if (json.retcode !== 0) {
         return {
           pulls: [],
           error:
-            json.message ||
-            `Ошибка API (${json.retcode}). Ссылка устарела — откройте историю молитв в игре снова.`,
+            error ||
+            "Не удалось загрузить историю. Откройте молитвы в игре и попробуйте ещё раз.",
+        };
+      }
+
+      if (json.retcode !== 0) {
+        if (isTransientHoyoverse(json)) {
+          // ретраи исчерпаны — мягкое сообщение без сырого текста API
+          return {
+            pulls: [],
+            error:
+              "Не удалось загрузить историю. Подождите немного и попробуйте ещё раз.",
+          };
+        }
+        return {
+          pulls: [],
+          error: /authkey|login|invalid|expired/i.test(json.message || "")
+            ? "Ссылка устарела — откройте историю молитв в игре снова и скопируйте новую."
+            : "Не удалось загрузить историю. Откройте молитвы в игре и попробуйте ещё раз.",
         };
       }
 
@@ -737,7 +811,10 @@ export async function fetchAllWishesFromAuthUrl(
       });
 
       endId = String(list[list.length - 1]?.id ?? "0");
-      await new Promise((r) => setTimeout(r, 180));
+      await new Promise((r) => setTimeout(r, 320));
+    }
+    if (ti < types.length - 1) {
+      await new Promise((r) => setTimeout(r, 500));
     }
   }
 
