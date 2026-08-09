@@ -168,6 +168,8 @@ export const authOptions: NextAuthOptions = {
         token.kind = kind;
         token.role = (user as { role?: string }).role;
         token.uid = user.id;
+        if (user.email) token.email = user.email;
+
         if (account?.provider === "google" && user.email) {
           token.kind = "user";
           const dbUser = await withPrisma((prisma) =>
@@ -176,7 +178,33 @@ export const authOptions: NextAuthOptions = {
               select: { id: true },
             }),
           );
-          if (dbUser) token.uid = dbUser.id;
+          if (dbUser) {
+            token.uid = dbUser.id;
+            token.sub = dbUser.id;
+          }
+        } else if (kind === "user" && user.id) {
+          token.sub = user.id;
+        }
+      } else if (
+        token.kind !== "admin" &&
+        typeof token.email === "string" &&
+        token.email
+      ) {
+        const uid = String(token.uid || token.sub || "");
+        // Google sub часто чисто числовой / длинный — чиним на cuid из БД
+        const looksForeign = !uid || /^\d+$/.test(uid) || uid.length > 36;
+        if (looksForeign) {
+          const dbUser = await withPrisma((prisma) =>
+            prisma.user.findUnique({
+              where: { email: token.email!.toLowerCase() },
+              select: { id: true },
+            }),
+          );
+          if (dbUser) {
+            token.uid = dbUser.id;
+            token.sub = dbUser.id;
+            token.kind = "user";
+          }
         }
       }
       return token;

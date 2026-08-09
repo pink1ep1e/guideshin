@@ -446,8 +446,30 @@ async function fetchGachaPage(
   }
 }
 
+export type WishImportProgress = {
+  phase: "connecting" | "banner" | "saving" | "done";
+  /** Человекочитаемый статус */
+  label: string;
+  /** Номер текущего баннера 1..N */
+  step: number;
+  /** Всего баннеров */
+  steps: number;
+  page: number;
+  totalPulled: number;
+};
+
+const GACHA_PROGRESS_LABEL: Record<string, string> = {
+  [GACHA_TYPES.character]: "Ивент персонажей",
+  [GACHA_TYPES.character2]: "Ивент персонажей · 2",
+  [GACHA_TYPES.weapon]: "Ивент оружия",
+  [GACHA_TYPES.permanent]: "Стандарт",
+  [GACHA_TYPES.chronicled]: "Хроники",
+  [GACHA_TYPES.novice]: "Новичок",
+};
+
 export async function fetchAllWishesFromAuthUrl(
   rawUrl: string,
+  onProgress?: (p: WishImportProgress) => void,
 ): Promise<{ pulls: NormalizedWish[]; error?: string }> {
   const trimmed = rawUrl.trim();
   if (!extractQueryParam(trimmed, "authkey") && !extractQueryParam(trimmed, "auth_key")) {
@@ -465,6 +487,15 @@ export async function fetchAllWishesFromAuthUrl(
     GACHA_TYPES.chronicled,
     GACHA_TYPES.novice,
   ];
+
+  onProgress?.({
+    phase: "connecting",
+    label: "Подключаемся к Hoyoverse…",
+    step: 0,
+    steps: types.length,
+    page: 0,
+    totalPulled: 0,
+  });
 
   const hosts = resolveGachaApiHosts(trimmed);
   let workingHost = hosts[0];
@@ -488,7 +519,6 @@ export async function fetchAllWishesFromAuthUrl(
       lastError =
         json.message ||
         `Ошибка API (${json.retcode}). Ссылка устарела — откройте историю молитв снова.`;
-      // authkey / permission — другой хост не поможет
       if (
         json.retcode === -101 ||
         json.retcode === -100 ||
@@ -503,8 +533,20 @@ export async function fetchAllWishesFromAuthUrl(
   const all: NormalizedWish[] = [];
   const seen = new Set<string>();
 
-  for (const gachaType of types) {
+  for (let ti = 0; ti < types.length; ti++) {
+    const gachaType = types[ti];
+    const bannerLabel = GACHA_PROGRESS_LABEL[gachaType] || gachaType;
     let endId = "0";
+
+    onProgress?.({
+      phase: "banner",
+      label: `Импорт: ${bannerLabel}`,
+      step: ti + 1,
+      steps: types.length,
+      page: 1,
+      totalPulled: all.length,
+    });
+
     for (let page = 0; page < 80; page++) {
       const apiUrl = buildGachaLogUrl(trimmed, gachaType, endId, workingHost);
       if (!apiUrl) {
@@ -538,6 +580,15 @@ export async function fetchAllWishesFromAuthUrl(
         all.push(n);
       }
 
+      onProgress?.({
+        phase: "banner",
+        label: `Импорт: ${bannerLabel} · стр. ${page + 1}`,
+        step: ti + 1,
+        steps: types.length,
+        page: page + 1,
+        totalPulled: all.length,
+      });
+
       endId = String(list[list.length - 1]?.id ?? "0");
       await new Promise((r) => setTimeout(r, 180));
     }
@@ -550,6 +601,15 @@ export async function fetchAllWishesFromAuthUrl(
         "Молитв не найдено. Откройте историю в игре, дождитесь загрузки и получите свежую ссылку.",
     };
   }
+
+  onProgress?.({
+    phase: "done",
+    label: `Собрано ${all.length} молитв`,
+    step: types.length,
+    steps: types.length,
+    page: 0,
+    totalPulled: all.length,
+  });
 
   return { pulls: all };
 }

@@ -11,21 +11,23 @@ import {
   buildGuideLinkIndex,
   resolveGuideHref,
 } from "@/lib/wish-guide-links";
+import { resolveWishUser } from "@/lib/wish-auth";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || session.user.kind !== "user") {
+  const user = await resolveWishUser(session);
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const data = await withPrisma(async (prisma) => {
     let account = await prisma.wishAccount.findFirst({
-      where: { userId: session.user.id },
+      where: { userId: user.id },
       orderBy: { createdAt: "asc" },
     });
     if (!account) {
       account = await prisma.wishAccount.create({
-        data: { userId: session.user.id, label: "Основной" },
+        data: { userId: user.id, label: "Основной" },
       });
     }
 

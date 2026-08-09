@@ -10,6 +10,7 @@ import type {
   BannerPityStats,
   GachaBannerKey,
   PityChartPoint,
+  WishImportProgress,
   WishOverview,
 } from "@/lib/wishes";
 import {
@@ -23,6 +24,7 @@ import {
 import WishImportWizard from "@/components/wishes/WishImportWizard";
 import { WishPityAreaChart, WishRateCompare } from "@/components/wishes/WishCharts";
 import { AnimatedNumber } from "@/components/wishes/WishMotion";
+import { friendlyWishImportError } from "@/lib/wish-errors";
 
 type FiveStar = BannerPityStats["fiveStars"][number] & {
   guideHref?: string | null;
@@ -87,6 +89,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
   const [data, setData] = useState<WishDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<WishImportProgress | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [chartFilter, setChartFilter] = useState<GachaBannerKey | "all">("all");
@@ -98,7 +101,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
       if (!res.ok) throw new Error("fail");
       setData((await res.json()) as WishDashboard);
     } catch {
-      setError("Не удалось загрузить данные");
+      setError("Не удалось загрузить данные. Попробуйте обновить страницу.");
     } finally {
       setLoading(false);
     }
@@ -111,10 +114,19 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
   const clearFeedback = useCallback(() => {
     setError(null);
     setMessage(null);
+    setProgress(null);
   }, []);
 
   const savePulls = useCallback(
     async (pulls: unknown) => {
+      setProgress({
+        phase: "saving",
+        label: "Сохраняем молитвы в аккаунт…",
+        step: 6,
+        steps: 6,
+        page: 0,
+        totalPulled: Array.isArray(pulls) ? pulls.length : 0,
+      });
       const res = await fetch("/api/wishes/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -139,15 +151,29 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
       setBusy(true);
       setError(null);
       setMessage(null);
+      setProgress({
+        phase: "connecting",
+        label: "Подключаемся к Hoyoverse…",
+        step: 0,
+        steps: 6,
+        page: 0,
+        totalPulled: 0,
+      });
       try {
-        // Клиентский fetch к Hoyoverse (как paimon.moe)
-        const result = await fetchAllWishesFromAuthUrl(url);
+        const result = await fetchAllWishesFromAuthUrl(url, setProgress);
         if (result.error) {
           const isNetwork = /связаться|VPN|сеть|Failed to fetch|NetworkError/i.test(
             result.error,
           );
           if (isNetwork) {
-            // Fallback: сервер тянет историю сам
+            setProgress({
+              phase: "saving",
+              label: "Сеть блокирует браузер — пробуем через сервер…",
+              step: 6,
+              steps: 6,
+              page: 0,
+              totalPulled: 0,
+            });
             const res = await fetch("/api/wishes/import", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -177,9 +203,10 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
         }));
         await savePulls(serializable);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Ошибка импорта");
+        setError(friendlyWishImportError(e));
       } finally {
         setBusy(false);
+        setProgress(null);
       }
     },
     [load, savePulls],
@@ -190,6 +217,14 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
       setBusy(true);
       setError(null);
       setMessage(null);
+      setProgress({
+        phase: "saving",
+        label: "Разбираем JSON и сохраняем…",
+        step: 6,
+        steps: 6,
+        page: 0,
+        totalPulled: 0,
+      });
       try {
         const res = await fetch("/api/wishes/import", {
           method: "POST",
@@ -207,9 +242,10 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
         );
         await load();
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Ошибка импорта");
+        setError(friendlyWishImportError(e));
       } finally {
         setBusy(false);
+        setProgress(null);
       }
     },
     [load],
@@ -253,6 +289,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
           <div className="mx-auto max-w-2xl">
             <WishImportWizard
               busy={busy}
+              progress={progress}
               error={error}
               message={message}
               onImportUrl={importFromUrl}
@@ -455,6 +492,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
               <aside className="xl:sticky xl:top-24">
                 <WishImportWizard
                   busy={busy}
+                  progress={progress}
                   error={error}
                   message={message}
                   onImportUrl={importFromUrl}

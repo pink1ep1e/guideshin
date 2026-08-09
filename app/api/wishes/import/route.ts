@@ -7,14 +7,12 @@ import {
   parseWishImportPayload,
   type NormalizedWish,
 } from "@/lib/wishes";
+import {
+  friendlyWishImportError,
+  resolveWishUser,
+} from "@/lib/wish-auth";
 
 export const maxDuration = 60;
-
-async function requireUserId() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id || session.user.kind !== "user") return null;
-  return session.user.id;
-}
 
 async function ensureWishAccount(userId: string) {
   return withPrisma(async (prisma) => {
@@ -64,9 +62,16 @@ async function upsertPulls(accountId: string, pulls: NormalizedWish[]) {
 }
 
 export async function POST(req: Request) {
-  const userId = await requireUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getServerSession(authOptions);
+  const user = await resolveWishUser(session);
+  if (!user) {
+    return NextResponse.json(
+      {
+        error:
+          "Сессия устарела или аккаунт не найден. Выйдите и войдите снова.",
+      },
+      { status: 401 },
+    );
   }
 
   try {
@@ -77,7 +82,7 @@ export async function POST(req: Request) {
       pulls?: unknown;
     };
 
-    const account = await ensureWishAccount(userId);
+    const account = await ensureWishAccount(user.id);
     let pulls: NormalizedWish[] = [];
 
     if (body.mode === "pulls" || Array.isArray(body.pulls)) {
@@ -89,7 +94,6 @@ export async function POST(req: Request) {
         );
       }
     } else if (body.mode === "url" || body.url) {
-      // Fallback: серверный fetch (предпочтительно клиент шлёт mode=pulls)
       const result = await fetchAllWishesFromAuthUrl(body.url || "");
       if (result.error) {
         return NextResponse.json({ error: result.error }, { status: 400 });
@@ -122,11 +126,8 @@ export async function POST(req: Request) {
     });
   } catch (e) {
     console.error("[wish import]", e);
-    const detail = e instanceof Error ? e.message : "unknown";
     return NextResponse.json(
-      {
-        error: `Ошибка импорта: ${detail}. Если ссылка свежая — попробуйте ещё раз.`,
-      },
+      { error: friendlyWishImportError(e) },
       { status: 500 },
     );
   }
