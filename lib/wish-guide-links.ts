@@ -125,6 +125,78 @@ const EN_TO_RU: Record<string, string> = {
   sucrose: "сахароза",
   diona: "диона",
   xinyan: "синь янь",
+  chiori: "тиори",
+  "kirara": "кирара",
+  "ororon": "оророн",
+  "iansan": "иансан",
+  "varesa": "вареса",
+  "skirk": "скирк",
+  "dahila": "далила",
+  // оружие
+  "staff of homa": "посох хомы",
+  "primordial jade winged spear": "нефритовый крылатый копьё",
+  "primordial jade winged-spear": "нефритовый крылатый копьё",
+  "redhorn stonethresher": "краснорогий камнеруб",
+  "skyward blade": "небесный меч",
+  "skyward spine": "небесная ось",
+  "skyward atlas": "небесный атлас",
+  "skyward harp": "небесное крыло",
+  "skyward pride": "небесное величие",
+  "emerald orb": "изумрудный шар",
+  "black tassel": "чёрная кисть",
+  "debate club": "дубина переговоров",
+  "thrilling tales of dragon slayers": "эпические сказания",
+  "the widsith": "песнь разбитых струн",
+  rust: "ржавый лук",
+  "the flute": "флейта",
+  "the bell": "меч-колокол",
+  rainslasher: "дождерез",
+  "favonius warbow": "боевой лук фавония",
+  "favonius greatsword": "двуручный меч фавония",
+  "favonius sword": "меч фавония",
+  "favonius lance": "копьё фавония",
+  "favonius codex": "кодекс фавония",
+  "sacrificial sword": "церемониальный меч",
+  "sacrificial greatsword": "церемониальный двуручный меч",
+  "sacrificial bow": "церемониальный лук",
+  "sacrificial fragments": "церемониальные мемуары",
+  "lions roar": "львиный рёв",
+  "lion's roar": "львиный рёв",
+  "dragon bane": "гром дракона",
+  "eye of perception": "острый глаз",
+  "amos bow": "лук амоса",
+  "wolfs gravestone": "волчья погибель",
+  "wolf's gravestone": "волчья погибель",
+  "aquila favonia": "меч сокола",
+  "lost prayer to the sacred winds": "молитва святым ветрам",
+  "memory of dust": "память о пыли",
+  "vortex vanquisher": "покоритель вихря",
+  "summit shaper": "камнерез",
+  "the unforged": "некованый",
+  "primordial jade cutter": "нефритовый резак",
+  "freedom sworn": "клятва свободы",
+  "mistsplitter reforged": "рассекающий туман",
+  "thundering pulse": "громовой пульс",
+  "engulfing lightning": "сияющая жатва",
+  "everlasting moonglow": "вечная луна",
+  "song of broken pines": "песнь разбитых сосен",
+  "elegy for the end": "элегия погибели",
+  "haran gekpaku futsu": "харан гэппаку фуцу",
+  "redhorn": "краснорогий камнеруб",
+  "kaguras verity": "истинное право кагура",
+  "kagura's verity": "истинное право кагура",
+  "calamity queller": "усмиритель бед",
+  "aqua simulacra": "аква симулякрум",
+  "light of foliar incision": "свет лиственного надреза",
+  "key of khaj nisut": "ключ хадж-нисут",
+  "key of khaj-nisut": "ключ хадж-нисут",
+  "a thousand floating dreams": "тысяча парящих снов",
+  "staff of the scarlet sands": "посох алых песков",
+  "beacon of the reed sea": "маяк тростникового моря",
+  "tulaytullahs remembrance": "воспоминания тулайтуллы",
+  "tulaytullah's remembrance": "воспоминания тулайтуллы",
+  "hunter's path": "путь охотника",
+  "hunters path": "путь охотника",
 };
 
 function aliasKeys(name: string): string[] {
@@ -136,6 +208,16 @@ function aliasKeys(name: string): string[] {
   const slug = slugFromName(name);
   if (slug) keys.add(normalizeKey(slug.replace(/-/g, " ")));
   return [...keys];
+}
+
+/** EN / paimon_id → RU-ключ для поиска в каталоге */
+export function localizeWishLookupKey(raw: string): string {
+  const spaced = normalizeKey(raw.replace(/[_-]+/g, " "));
+  return EN_TO_RU[spaced] || EN_TO_RU[normalizeKey(raw)] || spaced;
+}
+
+export function wishEnToRuEntries(): [string, string][] {
+  return Object.entries(EN_TO_RU);
 }
 
 export function buildGuideLinkIndex(input: {
@@ -164,6 +246,24 @@ export function buildGuideLinkIndex(input: {
     weaponsByKey.set(normalizeKey(w.slug.replace(/-/g, " ")), entry);
   }
 
+  // EN / paimon-ключи → уже найденные RU-записи
+  for (const [en, ru] of Object.entries(EN_TO_RU)) {
+    const ruKey = normalizeKey(ru);
+    const charHit =
+      charactersByKey.get(ruKey) ||
+      charactersByKey.get(ruKey.replace(/\s+/g, ""));
+    if (charHit) {
+      charactersByKey.set(normalizeKey(en), charHit);
+      charactersByKey.set(normalizeKey(en).replace(/\s+/g, ""), charHit);
+    }
+    const weaponHit =
+      weaponsByKey.get(ruKey) || weaponsByKey.get(ruKey.replace(/\s+/g, ""));
+    if (weaponHit) {
+      weaponsByKey.set(normalizeKey(en), weaponHit);
+      weaponsByKey.set(normalizeKey(en).replace(/\s+/g, ""), weaponHit);
+    }
+  }
+
   return { charactersByKey, weaponsByKey };
 }
 
@@ -179,7 +279,7 @@ export function resolveGuideMeta(
   itemName: string,
   itemType: string,
   index: GuideLinkIndex,
-): { href: string; image: string | null; slug: string } | null {
+): { href: string; image: string | null; slug: string; name: string } | null {
   const isWeapon = /weapon|оруж/i.test(itemType);
 
   const tryMap = (
@@ -196,6 +296,7 @@ export function resolveGuideMeta(
               : `/wiki/characters/${hit.slug}`,
           image: hit.image,
           slug: hit.slug,
+          name: hit.name,
         };
       }
     }

@@ -481,6 +481,8 @@ export type WishImportProgress = {
   steps: number;
   page: number;
   totalPulled: number;
+  /** Ожидаемый объём (для прогресса разбора файла) */
+  totalApprox?: number;
 };
 
 const GACHA_PROGRESS_LABEL: Record<string, string> = {

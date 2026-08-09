@@ -31,7 +31,9 @@ import {
   rarityBg,
   type ElementKey,
 } from "@/lib/genshin";
+import FancySelect from "@/components/ui/FancySelect";
 import type { CommunityLuck, FiftyFiftyStats } from "@/lib/wish-luck";
+import { SERVER_LABEL, WISH_SERVER_OPTIONS } from "@/lib/wish-servers";
 
 type FiveStar = BannerPityStats["fiveStars"][number] & {
   guideHref?: string | null;
@@ -52,11 +54,15 @@ type GameAccount = {
   server: string;
 };
 
-const SERVER_LABEL: Record<string, string> = {
-  europe: "Европа",
-  asia: "Азия",
-  america: "Америка",
-  china: "Китай",
+type ImportHistoryItem = {
+  id: string;
+  source: string;
+  sourceLabel: string;
+  label: string | null;
+  pullCount: number;
+  replacedPrevious: boolean;
+  canRestore: boolean;
+  createdAt: string;
 };
 
 type WishDashboard = {
@@ -123,22 +129,41 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
   const [addOpen, setAddOpen] = useState(false);
   const [newLabel, setNewLabel] = useState("");
   const [newServer, setNewServer] = useState("europe");
+  const [imports, setImports] = useState<ImportHistoryItem[]>([]);
+  const [undoId, setUndoId] = useState<string | null>(null);
 
-  const load = useCallback(async (id?: string | null) => {
-    setLoading(true);
+  const loadImports = useCallback(async (id: string) => {
     try {
-      const q = id ? `?accountId=${encodeURIComponent(id)}` : "";
-      const res = await fetch(`/api/wishes${q}`);
-      if (!res.ok) throw new Error("fail");
-      const json = (await res.json()) as WishDashboard;
-      setData(json);
-      setAccountId(json.account.id);
+      const res = await fetch(
+        `/api/wishes/imports?accountId=${encodeURIComponent(id)}`,
+      );
+      if (!res.ok) return;
+      const json = (await res.json()) as { imports: ImportHistoryItem[] };
+      setImports(json.imports || []);
     } catch {
-      setError("Не удалось загрузить данные. Попробуйте обновить страницу.");
-    } finally {
-      setLoading(false);
+      /* ignore */
     }
   }, []);
+
+  const load = useCallback(
+    async (id?: string | null) => {
+      setLoading(true);
+      try {
+        const q = id ? `?accountId=${encodeURIComponent(id)}` : "";
+        const res = await fetch(`/api/wishes${q}`);
+        if (!res.ok) throw new Error("fail");
+        const json = (await res.json()) as WishDashboard;
+        setData(json);
+        setAccountId(json.account.id);
+        void loadImports(json.account.id);
+      } catch {
+        setError("Не удалось загрузить данные. Попробуйте обновить страницу.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loadImports],
+  );
 
   useEffect(() => {
     void load(accountId);
@@ -181,10 +206,15 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
   }, [newLabel, newServer, selectAccount]);
 
   const savePulls = useCallback(
-    async (pulls: unknown) => {
+    async (
+      pulls: unknown,
+      opts?: { replace?: boolean; source?: string },
+    ) => {
       setProgress({
         phase: "saving",
-        label: "Сохраняем молитвы в аккаунт…",
+        label: opts?.replace
+          ? "Заменяем данные аккаунта…"
+          : "Сохраняем молитвы в аккаунт…",
         step: 6,
         steps: 6,
         page: 0,
@@ -197,6 +227,8 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
           mode: "pulls",
           pulls,
           accountId,
+          replace: opts?.replace === true,
+          source: opts?.source || "pulls",
         }),
       });
       const json = (await res.json()) as {
@@ -204,14 +236,35 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
         inserted?: number;
         totalParsed?: number;
         accountLabel?: string;
+        replaced?: boolean;
       };
       if (!res.ok) throw new Error(json.error || "Ошибка импорта");
       setMessage(
-        `Готово для «${json.accountLabel || data?.account.label}»: разобрано ${json.totalParsed}, добавлено ${json.inserted}`,
+        `${json.replaced ? "Данные заменены" : "Готово"} для «${json.accountLabel || data?.account.label}»: разобрано ${json.totalParsed}, сохранено ${json.inserted}`,
       );
       await load(accountId);
     },
     [accountId, data?.account.label, load],
+  );
+
+  const importFromPulls = useCallback(
+    async (
+      pulls: unknown[],
+      opts: { replace?: boolean; source?: string },
+    ) => {
+      setBusy(true);
+      setError(null);
+      setMessage(null);
+      try {
+        await savePulls(pulls, opts);
+      } catch (e) {
+        setError(friendlyWishImportError(e));
+      } finally {
+        setBusy(false);
+        setProgress(null);
+      }
+    },
+    [savePulls],
   );
 
   const importFromUrl = useCallback(
@@ -283,7 +336,10 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
   );
 
   const importFromJson = useCallback(
-    async (payload: unknown) => {
+    async (
+      payload: unknown,
+      opts?: { replace?: boolean; source?: string },
+    ) => {
       setBusy(true);
       setError(null);
       setMessage(null);
@@ -299,17 +355,24 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
         const res = await fetch("/api/wishes/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mode: "json", payload, accountId }),
+          body: JSON.stringify({
+            mode: "json",
+            payload,
+            accountId,
+            replace: opts?.replace === true,
+            source: opts?.source,
+          }),
         });
         const json = (await res.json()) as {
           error?: string;
           inserted?: number;
           totalParsed?: number;
           accountLabel?: string;
+          replaced?: boolean;
         };
         if (!res.ok) throw new Error(json.error || "Ошибка импорта");
         setMessage(
-          `Готово для «${json.accountLabel || data?.account.label}»: разобрано ${json.totalParsed}, добавлено ${json.inserted}`,
+          `${json.replaced ? "Данные заменены" : "Готово"} для «${json.accountLabel || data?.account.label}»: разобрано ${json.totalParsed}, сохранено ${json.inserted}`,
         );
         await load(accountId);
       } catch (e) {
@@ -321,6 +384,31 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
     },
     [accountId, data?.account.label, load],
   );
+
+  const undoImport = useCallback(async () => {
+    if (!undoId) return;
+    setBusy(true);
+    try {
+      const res = await fetch(
+        `/api/wishes/imports?id=${encodeURIComponent(undoId)}`,
+        { method: "DELETE" },
+      );
+      const json = (await res.json()) as { error?: string; restored?: number };
+      if (!res.ok) throw new Error(json.error || "Не удалось отменить");
+      setMessage(
+        json.restored
+          ? `Импорт отменён, восстановлено ${json.restored} молитв`
+          : "Импорт отменён",
+      );
+      setUndoId(null);
+      await load(accountId);
+    } catch (e) {
+      setError(friendlyWishImportError(e));
+      setUndoId(null);
+    } finally {
+      setBusy(false);
+    }
+  }, [accountId, load, undoId]);
 
   const statsByKey = useMemo(() => {
     const map = new Map<GachaBannerKey, Stat>();
@@ -339,6 +427,8 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
       message={message}
       onImportUrl={importFromUrl}
       onImportJson={importFromJson}
+      onImportPulls={importFromPulls}
+      onProgressChange={setProgress}
       onClearFeedback={clearFeedback}
       compact
       targetAccountLabel={activeAccount?.label}
@@ -351,22 +441,22 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
   );
 
   return (
-    <div className="pb-14">
-      <section className="container-page-wide pt-6 sm:pt-8">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="pb-16 text-[15px] sm:text-base">
+      <section className="container-page-wide pt-7 sm:pt-10">
+        <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#189b8e]">
+            <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#189b8e]">
               {userName || "Кабинет"}
             </p>
-            <h1 className="font-genshin text-3xl tracking-wide text-foreground sm:text-4xl">
+            <h1 className="font-genshin text-4xl tracking-wide text-foreground sm:text-[2.75rem]">
               Счётчик молитв
             </h1>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
               onClick={() => setImportOpen(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#189b8e] px-3.5 py-2 text-sm font-bold text-white transition hover:bg-[#147f74]"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#189b8e] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#147f74]"
             >
               <CloudDownload className="h-4 w-4" />
               Авто-импорт
@@ -374,7 +464,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/" })}
-              className="inline-flex items-center gap-2 rounded-xl border border-black/[0.08] bg-white px-3.5 py-2 text-sm font-bold text-foreground/80 transition hover:bg-black/[0.03]"
+              className="inline-flex items-center gap-2 rounded-xl border border-black/[0.08] bg-white px-4 py-2.5 text-sm font-bold text-foreground/80 transition hover:bg-black/[0.03]"
             >
               <LogOut className="h-4 w-4" />
               Выйти
@@ -384,7 +474,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
 
         {/* Game accounts */}
         {!loading && data && (
-          <div className="mb-5 flex flex-wrap items-center gap-2">
+          <div className="mb-6 flex flex-wrap items-stretch gap-2.5">
             {data.accounts.map((a) => {
               const active = a.id === data.account.id;
               return (
@@ -392,15 +482,15 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
                   key={a.id}
                   type="button"
                   onClick={() => selectAccount(a.id)}
-                  className={`rounded-xl px-3.5 py-2 text-left text-sm transition ${
+                  className={`min-h-[3.25rem] rounded-xl px-4 py-2.5 text-left text-sm transition ${
                     active
                       ? "bg-[#189b8e] text-white shadow-soft"
                       : "bg-white text-foreground/80 ring-1 ring-black/[0.06] hover:bg-black/[0.03]"
                   }`}
                 >
-                  <span className="block font-bold">{a.label}</span>
+                  <span className="block font-bold leading-tight">{a.label}</span>
                   <span
-                    className={`block text-[11px] ${
+                    className={`mt-0.5 block text-xs ${
                       active ? "text-white/80" : "text-muted-foreground"
                     }`}
                   >
@@ -412,7 +502,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
             <button
               type="button"
               onClick={() => setAddOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-[#189b8e]/40 px-3 py-2 text-sm font-bold text-[#189b8e]"
+              className="inline-flex min-h-[3.25rem] items-center gap-1.5 rounded-xl border border-dashed border-[#189b8e]/45 bg-white px-4 py-2.5 text-sm font-bold text-[#189b8e] transition hover:bg-[#189b8e]/5"
             >
               <Plus className="h-4 w-4" />
               Аккаунт
@@ -421,17 +511,17 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
         )}
 
         {loading ? (
-          <div className="rounded-2xl border border-black/[0.06] bg-white p-12 text-center text-sm text-muted-foreground">
+          <div className="rounded-2xl border border-black/[0.06] bg-white p-14 text-center text-base text-muted-foreground">
             Загружаем…
           </div>
         ) : !hasPulls ? (
-          <div className="mx-auto max-w-xl">{wizard}</div>
+          <div className="mx-auto max-w-2xl">{wizard}</div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-7">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+              className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4"
             >
               <OverviewTile label="Всего молитв" value={data!.overview.total} />
               <OverviewTile
@@ -463,13 +553,13 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
             </div>
 
             <div className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
-              <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-6">
+              <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
                 <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                   <div>
-                    <h2 className="font-genshin text-xl text-foreground">
+                    <h2 className="font-genshin text-2xl text-foreground">
                       Гарант 5★ по месяцам
                     </h2>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       Чем ниже точка — тем раньше выпал 5★
                     </p>
                   </div>
@@ -484,7 +574,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
                         key={key}
                         type="button"
                         onClick={() => setChartFilter(key)}
-                        className={`rounded-lg px-2.5 py-1 text-[11px] font-bold ${
+                        className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
                           chartFilter === key
                             ? "bg-[#189b8e] text-white"
                             : "bg-black/[0.05] text-foreground/70"
@@ -501,11 +591,11 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
                 />
               </section>
 
-              <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-6">
-                <h2 className="mb-1 font-genshin text-xl text-foreground">
+              <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+                <h2 className="mb-1 font-genshin text-2xl text-foreground">
                   Ваши шансы
                 </h2>
-                <p className="mb-3 text-xs text-muted-foreground">
+                <p className="mb-3 text-sm text-muted-foreground">
                   Серый — ожидание игры · цвет — ваш факт
                 </p>
                 <WishRateCompare
@@ -521,8 +611,8 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
 
             {/* Luck vs community */}
             {data?.luck && (
-              <section className="rounded-2xl border border-black/[0.06] bg-gradient-to-br from-[#eef8f6] to-white p-5 sm:p-6">
-                <h2 className="font-genshin text-xl text-foreground">
+              <section className="rounded-2xl border border-black/[0.06] bg-gradient-to-br from-[#eef8f6] to-white p-5 sm:p-7">
+                <h2 className="font-genshin text-2xl text-foreground">
                   Удачливость среди игроков
                 </h2>
                 <p className="mt-1 text-sm text-foreground/70">
@@ -578,8 +668,8 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
               </section>
             )}
 
-            <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-6">
-              <h2 className="mb-4 font-genshin text-xl text-foreground">
+            <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+              <h2 className="mb-4 font-genshin text-2xl text-foreground">
                 История 5★
               </h2>
               <div className="space-y-6">
@@ -588,10 +678,10 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
                   if (!s || s.fiveStars.length === 0) return null;
                   return (
                     <div key={key}>
-                      <p className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      <p className="mb-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         {BANNER_LABELS[key]}
                       </p>
-                      <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7">
+                      <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 sm:gap-2.5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
                         {s.fiveStars.map((f, i) => (
                           <FiveStarCard
                             key={`${f.name}-${f.time}-${i}`}
@@ -605,9 +695,9 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
               </div>
             </section>
 
-            <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-6">
+            <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
               <div className="mb-4 flex items-end justify-between">
-                <h2 className="font-genshin text-xl text-foreground">
+                <h2 className="font-genshin text-2xl text-foreground">
                   Последние молитвы
                 </h2>
                 <p className="text-sm font-bold text-muted-foreground">
@@ -618,17 +708,17 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
                 {data!.recent.map((pull) => (
                   <li
                     key={pull.id}
-                    className="flex flex-wrap items-center justify-between gap-2 py-3"
+                    className="flex flex-wrap items-center justify-between gap-2 py-3.5"
                   >
                     <div className="flex items-center gap-3">
                       {pull.image ? (
-                        <div className="relative h-10 w-10 overflow-hidden rounded-lg bg-black/[0.04]">
+                        <div className="relative h-11 w-11 overflow-hidden rounded-lg bg-black/[0.04]">
                           <Image
                             src={pull.image}
                             alt=""
                             fill
                             className="object-cover"
-                            sizes="40px"
+                            sizes="44px"
                           />
                         </div>
                       ) : null}
@@ -647,7 +737,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
                           </span>{" "}
                           {pull.itemName}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">
                           {BANNER_LABELS[bannerKeyFromGachaType(pull.gachaType)]}{" "}
                           · {new Date(pull.wishTime).toLocaleString("ru-RU")}
                         </p>
@@ -656,7 +746,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
                     {pull.guideHref && (
                       <Link
                         href={pull.guideHref}
-                        className="text-xs font-bold text-[#189b8e] hover:underline"
+                        className="text-sm font-bold text-[#189b8e] hover:underline"
                       >
                         Гайд →
                       </Link>
@@ -665,6 +755,49 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
                 ))}
               </ul>
             </section>
+
+            {imports.length > 0 && (
+              <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+                <h2 className="mb-1 font-genshin text-2xl text-foreground">
+                  История импортов
+                </h2>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Можно отменить импорт и вернуть данные до него (если был
+                  снимок).
+                </p>
+                <ul className="divide-y divide-black/[0.05]">
+                  {imports.map((batch) => (
+                    <li
+                      key={batch.id}
+                      className="flex flex-wrap items-center justify-between gap-3 py-3.5"
+                    >
+                      <div>
+                        <p className="font-bold text-foreground">
+                          {batch.sourceLabel}
+                          {batch.replacedPrevious ? (
+                            <span className="ml-2 text-xs font-semibold text-[#c99212]">
+                              с заменой
+                            </span>
+                          ) : null}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(batch.createdAt).toLocaleString("ru-RU")} ·{" "}
+                          {batch.pullCount.toLocaleString("ru-RU")} молитв
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => setUndoId(batch.id)}
+                        className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:opacity-50"
+                      >
+                        Отменить
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </div>
         )}
       </section>
@@ -673,7 +806,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
       <AnimatePresence>
         {importOpen && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-3 sm:items-center"
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-3 sm:items-center sm:p-5"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -684,14 +817,14 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16 }}
               transition={{ duration: 0.25 }}
-              className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto"
+              className="relative max-h-[92vh] w-full max-w-xl overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 type="button"
                 disabled={busy}
                 onClick={() => setImportOpen(false)}
-                className="absolute right-3 top-3 z-10 rounded-lg bg-white/90 p-1.5 text-foreground/70 shadow-sm ring-1 ring-black/[0.06]"
+                className="absolute right-3 top-3 z-10 rounded-lg bg-white/90 p-2 text-foreground/70 shadow-sm ring-1 ring-black/[0.06]"
                 aria-label="Закрыть"
               >
                 <X className="h-4 w-4" />
@@ -716,48 +849,92 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
-              className="w-full max-w-md rounded-2xl bg-white p-5 shadow-panel"
+              className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-panel sm:p-7"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="font-genshin text-xl text-foreground">
+              <h3 className="font-genshin text-2xl text-foreground">
                 Новый аккаунт Genshin
               </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1.5 text-sm text-muted-foreground">
                 Ник и сервер игрового профиля — молитвы будут отдельно.
               </p>
-              <label className="mt-4 block text-sm font-bold">Ник</label>
+              <label className="mt-5 block text-sm font-bold">Ник</label>
               <input
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
                 placeholder="Например, Traveler EU"
-                className="mt-1 w-full rounded-xl border border-black/[0.08] px-3 py-2.5 text-sm outline-none ring-[#189b8e]/30 focus:ring-2"
+                className="mt-1.5 w-full rounded-xl border border-black/[0.08] px-3.5 py-3 text-sm outline-none ring-[#189b8e]/30 focus:ring-2"
               />
-              <label className="mt-3 block text-sm font-bold">Сервер</label>
-              <select
-                value={newServer}
-                onChange={(e) => setNewServer(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-black/[0.08] px-3 py-2.5 text-sm outline-none ring-[#189b8e]/30 focus:ring-2"
-              >
-                {Object.entries(SERVER_LABEL).map(([id, label]) => (
-                  <option key={id} value={id}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-              <div className="mt-5 flex gap-2">
+              <div className="mt-4">
+                <FancySelect
+                  label="Сервер"
+                  value={newServer}
+                  onChange={setNewServer}
+                  options={[...WISH_SERVER_OPTIONS]}
+                  placeholder="Выберите сервер"
+                />
+              </div>
+              <div className="mt-6 flex gap-2.5">
                 <button
                   type="button"
                   onClick={() => setAddOpen(false)}
-                  className="flex-1 rounded-xl border border-black/[0.08] py-2.5 text-sm font-bold"
+                  className="flex-1 rounded-xl border border-black/[0.08] py-3 text-sm font-bold"
                 >
                   Отмена
                 </button>
                 <button
                   type="button"
                   onClick={() => void createAccount()}
-                  className="flex-1 rounded-xl bg-[#189b8e] py-2.5 text-sm font-bold text-white"
+                  className="flex-1 rounded-xl bg-[#189b8e] py-3 text-sm font-bold text-white"
                 >
                   Добавить
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Undo import confirm */}
+      <AnimatePresence>
+        {undoId && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !busy && setUndoId(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-panel"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="font-genshin text-2xl text-foreground">
+                Отменить импорт?
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/75">
+                Молитвы этого импорта будут удалены. Если импорт заменял данные,
+                восстановим снимок до него.
+              </p>
+              <div className="mt-6 flex gap-2.5">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setUndoId(null)}
+                  className="flex-1 rounded-xl border border-black/[0.08] py-3 text-sm font-bold disabled:opacity-50"
+                >
+                  Нет
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void undoImport()}
+                  className="flex-1 rounded-xl bg-red-600 py-3 text-sm font-bold text-white disabled:opacity-50"
+                >
+                  Отменить импорт
                 </button>
               </div>
             </motion.div>
@@ -779,7 +956,7 @@ function FiveStarCard({ item }: { item: FiveStar }) {
   const isWeapon = /weapon|оруж/i.test(item.itemType);
 
   const inner = (
-    <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)]">
+    <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-[12px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)]">
       <div
         className="relative aspect-square w-full overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: `url(${rarityBg(stars)})` }}
@@ -792,32 +969,32 @@ function FiveStarCard({ item }: { item: FiveStar }) {
             className="relative z-0 h-full w-full object-cover object-top"
           />
         ) : (
-          <div className="flex h-full items-center justify-center font-genshin text-2xl text-white/80">
+          <div className="flex h-full items-center justify-center font-genshin text-lg text-white/80">
             5★
           </div>
         )}
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-9 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`/images/stars/Quality_star_${stars}.svg`}
           alt=""
-          className="absolute bottom-1.5 left-1/2 z-20 h-3.5 w-auto -translate-x-1/2"
+          className="absolute bottom-1 left-1/2 z-20 h-2.5 w-auto -translate-x-1/2"
         />
 
         {!isWeapon && elementIcon && (
-          <span className="absolute left-1.5 top-1.5 z-20 flex h-7 w-7 items-center justify-center">
+          <span className="absolute left-1 top-1 z-20 flex h-5 w-5 items-center justify-center">
             <span
               aria-hidden
-              className="absolute inset-[-2px] rounded-full blur-[8px]"
+              className="absolute inset-[-2px] rounded-full blur-[6px]"
               style={{ backgroundColor: glow, opacity: 0.7 }}
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={elementIcon}
               alt=""
-              className="relative h-[22px] w-[22px]"
+              className="relative h-[16px] w-[16px]"
               style={{
                 filter:
                   "drop-shadow(0 0 1.5px rgba(0,0,0,0.45)) drop-shadow(0 1px 2px rgba(0,0,0,0.3))",
@@ -826,13 +1003,13 @@ function FiveStarCard({ item }: { item: FiveStar }) {
           </span>
         )}
 
-        <span className="absolute right-1.5 top-1.5 z-20 rounded-md bg-black/70 px-1.5 py-0.5 text-[11px] font-bold text-white">
+        <span className="absolute right-1 top-1 z-20 rounded-md bg-black/70 px-1 py-0.5 text-[10px] font-bold text-white">
           {item.pity}
         </span>
       </div>
 
-      <div className="flex min-h-[2.1rem] shrink-0 items-center justify-center px-1.5 py-1">
-        <p className="font-genshin line-clamp-2 w-full text-center text-[12px] leading-snug tracking-wide text-[#1e1e1e] [overflow-wrap:anywhere]">
+      <div className="flex min-h-[1.75rem] shrink-0 items-center justify-center px-1 py-0.5">
+        <p className="font-genshin line-clamp-2 w-full text-center text-[10px] leading-snug tracking-wide text-[#1e1e1e] [overflow-wrap:anywhere] sm:text-[11px]">
           {item.name}
         </p>
       </div>

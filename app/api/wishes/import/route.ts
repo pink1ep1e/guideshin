@@ -9,6 +9,7 @@ import {
 } from "@/lib/wishes";
 import {
   buildPaimonRarityLookup,
+  isPaimonMoeExport,
   parsePaimonMoeExport,
 } from "@/lib/paimon-import";
 import {
@@ -37,58 +38,24 @@ async function getOrCreateAccount(userId: string, accountId?: string | null) {
   });
 }
 
-function toDbRows(accountId: string, pulls: NormalizedWish[]) {
-  return pulls.map((pull) => ({
-    accountId,
-    hoyoId: pull.hoyoId,
-    gachaType: pull.gachaType,
-    itemName: pull.itemName,
-    itemType: pull.itemType,
-    rankType: pull.rankType,
-    wishTime: pull.wishTime,
-    raw: (pull.raw as object | undefined) ?? undefined,
-  }));
-}
-
-async function upsertPulls(accountId: string, pulls: NormalizedWish[]) {
-  if (pulls.length === 0) return 0;
-
-  let inserted = 0;
-  const rows = toDbRows(accountId, pulls);
-
-  await withPrisma(async (prisma) => {
-    const chunk = 200;
-    for (let i = 0; i < rows.length; i += chunk) {
-      const slice = rows.slice(i, i + chunk);
-      const result = await prisma.wishPull.createMany({
-        data: slice,
-        skipDuplicates: true,
-      });
-      inserted += result.count;
-    }
-  });
-
-  return inserted;
-}
-
 async function parsePayloadWithPaimon(payload: unknown): Promise<NormalizedWish[]> {
-  const catalog = await withPrisma(async (prisma) => {
-    const [characters, weapons] = await Promise.all([
-      prisma.character.findMany({
-        where: { published: true },
-        select: { slug: true, name: true, rarity: true },
-      }),
-      prisma.weapon.findMany({
-        where: { published: true },
-        select: { slug: true, name: true, rarity: true },
-      }),
-    ]);
-    return { characters, weapons };
-  });
-
-  const lookup = buildPaimonRarityLookup(catalog);
-  const paimon = parsePaimonMoeExport(payload, lookup);
-  if (paimon.length > 0) return paimon;
+  if (isPaimonMoeExport(payload)) {
+    const catalog = await withPrisma(async (prisma) => {
+      const [characters, weapons] = await Promise.all([
+        prisma.character.findMany({
+          where: { published: true },
+          select: { slug: true, name: true, rarity: true, image: true },
+        }),
+        prisma.weapon.findMany({
+          where: { published: true },
+          select: { slug: true, name: true, rarity: true, image: true },
+        }),
+      ]);
+      return { characters, weapons };
+    });
+    const lookup = buildPaimonRarityLookup(catalog);
+    return parsePaimonMoeExport(payload, lookup);
+  }
   return parseWishImportPayload(payload);
 }
 
@@ -112,13 +79,19 @@ export async function POST(req: Request) {
       payload?: unknown;
       pulls?: unknown;
       accountId?: string;
+      /** Удалить текущие молитвы аккаунта перед импортом */
+      replace?: boolean;
+      source?: string;
+      label?: string;
     };
 
     const account = await getOrCreateAccount(user.id, body.accountId);
     let pulls: NormalizedWish[] = [];
+    let source = body.source || body.mode || "json";
 
     if (body.mode === "pulls" || Array.isArray(body.pulls)) {
       pulls = parseWishImportPayload(body.pulls ?? []);
+      source = body.source || "pulls";
       if (pulls.length === 0) {
         return NextResponse.json(
           { error: "Пустой список молитв после разбора." },
@@ -131,8 +104,10 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: result.error }, { status: 400 });
       }
       pulls = result.pulls;
+      source = "url";
     } else if (body.mode === "json" || body.payload !== undefined) {
       pulls = await parsePayloadWithPaimon(body.payload);
+      source = isPaimonMoeExport(body.payload) ? "paimon" : "json";
       if (pulls.length === 0) {
         return NextResponse.json(
           {
@@ -149,14 +124,78 @@ export async function POST(req: Request) {
       );
     }
 
-    const inserted = await upsertPulls(account.id, pulls);
+    // paimon по умолчанию заменяет данные
+    const replace =
+      body.replace === true || (source === "paimon" && body.replace !== false);
+
+    const result = await withPrisma(async (prisma) => {
+      let previousPulls: unknown = null;
+      if (replace) {
+        const existing = await prisma.wishPull.findMany({
+          where: { accountId: account.id },
+          select: {
+            hoyoId: true,
+            gachaType: true,
+            itemName: true,
+            itemType: true,
+            rankType: true,
+            wishTime: true,
+            raw: true,
+          },
+        });
+        previousPulls = existing.length ? existing : null;
+        await prisma.wishPull.deleteMany({ where: { accountId: account.id } });
+      }
+
+      const batch = await prisma.wishImportBatch.create({
+        data: {
+          accountId: account.id,
+          source,
+          label: body.label || null,
+          pullCount: pulls.length,
+          replacedPrevious: Boolean(replace && previousPulls),
+          previousPulls: previousPulls as object | undefined,
+        },
+      });
+
+      let inserted = 0;
+      const chunk = 200;
+      for (let i = 0; i < pulls.length; i += chunk) {
+        const slice = pulls.slice(i, i + chunk);
+        const created = await prisma.wishPull.createMany({
+          data: slice.map((pull) => ({
+            accountId: account.id,
+            hoyoId: pull.hoyoId,
+            gachaType: pull.gachaType,
+            itemName: pull.itemName,
+            itemType: pull.itemType,
+            rankType: pull.rankType,
+            wishTime: pull.wishTime,
+            raw: (pull.raw as object | undefined) ?? undefined,
+            importBatchId: batch.id,
+          })),
+          skipDuplicates: true,
+        });
+        inserted += created.count;
+      }
+
+      await prisma.wishImportBatch.update({
+        where: { id: batch.id },
+        data: { pullCount: inserted },
+      });
+
+      return { batchId: batch.id, inserted, replaced: Boolean(replace) };
+    });
+
     return NextResponse.json({
       ok: true,
       totalParsed: pulls.length,
-      inserted,
+      inserted: result.inserted,
       accountId: account.id,
       accountLabel: account.label,
       accountServer: account.server,
+      batchId: result.batchId,
+      replaced: result.replaced,
     });
   } catch (e) {
     console.error("[wish import]", e);

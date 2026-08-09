@@ -283,8 +283,29 @@ model WishAccount {
 
   user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   pulls WishPull[]
+  importBatches WishImportBatch[]
 
   @@index([userId])
+}
+
+/// Пакет импорта (для истории и отмены)
+model WishImportBatch {
+  id                String   @id @default(cuid())
+  accountId         String
+  /// paimon | url | json | pulls
+  source            String
+  label             String?
+  pullCount         Int      @default(0)
+  /// Импорт заменил предыдущие данные
+  replacedPrevious  Boolean  @default(false)
+  /// Снимок удалённых молитв для отмены (JSON)
+  previousPulls     Json?
+  createdAt         DateTime @default(now())
+
+  account WishAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  pulls   WishPull[]
+
+  @@index([accountId, createdAt])
 }
 
 /// Одна молитва (pull)
@@ -302,12 +323,15 @@ model WishPull {
   rankType  String
   wishTime  DateTime
   raw       Json?
+  importBatchId String?
 
   createdAt DateTime @default(now())
 
-  account WishAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account     WishAccount      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  importBatch WishImportBatch? @relation(fields: [importBatchId], references: [id], onDelete: SetNull)
 
   @@unique([accountId, hoyoId])
   @@index([accountId, gachaType, wishTime])
   @@index([accountId, wishTime])
+  @@index([importBatchId])
 }

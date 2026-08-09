@@ -19,7 +19,15 @@ type Props = {
   busy: boolean;
   progress: WishImportProgress | null;
   onImportUrl: (url: string) => Promise<void>;
-  onImportJson: (payload: unknown) => Promise<void>;
+  onImportJson: (
+    payload: unknown,
+    opts?: { replace?: boolean; source?: string },
+  ) => Promise<void>;
+  onImportPulls?: (
+    pulls: unknown[],
+    opts: { replace?: boolean; source?: string },
+  ) => Promise<void>;
+  onProgressChange?: (p: WishImportProgress | null) => void;
   error: string | null;
   message: string | null;
   onClearFeedback?: () => void;
@@ -36,6 +44,8 @@ export default function WishImportWizard({
   progress,
   onImportUrl,
   onImportJson,
+  onImportPulls,
+  onProgressChange,
   error,
   message,
   onClearFeedback,
@@ -110,17 +120,113 @@ export default function WishImportWizard({
     async (file: File) => {
       setLocalError(null);
       onClearFeedback?.();
+
+      const ok = window.confirm(
+        "Импорт из paimon.moe удалит все текущие молитвы этого игрового аккаунта и заменит их данными из файла. Продолжить?",
+      );
+      if (!ok) return;
+
       try {
+        onProgressChange?.({
+          phase: "connecting",
+          label: "Читаем файл…",
+          step: 0,
+          steps: 6,
+          page: 0,
+          totalPulled: 0,
+        });
         const text = await file.text();
-        const payload = JSON.parse(text);
-        await onImportJson(payload);
+        const payload = JSON.parse(text) as unknown;
+
+        const { isPaimonMoeExport, parsePaimonMoeExport, buildPaimonRarityLookup } =
+          await import("@/lib/paimon-import");
+
+        if (!isPaimonMoeExport(payload)) {
+          await onImportJson(payload, { replace: false, source: "json" });
+          return;
+        }
+
+        onProgressChange?.({
+          phase: "connecting",
+          label: "Загружаем каталог имён…",
+          step: 0,
+          steps: 6,
+          page: 0,
+          totalPulled: 0,
+        });
+        const catRes = await fetch("/api/catalog", { cache: "no-store" });
+        const catalog = catRes.ok
+          ? ((await catRes.json()) as {
+              characters: {
+                slug: string;
+                name: string;
+                rarity: string;
+                image?: string;
+              }[];
+              weapons: {
+                slug: string;
+                name: string;
+                rarity: string;
+                image?: string;
+              }[];
+            })
+          : { characters: [], weapons: [] };
+
+        const lookup = buildPaimonRarityLookup(catalog);
+        const pulls = parsePaimonMoeExport(payload, lookup, (p) => {
+          onProgressChange?.({
+            phase: "banner",
+            label: `Разбор: ${p.bannerLabel}`,
+            step: p.step,
+            steps: p.steps,
+            page: 0,
+            totalPulled: p.processed,
+            totalApprox: p.totalApprox,
+          });
+        });
+
+        if (pulls.length === 0) {
+          setLocalError("В файле paimon.moe не найдено молитв.");
+          onProgressChange?.(null);
+          return;
+        }
+
+        onProgressChange?.({
+          phase: "saving",
+          label: "Удаляем старые данные и сохраняем…",
+          step: 6,
+          steps: 6,
+          page: 0,
+          totalPulled: pulls.length,
+        });
+
+        const serializable = pulls.map((p) => ({
+          id: p.hoyoId,
+          gacha_type: p.gachaType,
+          name: p.itemName,
+          item_type: p.itemType,
+          rank_type: p.rankType,
+          time: p.wishTime.toISOString(),
+          paimon_rate: (p.raw as { paimon_rate?: number } | undefined)
+            ?.paimon_rate,
+        }));
+
+        if (onImportPulls) {
+          await onImportPulls(serializable, {
+            replace: true,
+            source: "paimon",
+          });
+        } else {
+          await onImportJson(payload, { replace: true, source: "paimon" });
+        }
       } catch {
         setLocalError(
           "Не удалось прочитать файл. Нужен JSON-экспорт paimon.moe / UIGF.",
         );
+        onProgressChange?.(null);
       }
     },
-    [onClearFeedback, onImportJson],
+    [onClearFeedback, onImportJson, onImportPulls, onProgressChange],
   );
 
   const importFromDriveLink = useCallback(async () => {
@@ -132,6 +238,14 @@ export default function WishImportWizard({
       return;
     }
     try {
+      onProgressChange?.({
+        phase: "connecting",
+        label: "Скачиваем файл с Drive…",
+        step: 0,
+        steps: 6,
+        page: 0,
+        totalPulled: 0,
+      });
       const res = await fetch("/api/wishes/import-drive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -144,33 +258,94 @@ export default function WishImportWizard({
       if (!res.ok || !json.payload) {
         throw new Error(json.error || "Не удалось скачать файл с Drive");
       }
-      await onImportJson(json.payload);
+      // Переиспользуем тот же путь, что и для файла
+      const blob = new Blob([JSON.stringify(json.payload)], {
+        type: "application/json",
+      });
+      const file = new File([blob], "paimon-drive.json", {
+        type: "application/json",
+      });
+      // без второго confirm — уже спросили
+      const text = await file.text();
+      const payload = JSON.parse(text) as unknown;
+      const { isPaimonMoeExport, parsePaimonMoeExport, buildPaimonRarityLookup } =
+        await import("@/lib/paimon-import");
+      if (isPaimonMoeExport(payload)) {
+        const catRes = await fetch("/api/catalog", { cache: "no-store" });
+        const catalog = catRes.ok
+          ? await catRes.json()
+          : { characters: [], weapons: [] };
+        const lookup = buildPaimonRarityLookup(catalog);
+        const pulls = parsePaimonMoeExport(payload, lookup, (p) => {
+          onProgressChange?.({
+            phase: "banner",
+            label: `Разбор: ${p.bannerLabel}`,
+            step: p.step,
+            steps: p.steps,
+            page: 0,
+            totalPulled: p.processed,
+            totalApprox: p.totalApprox,
+          });
+        });
+        const serializable = pulls.map((p) => ({
+          id: p.hoyoId,
+          gacha_type: p.gachaType,
+          name: p.itemName,
+          item_type: p.itemType,
+          rank_type: p.rankType,
+          time: p.wishTime.toISOString(),
+          paimon_rate: (p.raw as { paimon_rate?: number } | undefined)
+            ?.paimon_rate,
+        }));
+        if (onImportPulls) {
+          await onImportPulls(serializable, { replace: true, source: "paimon" });
+        } else {
+          await onImportJson(payload, { replace: true, source: "paimon" });
+        }
+      } else {
+        await onImportJson(json.payload, { replace: true, source: "json" });
+      }
     } catch (e) {
       setLocalError(
         e instanceof Error
           ? e.message
           : "Не удалось импортировать с Google Drive",
       );
+      onProgressChange?.(null);
     }
-  }, [driveUrl, onClearFeedback, onImportJson]);
+  }, [
+    driveUrl,
+    onClearFeedback,
+    onImportJson,
+    onImportPulls,
+    onProgressChange,
+  ]);
 
   const feedbackError = localError || error;
-  const progressPct =
-    progress && progress.steps > 0
-      ? Math.min(
-          100,
-          Math.round(
-            ((progress.phase === "saving" || progress.phase === "done"
-              ? progress.steps
-              : Math.max(0, progress.step - 1)) /
-              progress.steps) *
-              100 +
-              (progress.phase === "banner" ? 8 : 0),
-          ),
-        )
-      : busy
-        ? 12
-        : 0;
+  const blocked = busy || Boolean(progress);
+  const progressPct = (() => {
+    if (!progress) return busy ? 12 : 0;
+    if (progress.phase === "saving" || progress.phase === "done") {
+      return progress.totalPulled > 0 ? 96 : 88;
+    }
+    const approx = progress.totalApprox || 0;
+    if (approx > 0) {
+      return Math.min(
+        90,
+        Math.round(8 + (progress.totalPulled / approx) * 82),
+      );
+    }
+    if (progress.steps > 0) {
+      return Math.min(
+        90,
+        Math.round(
+          (progress.step / progress.steps) * 70 +
+            Math.min(20, (progress.totalPulled / 2000) * 20),
+        ),
+      );
+    }
+    return busy ? 12 : 0;
+  })();
 
   const tabs: { id: Platform; label: string; icon: React.ReactNode }[] = [
     { id: "pc", label: "PC", icon: <Monitor className="h-3.5 w-3.5" /> },
@@ -255,7 +430,7 @@ export default function WishImportWizard({
               </div>
               <button
                 type="button"
-                disabled={!oneLiner || busy}
+                disabled={!oneLiner || blocked}
                 onClick={() => void copyScript()}
                 className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#189b8e] px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
               >
@@ -320,17 +495,22 @@ export default function WishImportWizard({
         )}
 
         {platform === "paimon" && (
-          <div className="space-y-4 text-sm leading-relaxed">
+          <div className="space-y-4 text-base leading-relaxed">
+            <div className="rounded-xl border border-amber-300/80 bg-amber-50 px-3.5 py-3 text-sm text-amber-950">
+              <p className="font-bold">Важно</p>
+              <p className="mt-1">
+                Импорт из paimon.moe <strong>удалит все текущие молитвы</strong>{" "}
+                выбранного игрового аккаунта и заменит их данными из файла.
+              </p>
+            </div>
             <p className="text-foreground/75">
-              Синк paimon.moe в Google Drive доступен только самому paimon.moe.
-              Экспортируйте данные и загрузите сюда — или дайте публичную ссылку
-              на JSON-файл на вашем Drive.
+              paimon.moe → Settings → Export & Import Data → Download Data. Затем
+              загрузите файл сюда.
             </p>
             <ol className="space-y-4">
               <Step n={1} title="Экспорт в paimon.moe">
-                paimon.moe → Settings → Export & Import Data → Download Data.
-                Можно заранее включить Drive Sync и потом скачать/загрузить файл
-                в свой Google Drive.
+                Settings → Export & Import Data → Download Data
+                (`paimon-moe-local-data….json`).
               </Step>
               <Step n={2} title="Загрузить JSON">
                 <input
@@ -341,34 +521,39 @@ export default function WishImportWizard({
                   onChange={(e) => {
                     const f = e.target.files?.[0];
                     if (f) void handleFile(f);
+                    e.target.value = "";
                   }}
                 />
                 <button
                   type="button"
-                  disabled={busy}
+                  disabled={blocked}
                   onClick={() => fileRef.current?.click()}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#189b8e] px-3.5 py-2.5 text-xs font-bold text-white disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#189b8e] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
                 >
-                  <Upload className="h-3.5 w-3.5" />
+                  <Upload className="h-4 w-4" />
                   Выбрать файл paimon.moe
                 </button>
               </Step>
               <Step n={3} title="Или ссылка Google Drive">
-                Файл → «Открыть доступ» → «Все, у кого есть ссылка» → вставьте
-                ссылку:
+                Файл должен быть публичным по ссылке:
                 <input
                   value={driveUrl}
                   onChange={(e) => setDriveUrl(e.target.value)}
                   placeholder="https://drive.google.com/file/d/…"
-                  className="mt-2 w-full rounded-xl border border-black/[0.08] px-3 py-2 text-sm outline-none ring-[#189b8e]/30 focus:ring-2"
+                  className="mt-2 w-full rounded-xl border border-black/[0.08] px-3 py-2.5 text-sm outline-none ring-[#189b8e]/30 focus:ring-2"
                 />
                 <button
                   type="button"
-                  disabled={busy || !driveUrl.trim()}
-                  onClick={() => void importFromDriveLink()}
-                  className="mt-2 inline-flex items-center gap-2 rounded-xl border-2 border-[#189b8e] px-3.5 py-2 text-xs font-bold text-[#189b8e] disabled:opacity-50"
+                  disabled={blocked || !driveUrl.trim()}
+                  onClick={() => {
+                    const ok = window.confirm(
+                      "Импорт с Drive также заменит текущие молитвы этого аккаунта. Продолжить?",
+                    );
+                    if (ok) void importFromDriveLink();
+                  }}
+                  className="mt-2 inline-flex items-center gap-2 rounded-xl border-2 border-[#189b8e] px-3.5 py-2.5 text-sm font-bold text-[#189b8e] disabled:opacity-50"
                 >
-                  <Cloud className="h-3.5 w-3.5" />
+                  <Cloud className="h-4 w-4" />
                   Импорт с Drive
                 </button>
               </Step>
@@ -396,7 +581,9 @@ export default function WishImportWizard({
                   ? `Баннер ${progress.step}/${progress.steps}`
                   : null}
                 {progress.page > 0 ? ` · стр. ${progress.page}` : null}
-                {` · собрано ${progress.totalPulled.toLocaleString("ru-RU")}`}
+                {progress.totalApprox && progress.totalApprox > 0
+                  ? ` · обработано ${progress.totalPulled.toLocaleString("ru-RU")} / ${progress.totalApprox.toLocaleString("ru-RU")}`
+                  : ` · собрано ${progress.totalPulled.toLocaleString("ru-RU")}`}
               </p>
             )}
           </div>
@@ -416,7 +603,7 @@ export default function WishImportWizard({
             />
             <button
               type="button"
-              disabled={busy || !url.trim()}
+              disabled={blocked || !url.trim()}
               className="mt-2 w-full rounded-lg border border-[#189b8e] py-2 text-xs font-bold text-[#189b8e] disabled:opacity-50"
               onClick={() => void importManualUrl()}
             >

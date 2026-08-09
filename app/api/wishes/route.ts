@@ -99,6 +99,7 @@ export async function GET(req: Request) {
     const meta = resolveGuideMeta(p.name, "Character", guideIndex);
     return {
       ...p,
+      name: meta?.name ?? p.name,
       guideHref: meta?.href ?? null,
       image: meta?.image ?? null,
     };
@@ -112,13 +113,15 @@ export async function GET(req: Request) {
         row.itemType || "Character",
         guideIndex,
       );
+      const displayName = meta?.name ?? row.name;
       const char = data.characters.find(
         (c) =>
-          c.name.toLowerCase() === row.name.toLowerCase() ||
+          c.name.toLowerCase() === displayName.toLowerCase() ||
           meta?.slug === c.slug,
       );
       return {
         ...row,
+        name: displayName,
         guideHref: meta?.href ?? null,
         image: meta?.image ?? null,
         element: char?.element ?? null,
@@ -134,7 +137,7 @@ export async function GET(req: Request) {
     const meta = resolveGuideMeta(p.itemName, p.itemType, guideIndex);
     return {
       id: p.id,
-      itemName: p.itemName,
+      itemName: meta?.name ?? p.itemName,
       itemType: p.itemType,
       rankType: p.rankType,
       gachaType: p.gachaType,
