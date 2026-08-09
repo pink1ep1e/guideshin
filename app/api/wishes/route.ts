@@ -13,51 +13,73 @@ import {
   resolveGuideMeta,
 } from "@/lib/wish-guide-links";
 import { resolveWishUser } from "@/lib/wish-auth";
+import {
+  buildCommunityLuck,
+  computeFiftyFifty,
+  snapshotFromPulls,
+} from "@/lib/wish-luck";
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   const user = await resolveWishUser(session);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const url = new URL(req.url);
+  const requestedAccountId = url.searchParams.get("accountId");
+
   const data = await withPrisma(async (prisma) => {
-    let account = await prisma.wishAccount.findFirst({
+    let accounts = await prisma.wishAccount.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "asc" },
     });
-    if (!account) {
-      account = await prisma.wishAccount.create({
-        data: { userId: user.id, label: "Основной" },
+    if (accounts.length === 0) {
+      const created = await prisma.wishAccount.create({
+        data: { userId: user.id, label: "Основной", server: "europe" },
       });
+      accounts = [created];
     }
 
-    const [pulls, characters, weapons, totals, fives] = await Promise.all([
+    const account =
+      accounts.find((a) => a.id === requestedAccountId) || accounts[0];
+
+    const [pulls, characters, weapons, allAccounts] = await Promise.all([
       prisma.wishPull.findMany({
         where: { accountId: account.id },
         orderBy: { wishTime: "desc" },
-        take: 8000,
+        take: 12000,
       }),
       prisma.character.findMany({
         where: { published: true },
-        select: { slug: true, name: true, image: true },
+        select: { slug: true, name: true, image: true, rarity: true, element: true },
       }),
       prisma.weapon.findMany({
         where: { published: true },
-        select: { slug: true, name: true, image: true },
+        select: { slug: true, name: true, image: true, rarity: true },
       }),
-      prisma.wishPull.groupBy({
-        by: ["accountId"],
-        _count: { _all: true },
-      }),
-      prisma.wishPull.groupBy({
-        by: ["accountId"],
-        where: { rankType: "5" },
-        _count: { _all: true },
+      prisma.wishAccount.findMany({
+        where: { pulls: { some: {} } },
+        take: 100,
+        select: {
+          id: true,
+          pulls: {
+            select: {
+              hoyoId: true,
+              gachaType: true,
+              itemName: true,
+              itemType: true,
+              rankType: true,
+              wishTime: true,
+              raw: true,
+            },
+            take: 4000,
+          },
+        },
       }),
     ]);
 
-    return { account, pulls, characters, weapons, totals, fives };
+    return { account, accounts, pulls, characters, weapons, allAccounts };
   });
 
   const guideIndex = buildGuideLinkIndex({
@@ -65,8 +87,15 @@ export async function GET() {
     weapons: data.weapons,
   });
 
-  const overview = computeWishOverview(data.pulls);
-  const pityChart = buildPityChart(data.pulls).map((p) => {
+  const pullsForStats = data.pulls.map((p) => ({
+    ...p,
+    raw: p.raw as { paimon_rate?: number } | null,
+  }));
+
+  const overview = computeWishOverview(pullsForStats);
+  const fifty = computeFiftyFifty(pullsForStats);
+
+  const pityChart = buildPityChart(pullsForStats).map((p) => {
     const meta = resolveGuideMeta(p.name, "Character", guideIndex);
     return {
       ...p,
@@ -75,7 +104,7 @@ export async function GET() {
     };
   });
 
-  const stats = computeAllBannerStats(data.pulls).map((stat) => ({
+  const stats = computeAllBannerStats(pullsForStats).map((stat) => ({
     ...stat,
     fiveStars: stat.fiveStars.map((row) => {
       const meta = resolveGuideMeta(
@@ -83,10 +112,17 @@ export async function GET() {
         row.itemType || "Character",
         guideIndex,
       );
+      const char = data.characters.find(
+        (c) =>
+          c.name.toLowerCase() === row.name.toLowerCase() ||
+          meta?.slug === c.slug,
+      );
       return {
         ...row,
         guideHref: meta?.href ?? null,
         image: meta?.image ?? null,
+        element: char?.element ?? null,
+        rarity: char?.rarity ?? (/weapon|оруж/i.test(row.itemType) ? "LEGEND" : "LEGEND"),
       };
     }),
     last5StarHref: stat.last5Star
@@ -108,59 +144,42 @@ export async function GET() {
     };
   });
 
-  // Сравнение удачи: ниже средний гарант 5★ ≈ удачливее
-  const fiveByAccount = new Map(
-    data.fives.map((r) => [r.accountId, r._count._all]),
+  const peerSnapshots = data.allAccounts.map((a) =>
+    snapshotFromPulls(
+      a.id,
+      a.pulls.map((p) => ({
+        ...p,
+        raw: p.raw as { paimon_rate?: number } | null,
+      })),
+    ),
   );
-  const communityAvgs: number[] = [];
-  for (const row of data.totals) {
-    const five = fiveByAccount.get(row.accountId) ?? 0;
-    if (five < 2 || row._count._all < 40) continue;
-    communityAvgs.push(row._count._all / five);
-  }
-  communityAvgs.sort((a, b) => a - b);
 
-  let luck = null as null | {
-    sampleSize: number;
-    communityAvgGarant: number;
-    yourAvgGarant: number | null;
-    luckierThanPercent: number | null;
-    verdict: string;
-  };
-
-  if (communityAvgs.length >= 2) {
-    const communityAvg =
-      communityAvgs.reduce((a, b) => a + b, 0) / communityAvgs.length;
-    const yours = overview.avgPity5;
-    let luckierThanPercent: number | null = null;
-    let verdict = "Пока мало данных для сравнения.";
-    if (yours != null) {
-      const worse = communityAvgs.filter((a) => a > yours).length;
-      luckierThanPercent = Math.round((worse / communityAvgs.length) * 100);
-      if (luckierThanPercent >= 70) {
-        verdict = "Вы заметно удачливее большинства игроков Guideshin.";
-      } else if (luckierThanPercent >= 45) {
-        verdict = "Ваша удача около среднего уровня сообщества.";
-      } else {
-        verdict = "Пока сообщество в среднем выбивает 5★ раньше вас.";
-      }
-    }
-    luck = {
-      sampleSize: communityAvgs.length,
-      communityAvgGarant: Number(communityAvg.toFixed(1)),
-      yourAvgGarant: yours == null ? null : Number(yours.toFixed(1)),
-      luckierThanPercent,
-      verdict,
-    };
-  }
+  const luck = buildCommunityLuck(
+    {
+      total: overview.total,
+      rate5: overview.rate5,
+      rate4: overview.rate4,
+      avgGarant5: overview.avgPity5,
+      fifty,
+    },
+    peerSnapshots,
+  );
 
   return NextResponse.json({
     account: {
       id: data.account.id,
       label: data.account.label,
       uid: data.account.uid,
+      server: data.account.server,
     },
+    accounts: data.accounts.map((a) => ({
+      id: a.id,
+      label: a.label,
+      uid: a.uid,
+      server: a.server,
+    })),
     overview,
+    fifty,
     pityChart,
     total: data.pulls.length,
     stats,

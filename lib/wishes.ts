@@ -69,6 +69,7 @@ export type WishPullLike = {
   itemType: string;
   rankType: string;
   wishTime: Date | string;
+  raw?: { paimon_rate?: number } | null;
 };
 
 export type BannerPityStats = {
@@ -318,7 +319,6 @@ export function parseWishImportPayload(payload: unknown): NormalizedWish[] {
     for (const key of Object.keys(obj)) {
       const val = obj[key];
       if (!Array.isArray(val) || val.length === 0) continue;
-      // paimon.moe: массив массивов [type, time, name, itemType, rank]
       if (Array.isArray(val[0])) {
         for (const entry of val as unknown[][]) {
           if (!Array.isArray(entry) || entry.length < 5) continue;
@@ -348,13 +348,11 @@ export function parseWishImportPayload(payload: unknown): NormalizedWish[] {
     if (obj.data && typeof obj.data === "object") {
       pushWishArrays(obj.data as Record<string, unknown>);
     }
-    // paimon.moe export: ключи вроде "wish-uid-..." или вложенный wish
     for (const key of Object.keys(obj)) {
       if (/^wish/i.test(key) && typeof obj[key] === "object" && obj[key]) {
         pushWishArrays(obj[key] as Record<string, unknown>);
       }
     }
-    // Иногда сами баннеры на верхнем уровне
     pushWishArrays(obj);
   }
 

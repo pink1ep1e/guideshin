@@ -268,13 +268,16 @@ model Account {
   @@index([userId])
 }
 
-/// Игровой профиль / слот истории молитв
+/// Игровой профиль Genshin (ник + сервер), не путать с User сайта
 model WishAccount {
   id        String   @id @default(cuid())
   userId    String
   /// UID из игры, если известен
   uid       String?
+  /// Ник / название слота
   label     String   @default("Основной")
+  /// europe | asia | america | china
+  server    String   @default("europe")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

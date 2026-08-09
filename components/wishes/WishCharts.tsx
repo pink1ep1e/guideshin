@@ -1,16 +1,17 @@
 "use client";
 
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
   Cell,
+  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
+  Area,
+  AreaChart,
 } from "recharts";
 import { motion } from "framer-motion";
 import type { GachaBannerKey, PityChartPoint } from "@/lib/wishes";
@@ -19,6 +20,7 @@ import { BANNER_LABELS } from "@/lib/wishes";
 const TEAL = "#189b8e";
 const GOLD = "#c99212";
 const VIOLET = "#6b5b95";
+const EXPECTED_GRAY = "#94a3b8";
 
 type ChartPoint = PityChartPoint & { guideHref?: string | null };
 
@@ -41,7 +43,7 @@ function ChartTooltip({
   return (
     <div className="rounded-2xl border border-black/[0.08] bg-white px-3.5 py-2.5 text-xs shadow-panel">
       <p className="font-bold text-foreground">{p.name}</p>
-      <p className="mt-0.5 text-foreground/75">
+      <p className="mt-0.5 text-foreground/80">
         Гарант <span className="font-bold text-foreground">{p.pity}</span>
         {" · "}
         {BANNER_LABELS[p.banner]}
@@ -70,7 +72,6 @@ export function WishPityAreaChart({
     ...d,
     index: i + 1,
     month: monthLabel(d.time),
-    ts: new Date(d.time).getTime(),
   }));
 
   if (chartData.length === 0) {
@@ -146,22 +147,22 @@ function RateTooltip({
   label,
 }: {
   active?: boolean;
-  payload?: { dataKey?: string; value?: number; color?: string }[];
+  payload?: { dataKey?: string | number; value?: number; name?: string }[];
   label?: string;
 }) {
   if (!active || !payload?.length) return null;
   const expected = payload.find((p) => p.dataKey === "expected");
   const actual = payload.find((p) => p.dataKey === "actual");
   return (
-    <div className="rounded-2xl border border-black/[0.1] bg-white px-3.5 py-2.5 text-xs shadow-panel">
-      <p className="font-bold text-foreground">{label}</p>
+    <div className="rounded-2xl border border-black/[0.12] bg-white px-3.5 py-2.5 text-xs shadow-panel">
+      <p className="font-bold text-[#0b1f44]">{label}</p>
       {expected != null && (
-        <p className="mt-1 font-semibold text-foreground/70">
+        <p className="mt-1.5 font-semibold text-[#475569]">
           Ожидание: {expected.value}%
         </p>
       )}
       {actual != null && (
-        <p className="font-bold text-foreground">У вас: {actual.value}%</p>
+        <p className="font-bold text-[#0b1f44]">У вас: {actual.value}%</p>
       )}
     </div>
   );
@@ -179,13 +180,13 @@ export function WishRateCompare({
       name: "5★",
       actual: Number(rate5.toFixed(2)),
       expected: 1.6,
-      fill: GOLD,
+      actualFill: GOLD,
     },
     {
       name: "4★",
       actual: Number(rate4.toFixed(2)),
       expected: 13,
-      fill: VIOLET,
+      actualFill: VIOLET,
     },
   ];
 
@@ -194,13 +195,14 @@ export function WishRateCompare({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1, duration: 0.4 }}
-      className="h-[220px] w-full"
+      className="h-[240px] w-full"
     >
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={rows}
-          margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
-          barGap={8}
+          margin={{ top: 8, right: 8, left: 0, bottom: 4 }}
+          barCategoryGap="28%"
+          barGap={6}
         >
           <CartesianGrid
             strokeDasharray="4 8"
@@ -221,23 +223,31 @@ export function WishRateCompare({
             unit="%"
           />
           <Tooltip content={<RateTooltip />} />
+          <Legend
+            verticalAlign="top"
+            height={28}
+            formatter={(value) =>
+              value === "expected" ? "Ожидание" : "У вас"
+            }
+            wrapperStyle={{ fontSize: 12, fontWeight: 600 }}
+          />
           <Bar
             dataKey="expected"
             name="expected"
-            fill="rgba(0,0,0,0.12)"
-            radius={[10, 10, 0, 0]}
-            barSize={28}
-            animationDuration={800}
+            fill={EXPECTED_GRAY}
+            radius={[8, 8, 0, 0]}
+            maxBarSize={36}
+            isAnimationActive={false}
           />
           <Bar
             dataKey="actual"
             name="actual"
-            radius={[10, 10, 0, 0]}
-            barSize={28}
-            animationDuration={900}
+            radius={[8, 8, 0, 0]}
+            maxBarSize={36}
+            isAnimationActive={false}
           >
             {rows.map((r) => (
-              <Cell key={r.name} fill={r.fill} />
+              <Cell key={r.name} fill={r.actualFill} />
             ))}
           </Bar>
         </BarChart>

@@ -24,6 +24,9 @@ type Props = {
   message: string | null;
   onClearFeedback?: () => void;
   compact?: boolean;
+  /** На какой игровой аккаунт идёт импорт */
+  targetAccountLabel?: string | null;
+  targetAccountServer?: string | null;
 };
 
 type Platform = "pc" | "android" | "ios" | "paimon";
@@ -37,6 +40,8 @@ export default function WishImportWizard({
   message,
   onClearFeedback,
   compact = false,
+  targetAccountLabel,
+  targetAccountServer,
 }: Props) {
   const [platform, setPlatform] = useState<Platform>("pc");
   const [oneLiner, setOneLiner] = useState("");
@@ -203,6 +208,17 @@ export default function WishImportWizard({
         <p className="mt-1.5 text-sm leading-relaxed text-foreground/70">
           Выберите платформу — короткая инструкция и импорт в одном месте.
         </p>
+        {targetAccountLabel ? (
+          <p className="mt-2 rounded-lg bg-white/80 px-3 py-2 text-sm font-bold text-[#0f5c54] ring-1 ring-[#189b8e]/20">
+            Загрузка на аккаунт: {targetAccountLabel}
+            {targetAccountServer ? (
+              <span className="font-medium text-foreground/60">
+                {" "}
+                · {targetAccountServer}
+              </span>
+            ) : null}
+          </p>
+        ) : null}
 
         <div className="mt-3 flex flex-wrap gap-1.5">
           {tabs.map((t) => (
