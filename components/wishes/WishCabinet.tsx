@@ -17,7 +17,6 @@ import {
   BANNER_SHORT,
   DASHBOARD_BANNERS,
   bannerKeyFromGachaType,
-  fetchAllWishesFromAuthUrl,
 } from "@/lib/wishes";
 import WishImportWizard from "@/components/wishes/WishImportWizard";
 import { WishMonthlyPullChart, WishRateCompare } from "@/components/wishes/WishCharts";
@@ -271,63 +270,29 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
       setMessage(null);
       setProgress({
         phase: "connecting",
-        label: "Подключаемся к Hoyoverse…",
+        label: "Загружаем историю через сервер…",
         step: 0,
         steps: 6,
         page: 0,
         totalPulled: 0,
       });
       try {
-        const result = await fetchAllWishesFromAuthUrl(url, setProgress);
-        if (result.error) {
-          const isNetwork =
-            /связаться|VPN|сеть|Failed to fetch|NetworkError/i.test(
-              result.error,
-            );
-          const softRetry =
-            /Не удалось загрузить историю|visit too frequently/i.test(
-              result.error,
-            );
-          if (isNetwork || softRetry) {
-            setProgress({
-              phase: "saving",
-              label: isNetwork
-                ? "Сеть блокирует браузер — пробуем через сервер…"
-                : "Повторяем загрузку через сервер…",
-              step: 6,
-              steps: 6,
-              page: 0,
-              totalPulled: 0,
-            });
-            const res = await fetch("/api/wishes/import", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ mode: "url", url, accountId }),
-            });
-            const json = (await res.json()) as {
-              error?: string;
-              inserted?: number;
-              totalParsed?: number;
-              accountLabel?: string;
-            };
-            if (!res.ok) throw new Error(json.error || result.error);
-            setMessage(
-              `Готово для «${json.accountLabel || data?.account.label}»: разобрано ${json.totalParsed}, добавлено ${json.inserted}`,
-            );
-            await load(accountId);
-            return;
-          }
-          throw new Error(result.error);
-        }
-        const serializable = result.pulls.map((p) => ({
-          id: p.hoyoId,
-          gacha_type: p.gachaType,
-          name: p.itemName,
-          item_type: p.itemType,
-          rank_type: p.rankType,
-          time: p.wishTime.toISOString(),
-        }));
-        await savePulls(serializable);
+        const res = await fetch("/api/wishes/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mode: "url", url, accountId }),
+        });
+        const json = (await res.json()) as {
+          error?: string;
+          inserted?: number;
+          totalParsed?: number;
+          accountLabel?: string;
+        };
+        if (!res.ok) throw new Error(json.error || "Не удалось импортировать");
+        setMessage(
+          `Готово для «${json.accountLabel || data?.account.label}»: разобрано ${json.totalParsed}, добавлено ${json.inserted}`,
+        );
+        await load(accountId);
       } catch (e) {
         setError(friendlyWishImportError(e));
       } finally {
@@ -335,7 +300,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
         setProgress(null);
       }
     },
-    [accountId, data?.account.label, load, savePulls],
+    [accountId, data?.account.label, load],
   );
 
   const importFromJson = useCallback(
@@ -433,7 +398,6 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
       onImportPulls={importFromPulls}
       onProgressChange={setProgress}
       onClearFeedback={clearFeedback}
-      compact
       targetAccountLabel={activeAccount?.label}
       targetAccountServer={
         activeAccount
@@ -444,32 +408,32 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
   );
 
   return (
-    <div className="pb-16 text-[15px] sm:text-base">
-      <section className="container-page-wide pt-7 sm:pt-10">
-        <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+    <div className="pb-20 text-base sm:text-[17px]">
+      <section className="container-page-wide pt-8 sm:pt-12">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#189b8e]">
+            <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#189b8e]">
               {userName || "Кабинет"}
             </p>
-            <h1 className="font-genshin text-4xl tracking-wide text-foreground sm:text-[2.75rem]">
+            <h1 className="font-genshin text-[2.5rem] tracking-wide text-foreground sm:text-5xl">
               Счётчик молитв
             </h1>
           </div>
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
               onClick={() => setImportOpen(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#189b8e] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#147f74]"
+              className="inline-flex items-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3 text-base font-bold text-white transition hover:bg-[#147f74]"
             >
-              <CloudDownload className="h-4 w-4" />
+              <CloudDownload className="h-5 w-5" />
               Авто-импорт
             </button>
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/" })}
-              className="inline-flex items-center gap-2 rounded-xl border border-black/[0.08] bg-white px-4 py-2.5 text-sm font-bold text-foreground/80 transition hover:bg-black/[0.03]"
+              className="inline-flex items-center gap-2 rounded-2xl border border-black/[0.08] bg-white px-5 py-3 text-base font-bold text-foreground/80 transition hover:bg-black/[0.03]"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-5 w-5" />
               Выйти
             </button>
           </div>
@@ -477,12 +441,12 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
 
         {/* Game accounts */}
         {loading ? (
-          <div className="mb-6 flex flex-wrap items-stretch gap-2.5">
-            <SkeletonBone className="h-[3.25rem] w-28" />
-            <SkeletonBone className="h-[3.25rem] w-24" />
+          <div className="mb-7 flex flex-wrap items-stretch gap-3">
+            <SkeletonBone className="h-14 w-32" />
+            <SkeletonBone className="h-14 w-28" />
           </div>
         ) : data ? (
-          <div className="mb-6 flex flex-wrap items-stretch gap-2.5">
+          <div className="mb-7 flex flex-wrap items-stretch gap-3">
             {data.accounts.map((a) => {
               const active = a.id === data.account.id;
               return (
@@ -490,7 +454,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
                   key={a.id}
                   type="button"
                   onClick={() => selectAccount(a.id)}
-                  className={`min-h-[3.25rem] rounded-xl px-4 py-2.5 text-left text-sm transition ${
+                  className={`min-h-14 rounded-2xl px-5 py-3 text-left text-base transition ${
                     active
                       ? "bg-[#189b8e] text-white shadow-soft"
                       : "bg-white text-foreground/80 ring-1 ring-black/[0.06] hover:bg-black/[0.03]"
@@ -498,7 +462,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
                 >
                   <span className="block font-bold leading-tight">{a.label}</span>
                   <span
-                    className={`mt-0.5 block text-xs ${
+                    className={`mt-0.5 block text-sm ${
                       active ? "text-white/80" : "text-muted-foreground"
                     }`}
                   >
@@ -510,9 +474,9 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
             <button
               type="button"
               onClick={() => setAddOpen(true)}
-              className="inline-flex min-h-[3.25rem] items-center gap-1.5 rounded-xl border border-dashed border-[#189b8e]/45 bg-white px-4 py-2.5 text-sm font-bold text-[#189b8e] transition hover:bg-[#189b8e]/5"
+              className="inline-flex min-h-14 items-center gap-2 rounded-2xl border border-dashed border-[#189b8e]/45 bg-white px-5 py-3 text-base font-bold text-[#189b8e] transition hover:bg-[#189b8e]/5"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-5 w-5" />
               Аккаунт
             </button>
           </div>
@@ -521,13 +485,15 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
         {loading ? (
           <WishCabinetSkeleton />
         ) : !hasPulls ? (
-          <div className="mx-auto max-w-2xl">{wizard}</div>
+          <div className="mx-auto max-w-2xl rounded-3xl border border-black/[0.06] shadow-[0_16px_40px_-24px_rgba(15,70,60,0.35)]">
+            {wizard}
+          </div>
         ) : (
-          <div className="space-y-7">
+          <div className="space-y-8">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4"
+              className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
             >
               <OverviewTile label="Всего молитв" value={data!.overview.total} />
               <OverviewTile
@@ -550,7 +516,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
               />
             </motion.div>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
               {DASHBOARD_BANNERS.map((key, i) => {
                 const s = statsByKey.get(key);
                 if (!s) return null;
@@ -559,10 +525,10 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
             </div>
 
             <div className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
-              <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+              <section className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
                 <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                   <div>
-                    <h2 className="font-genshin text-2xl text-foreground">
+                    <h2 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                       Молитвы по месяцам
                     </h2>
                     <p className="text-sm text-muted-foreground">
@@ -597,8 +563,8 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
                 />
               </section>
 
-              <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
-                <h2 className="mb-1 font-genshin text-2xl text-foreground">
+              <section className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
+                <h2 className="mb-1 font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                   Ваши шансы
                 </h2>
                 <p className="mb-3 text-sm text-muted-foreground">
@@ -617,8 +583,8 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
 
             {/* Luck vs community */}
             {data?.luck && (
-              <section className="rounded-2xl border border-black/[0.06] bg-gradient-to-br from-[#eef8f6] to-white p-5 sm:p-7">
-                <h2 className="font-genshin text-2xl text-foreground">
+              <section className="rounded-3xl border border-black/[0.06] bg-gradient-to-br from-[#eef8f6] to-white p-6 sm:p-8">
+                <h2 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                   Удачливость среди игроков
                 </h2>
                 <p className="mt-1 text-sm text-foreground/70">
@@ -674,8 +640,8 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
               </section>
             )}
 
-            <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
-              <h2 className="mb-4 font-genshin text-2xl text-foreground">
+            <section className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
+              <h2 className="mb-4 font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                 История 5★
               </h2>
               <div className="space-y-6">
@@ -701,9 +667,9 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
               </div>
             </section>
 
-            <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+            <section className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
               <div className="mb-4 flex items-end justify-between">
-                <h2 className="font-genshin text-2xl text-foreground">
+                <h2 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                   Последние молитвы
                 </h2>
                 <p className="text-sm font-bold text-muted-foreground">
@@ -763,8 +729,8 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
             </section>
 
             {imports.length > 0 && (
-              <section className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
-                <h2 className="mb-1 font-genshin text-2xl text-foreground">
+              <section className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
+                <h2 className="mb-1 font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                   История импортов
                 </h2>
                 <p className="mb-4 text-sm text-muted-foreground">
@@ -823,7 +789,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16 }}
               transition={{ duration: 0.25 }}
-              className="relative max-h-[92vh] w-full max-w-xl overflow-y-auto"
+              className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-black/[0.06] shadow-[0_20px_50px_-24px_rgba(15,70,60,0.45)]"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -855,10 +821,10 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
-              className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-panel sm:p-7"
+              className="w-full max-w-lg rounded-3xl bg-white p-7 shadow-panel sm:p-8"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="font-genshin text-2xl text-foreground">
+              <h3 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                 Новый аккаунт Genshin
               </h3>
               <p className="mt-1.5 text-sm text-muted-foreground">
@@ -918,7 +884,7 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
               className="w-full max-w-md rounded-2xl bg-white p-6 shadow-panel"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="font-genshin text-2xl text-foreground">
+              <h3 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                 Отменить импорт?
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-foreground/75">
@@ -966,35 +932,35 @@ function WishCabinetSkeleton() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-7"
+      className="space-y-8"
     >
       {/* Overview tiles */}
-      <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-2xl border border-black/[0.06] bg-white p-5"
+            className="rounded-3xl border border-black/[0.06] bg-white px-5 py-4 sm:px-6 sm:py-5"
           >
             <SkeletonBone className="h-3 w-24" />
-            <SkeletonBone className="mt-3 h-9 w-28" />
+            <SkeletonBone className="mt-3 h-10 w-32" />
             <SkeletonBone className="mt-2 h-3 w-16" />
           </div>
         ))}
       </div>
 
       {/* Banner pity cards */}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-2xl border border-black/[0.06] bg-white p-5"
+            className="rounded-3xl border border-black/[0.06] bg-white p-5 sm:p-6"
           >
-            <SkeletonBone className="h-4 w-28" />
-            <SkeletonBone className="mt-4 h-3 w-full" />
+            <SkeletonBone className="h-5 w-28" />
+            <SkeletonBone className="mt-4 h-3.5 w-full" />
             <SkeletonBone className="mt-2 h-3 w-[70%]" />
             <div className="mt-5 flex justify-between gap-3">
-              <SkeletonBone className="h-10 w-16" />
-              <SkeletonBone className="h-10 w-16" />
+              <SkeletonBone className="h-12 w-20" />
+              <SkeletonBone className="h-12 w-20" />
             </div>
           </div>
         ))}
@@ -1002,7 +968,7 @@ function WishCabinetSkeleton() {
 
       {/* Charts row */}
       <div className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
-        <div className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+        <div className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
           <SkeletonBone className="h-7 w-56" />
           <SkeletonBone className="mt-2 h-4 w-72 max-w-full" />
           <div className="mt-4 flex gap-2">
@@ -1013,7 +979,7 @@ function WishCabinetSkeleton() {
           </div>
           <SkeletonBone className="mt-5 h-[280px] w-full rounded-2xl" />
         </div>
-        <div className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+        <div className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
           <SkeletonBone className="h-7 w-40" />
           <SkeletonBone className="mt-2 h-4 w-52 max-w-full" />
           <SkeletonBone className="mt-5 h-[220px] w-full rounded-2xl" />
@@ -1021,7 +987,7 @@ function WishCabinetSkeleton() {
       </div>
 
       {/* Luck section */}
-      <div className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+      <div className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
         <SkeletonBone className="h-7 w-64" />
         <SkeletonBone className="mt-2 h-4 w-full max-w-xl" />
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -1039,7 +1005,7 @@ function WishCabinetSkeleton() {
       </div>
 
       {/* 5★ history cards */}
-      <div className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+      <div className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
         <SkeletonBone className="h-7 w-40" />
         <SkeletonBone className="mt-4 h-3 w-24" />
         <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
@@ -1053,7 +1019,7 @@ function WishCabinetSkeleton() {
       </div>
 
       {/* Recent pulls */}
-      <div className="rounded-2xl border border-black/[0.06] bg-white p-5 sm:p-7">
+      <div className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
         <div className="mb-4 flex items-end justify-between">
           <SkeletonBone className="h-7 w-48" />
           <SkeletonBone className="h-4 w-20" />
@@ -1172,20 +1138,20 @@ function LuckMetric({
   better: number | null;
 }) {
   return (
-    <div className="rounded-xl border border-black/[0.05] bg-white px-4 py-3">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+    <div className="rounded-2xl border border-black/[0.05] bg-white px-5 py-4">
+      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
-      <p className="mt-1 font-genshin text-xl text-foreground">{yours}</p>
-      <p className="mt-0.5 text-xs text-muted-foreground">
+      <p className="mt-1.5 font-genshin text-2xl text-foreground">{yours}</p>
+      <p className="mt-1 text-sm text-muted-foreground">
         сообщество: {community}
       </p>
       {better != null ? (
-        <p className="mt-1 text-xs font-bold text-[#189b8e]">
+        <p className="mt-1.5 text-sm font-bold text-[#189b8e]">
           удачливее {better}% игроков
         </p>
       ) : (
-        <p className="mt-1 text-xs text-muted-foreground">мало данных</p>
+        <p className="mt-1.5 text-sm text-muted-foreground">мало данных</p>
       )}
     </div>
   );
@@ -1205,20 +1171,20 @@ function OverviewTile({
   primogem?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-black/[0.06] bg-white px-4 py-3.5">
-      <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+    <div className="rounded-3xl border border-black/[0.06] bg-white px-5 py-4 sm:px-6 sm:py-5">
+      <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
         {label}
       </p>
-      <div className="mt-1 flex items-center gap-1.5">
-        {primogem ? <Primogem className="h-5 w-5" /> : null}
+      <div className="mt-1.5 flex items-center gap-2">
+        {primogem ? <Primogem className="h-6 w-6" /> : null}
         <AnimatedNumber
           value={value}
           format={format ?? ((n) => Math.round(n).toLocaleString("ru-RU"))}
-          className="font-genshin text-2xl tracking-wide text-foreground"
+          className="font-genshin text-[1.75rem] tracking-wide text-foreground sm:text-3xl"
         />
       </div>
       {hint ? (
-        <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
       ) : null}
     </div>
   );
@@ -1233,42 +1199,42 @@ function BannerCard({ stat, delay }: { stat: Stat; delay: number }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4 }}
-      className="rounded-2xl border border-black/[0.06] bg-white p-4 sm:p-5"
+      className="rounded-3xl border border-black/[0.06] bg-white p-5 sm:p-6"
     >
-      <div className="mb-3 flex items-start justify-between gap-2">
+      <div className="mb-4 flex items-start justify-between gap-2">
         <div>
-          <h3 className="font-genshin text-lg text-foreground">{stat.label}</h3>
-          <p className="text-[11px] text-muted-foreground">
+          <h3 className="font-genshin text-xl text-foreground">{stat.label}</h3>
+          <p className="text-xs text-muted-foreground">
             {BANNER_SHORT[stat.key]}
           </p>
         </div>
         <span
-          className="rounded-lg px-2 py-1 text-[11px] font-bold text-white"
+          className="rounded-xl px-2.5 py-1 text-xs font-bold text-white"
           style={{ backgroundColor: accent }}
         >
           {stat.total} молитв
         </span>
       </div>
 
-      <div className="mb-3">
-        <div className="mb-1 flex items-baseline justify-between">
-          <span className="text-xs font-bold text-muted-foreground">
+      <div className="mb-4">
+        <div className="mb-1.5 flex items-baseline justify-between">
+          <span className="text-sm font-bold text-muted-foreground">
             Гарант 5★
           </span>
-          <span className="font-genshin text-2xl" style={{ color: accent }}>
+          <span className="font-genshin text-3xl" style={{ color: accent }}>
             {stat.pity5}
-            <span className="text-sm text-muted-foreground">
+            <span className="text-base text-muted-foreground">
               /{stat.pity5Max}
             </span>
           </span>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-black/[0.06]">
+        <div className="h-2.5 overflow-hidden rounded-full bg-black/[0.06]">
           <div
             className="h-full rounded-full transition-all"
             style={{ width: `${bar * 100}%`, backgroundColor: accent }}
           />
         </div>
-        <p className="mt-1.5 text-xs text-muted-foreground">
+        <p className="mt-2 text-sm text-muted-foreground">
           До гаранта:{" "}
           <strong className="text-foreground">{stat.remaining5}</strong>
           {stat.pity5 >= stat.softPityAt ? (
@@ -1279,23 +1245,23 @@ function BannerCard({ stat, delay }: { stat: Stat; delay: number }) {
         </p>
       </div>
 
-      <div className="mb-3 grid grid-cols-2 gap-2 text-center">
-        <div className="rounded-xl bg-black/[0.03] px-2 py-2">
-          <p className="text-[10px] font-bold uppercase text-muted-foreground">
+      <div className="mb-4 grid grid-cols-2 gap-2.5 text-center">
+        <div className="rounded-2xl bg-black/[0.03] px-2 py-2.5">
+          <p className="text-[11px] font-bold uppercase text-muted-foreground">
             Гарант 4★
           </p>
-          <p className="font-genshin text-lg text-foreground">
+          <p className="font-genshin text-xl text-foreground">
             {stat.pity4}
-            <span className="text-xs text-muted-foreground">
+            <span className="text-sm text-muted-foreground">
               /{stat.pity4Max}
             </span>
           </p>
         </div>
-        <div className="rounded-xl bg-black/[0.03] px-2 py-2">
-          <p className="text-[10px] font-bold uppercase text-muted-foreground">
+        <div className="rounded-2xl bg-black/[0.03] px-2 py-2.5">
+          <p className="text-[11px] font-bold uppercase text-muted-foreground">
             Потрачено
           </p>
-          <p className="flex items-center justify-center gap-1 font-genshin text-lg text-foreground">
+          <p className="flex items-center justify-center gap-1.5 font-genshin text-xl text-foreground">
             <Primogem className="h-4 w-4" />
             {stat.primogems.toLocaleString("ru-RU")}
           </p>
@@ -1303,12 +1269,12 @@ function BannerCard({ stat, delay }: { stat: Stat; delay: number }) {
       </div>
 
       {stat.last5Star ? (
-        <p className="truncate text-xs text-muted-foreground">
+        <p className="truncate text-sm text-muted-foreground">
           Последний 5★:{" "}
           <span className="font-bold text-foreground">{stat.last5Star}</span>
         </p>
       ) : (
-        <p className="text-xs text-muted-foreground">Ещё не было 5★</p>
+        <p className="text-sm text-muted-foreground">Ещё не было 5★</p>
       )}
     </motion.article>
   );

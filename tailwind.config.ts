@@ -73,7 +73,7 @@ export default {
       },
       maxWidth: {
         page: "1240px",
-        "page-wide": "1480px",
+        "page-wide": "1560px",
       },
       borderRadius: {
         lg: "var(--radius)",

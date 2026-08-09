@@ -7,12 +7,8 @@ import {
   ClipboardPaste,
   Copy,
   Loader2,
-  AlertCircle,
   Upload,
-  Smartphone,
-  Monitor,
   Cloud,
-  Terminal,
 } from "lucide-react";
 import { looksLikeWishAuthUrl } from "@/lib/wishes-client";
 import type { WishImportProgress } from "@/lib/wishes";
@@ -33,7 +29,6 @@ type Props = {
   error: string | null;
   message: string | null;
   onClearFeedback?: () => void;
-  compact?: boolean;
   /** На какой игровой аккаунт идёт импорт */
   targetAccountLabel?: string | null;
   targetAccountServer?: string | null;
@@ -51,7 +46,6 @@ export default function WishImportWizard({
   error,
   message,
   onClearFeedback,
-  compact = false,
   targetAccountLabel,
   targetAccountServer,
 }: Props) {
@@ -368,274 +362,213 @@ export default function WishImportWizard({
     return busy ? 12 : 0;
   })();
 
-  const tabs: { id: Platform; label: string; icon: React.ReactNode }[] = [
-    { id: "pc", label: "PC", icon: <Monitor className="h-3.5 w-3.5" /> },
-    {
-      id: "android",
-      label: "Android",
-      icon: <Smartphone className="h-3.5 w-3.5" />,
-    },
-    { id: "ios", label: "iOS", icon: <Smartphone className="h-3.5 w-3.5" /> },
-    { id: "paimon", label: "Paimon", icon: <Cloud className="h-3.5 w-3.5" /> },
+  const tabs: { id: Platform; label: string }[] = [
+    { id: "pc", label: "PC" },
+    { id: "android", label: "Android" },
+    { id: "ios", label: "iOS" },
+    { id: "paimon", label: "Paimon" },
   ];
 
   return (
-    <div
-      id="wish-import"
-      className={`overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-[0_12px_32px_-20px_rgba(15,70,60,0.35)] ${
-        compact ? "" : ""
-      }`}
-    >
-      <div
-        className={`border-b border-black/[0.05] bg-gradient-to-br from-[#e8f7f5] via-white to-[#f3fbfa] ${
-          compact ? "px-4 py-4" : "px-5 py-5"
-        }`}
-      >
-        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#189b8e]">
-          Автоимпорт
-        </p>
-        <h2
-          className={`mt-0.5 font-genshin tracking-wide text-foreground ${
-            compact ? "text-xl" : "text-2xl"
-          }`}
-        >
+    <div id="wish-import" className="rounded-3xl bg-white p-6 sm:p-8">
+      <div className="max-w-xl">
+        <h2 className="font-genshin text-3xl tracking-wide text-foreground sm:text-[2rem]">
           Импорт молитв
         </h2>
-        <p className="mt-1.5 text-sm leading-relaxed text-foreground/70">
-          Выберите платформу — короткая инструкция и импорт в одном месте.
-        </p>
         {targetAccountLabel ? (
-          <p className="mt-2 rounded-lg bg-white/80 px-3 py-2 text-sm font-bold text-[#0f5c54] ring-1 ring-[#189b8e]/20">
-            Загрузка на аккаунт: {targetAccountLabel}
+          <p className="mt-2 text-base text-foreground/60">
+            Аккаунт{" "}
+            <span className="font-semibold text-foreground">
+              {targetAccountLabel}
+            </span>
             {targetAccountServer ? (
-              <span className="font-medium text-foreground/60">
-                {" "}
-                · {targetAccountServer}
-              </span>
+              <span> · {targetAccountServer}</span>
             ) : null}
           </p>
-        ) : null}
-
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setPlatform(t.id)}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
-                platform === t.id
-                  ? "bg-[#189b8e] text-white"
-                  : "bg-white/90 text-foreground/70 ring-1 ring-black/[0.06]"
-              }`}
-            >
-              {t.icon}
-              {t.label}
-            </button>
-          ))}
-        </div>
+        ) : (
+          <p className="mt-2 text-base text-foreground/60">
+            Загрузите историю с ПК, телефона или из paimon.moe
+          </p>
+        )}
       </div>
 
-      <div className={compact ? "space-y-4 px-4 py-4" : "space-y-5 px-5 py-5"}>
+      <div className="mt-6 flex gap-1 border-b border-black/[0.06]">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setPlatform(t.id)}
+            className={`-mb-px px-4 py-2.5 text-sm font-bold transition ${
+              platform === t.id
+                ? "border-b-2 border-[#189b8e] text-[#189b8e]"
+                : "text-foreground/45 hover:text-foreground/70"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-7 space-y-7">
         {platform === "pc" && (
-          <ol className="space-y-4 text-sm leading-relaxed">
-            <Step n={1} title="История в игре">
-              Молитва → История молитв → дождитесь загрузки → закройте окно.
-            </Step>
-            <Step n={2} title="Команда в PowerShell">
-              Win+R →{" "}
-              <code className="rounded-md bg-black/[0.06] px-1.5 py-0.5 text-[13px] font-semibold">
-                powershell
-              </code>{" "}
-              → вставьте команду:
-              <div className="mt-3 overflow-hidden rounded-2xl border border-[#1a3d38] bg-gradient-to-b from-[#122824] to-[#0b1a17] shadow-[0_12px_28px_-16px_rgba(15,70,60,0.55)]">
-                <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] px-3.5 py-2.5">
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#189b8e]/20 ring-1 ring-[#189b8e]/35">
-                      <Terminal className="h-4 w-4 text-[#7dede2]" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold tracking-wide text-[#c8f5f0]">
-                        PowerShell
-                      </p>
-                      <p className="truncate text-[11px] text-white/45">
-                        get-wish-url.ps1
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    disabled={!oneLiner || blocked}
-                    onClick={() => void copyScript()}
-                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition disabled:opacity-40 ${
-                      copied
-                        ? "bg-emerald-400/20 text-emerald-200 ring-1 ring-emerald-300/30"
-                        : "bg-white/[0.08] text-[#9be8df] ring-1 ring-white/10 hover:bg-[#189b8e]/35 hover:text-white"
-                    }`}
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="h-3.5 w-3.5" />
-                        Скопировано
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3.5 w-3.5" />
-                        Копировать
-                      </>
-                    )}
-                  </button>
-                </div>
-                <div className="relative px-3.5 py-3.5">
-                  <pre className="max-h-36 overflow-auto whitespace-pre-wrap break-all font-mono text-[12px] leading-relaxed text-[#a8f0e8] [scrollbar-width:thin]">
-                    {oneLiner || (
-                      <span className="text-white/40">Загрузка команды…</span>
-                    )}
-                  </pre>
-                </div>
-              </div>
-            </Step>
-            <Step n={3} title="Импорт">
+          <div className="space-y-6 text-[15px] leading-relaxed text-foreground/75 sm:text-base">
+            <SimpleStep n={1}>
+              В игре откройте <strong className="text-foreground">Молитва → История</strong>,
+              дождитесь загрузки и закройте окно.
+            </SimpleStep>
+            <SimpleStep n={2}>
+              Win+R → введите <strong className="text-foreground">powershell</strong> →
+              вставьте команду:
+              <button
+                type="button"
+                disabled={!oneLiner || blocked}
+                onClick={() => void copyScript()}
+                className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl border border-black/[0.08] bg-[#f7faf9] px-4 py-3.5 text-left transition hover:border-[#189b8e]/35 hover:bg-[#eef8f6] disabled:opacity-50"
+              >
+                <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-foreground/80">
+                  {oneLiner || "Загрузка команды…"}
+                </span>
+                <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-[#189b8e]">
+                  {copied ? (
+                    <>
+                      <Check className="h-4 w-4" /> Готово
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" /> Копировать
+                    </>
+                  )}
+                </span>
+              </button>
+            </SimpleStep>
+            <SimpleStep n={3}>
+              Вернитесь сюда и вставьте ссылку из буфера.
               <ImportActions
                 busy={busy}
                 onPaste={() => void pasteAndImport()}
               />
-            </Step>
-          </ol>
+            </SimpleStep>
+          </div>
         )}
 
         {platform === "android" && (
-          <ol className="space-y-4 text-sm leading-relaxed">
-            <Step n={1} title="Откройте историю">
-              В Genshin: Молитва → История молитв, дождитесь загрузки.
-            </Step>
-            <Step n={2} title="Скопируйте ссылку">
-              Нажмите «Поделиться» (или меню) в окне истории → «Копировать
-              ссылку». Если кнопки нет — откройте историю через браузер телефона
-              после входа в аккаунт HoYoverse.
-            </Step>
-            <Step n={3} title="Вставьте сюда">
+          <div className="space-y-6 text-[15px] leading-relaxed text-foreground/75 sm:text-base">
+            <SimpleStep n={1}>
+              Откройте историю молитв в игре и дождитесь загрузки.
+            </SimpleStep>
+            <SimpleStep n={2}>
+              В окне истории нажмите «Поделиться» → «Копировать ссылку».
+            </SimpleStep>
+            <SimpleStep n={3}>
+              Вставьте ссылку сюда.
               <ImportActions
                 busy={busy}
                 onPaste={() => void pasteAndImport()}
               />
-            </Step>
-          </ol>
+            </SimpleStep>
+          </div>
         )}
 
         {platform === "ios" && (
-          <ol className="space-y-4 text-sm leading-relaxed">
-            <Step n={1} title="Откройте историю">
-              В Genshin: Молитва → История молитв, дождитесь загрузки.
-            </Step>
-            <Step n={2} title="Поделиться → Скопировать">
-              В углу окна истории нажмите «Поделиться» → «Скопировать». Ссылка с
-              authkey попадёт в буфер.
-            </Step>
-            <Step n={3} title="Импорт на сайте">
-              Вернитесь в Safari/Chrome на Guideshin и нажмите кнопку ниже.
-              <div className="mt-2">
-                <ImportActions
-                  busy={busy}
-                  onPaste={() => void pasteAndImport()}
-                />
-              </div>
-            </Step>
-          </ol>
+          <div className="space-y-6 text-[15px] leading-relaxed text-foreground/75 sm:text-base">
+            <SimpleStep n={1}>
+              Откройте историю молитв в игре и дождитесь загрузки.
+            </SimpleStep>
+            <SimpleStep n={2}>
+              «Поделиться» → «Скопировать» — ссылка попадёт в буфер.
+            </SimpleStep>
+            <SimpleStep n={3}>
+              Вернитесь на сайт и вставьте ссылку.
+              <ImportActions
+                busy={busy}
+                onPaste={() => void pasteAndImport()}
+              />
+            </SimpleStep>
+          </div>
         )}
 
         {platform === "paimon" && (
-          <div className="space-y-4 text-base leading-relaxed">
-            <div className="rounded-xl border border-amber-300/80 bg-amber-50 px-3.5 py-3 text-sm text-amber-950">
-              <p className="font-bold">Важно</p>
-              <p className="mt-1">
-                Импорт из paimon.moe <strong>удалит все текущие молитвы</strong>{" "}
-                выбранного игрового аккаунта и заменит их данными из файла.
-              </p>
-            </div>
-            <p className="text-foreground/75">
-              paimon.moe → Settings → Export & Import Data → Download Data. Затем
-              загрузите файл сюда.
+          <div className="space-y-6 text-[15px] leading-relaxed text-foreground/75 sm:text-base">
+            <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              Импорт из paimon.moe заменит все текущие молитвы этого аккаунта.
             </p>
-            <ol className="space-y-4">
-              <Step n={1} title="Экспорт в paimon.moe">
-                Settings → Export & Import Data → Download Data
-                (`paimon-moe-local-data….json`).
-              </Step>
-              <Step n={2} title="Загрузить JSON">
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="application/json,.json"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) setReplaceConfirm({ kind: "file", file: f });
-                    e.target.value = "";
-                  }}
-                />
-                <button
-                  type="button"
-                  disabled={blocked}
-                  onClick={() => fileRef.current?.click()}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#189b8e] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
-                >
-                  <Upload className="h-4 w-4" />
-                  Выбрать файл paimon.moe
-                </button>
-              </Step>
-              <Step n={3} title="Или ссылка Google Drive">
-                Файл должен быть публичным по ссылке:
-                <input
-                  value={driveUrl}
-                  onChange={(e) => setDriveUrl(e.target.value)}
-                  placeholder="https://drive.google.com/file/d/…"
-                  className="mt-2 w-full rounded-xl border border-black/[0.08] px-3 py-2.5 text-sm outline-none ring-[#189b8e]/30 focus:ring-2"
-                />
-                <button
-                  type="button"
-                  disabled={blocked || !driveUrl.trim()}
-                  onClick={() => setReplaceConfirm({ kind: "drive" })}
-                  className="mt-2 inline-flex items-center gap-2 rounded-xl border-2 border-[#189b8e] px-3.5 py-2.5 text-sm font-bold text-[#189b8e] disabled:opacity-50"
-                >
-                  <Cloud className="h-4 w-4" />
-                  Импорт с Drive
-                </button>
-              </Step>
-            </ol>
+            <SimpleStep n={1}>
+              В paimon.moe: Settings → Export & Import Data → Download Data.
+            </SimpleStep>
+            <SimpleStep n={2}>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="application/json,.json"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) setReplaceConfirm({ kind: "file", file: f });
+                  e.target.value = "";
+                }}
+              />
+              <button
+                type="button"
+                disabled={blocked}
+                onClick={() => fileRef.current?.click()}
+                className="mt-1 inline-flex items-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3 text-sm font-bold text-white disabled:opacity-50"
+              >
+                <Upload className="h-4 w-4" />
+                Выбрать JSON-файл
+              </button>
+            </SimpleStep>
+            <SimpleStep n={3}>
+              Или публичная ссылка Google Drive:
+              <input
+                value={driveUrl}
+                onChange={(e) => setDriveUrl(e.target.value)}
+                placeholder="https://drive.google.com/file/d/…"
+                className="mt-3 w-full rounded-2xl border border-black/[0.08] px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#189b8e]/25"
+              />
+              <button
+                type="button"
+                disabled={blocked || !driveUrl.trim()}
+                onClick={() => setReplaceConfirm({ kind: "drive" })}
+                className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-[#189b8e] px-5 py-3 text-sm font-bold text-[#189b8e] disabled:opacity-50"
+              >
+                <Cloud className="h-4 w-4" />
+                Импорт с Drive
+              </button>
+            </SimpleStep>
           </div>
         )}
 
         {(busy || progress) && (
-          <div className="rounded-xl border border-[#189b8e]/25 bg-[#e8f7f5] p-3">
-            <div className="mb-1.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[#eef8f6] px-4 py-4">
+            <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-sm font-bold text-[#0f5c54]">
                 {progress?.label || "Импортируем…"}
               </p>
               <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[#189b8e]" />
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-white/80">
+            <div className="h-1.5 overflow-hidden rounded-full bg-white">
               <div
                 className="h-full rounded-full bg-[#189b8e] transition-all duration-500"
                 style={{ width: `${Math.max(progressPct, 8)}%` }}
               />
             </div>
             {progress && (
-              <p className="mt-2 text-xs font-medium text-[#0f5c54]/85">
+              <p className="mt-2 text-xs text-[#0f5c54]/80">
                 {progress.step > 0
                   ? `Баннер ${progress.step}/${progress.steps}`
                   : null}
                 {progress.page > 0 ? ` · стр. ${progress.page}` : null}
                 {progress.totalApprox && progress.totalApprox > 0
-                  ? ` · обработано ${progress.totalPulled.toLocaleString("ru-RU")} / ${progress.totalApprox.toLocaleString("ru-RU")}`
-                  : ` · собрано ${progress.totalPulled.toLocaleString("ru-RU")}`}
+                  ? ` · ${progress.totalPulled.toLocaleString("ru-RU")} / ${progress.totalApprox.toLocaleString("ru-RU")}`
+                  : ` · ${progress.totalPulled.toLocaleString("ru-RU")}`}
               </p>
             )}
           </div>
         )}
 
         {platform !== "paimon" && (
-          <details className="rounded-xl border border-black/[0.06] bg-[#f7faf9] p-3">
-            <summary className="cursor-pointer text-xs font-bold text-foreground/65">
+          <details className="group">
+            <summary className="cursor-pointer list-none text-sm font-semibold text-foreground/50 transition hover:text-[#189b8e]">
               Вставить ссылку вручную
             </summary>
             <textarea
@@ -643,12 +576,12 @@ export default function WishImportWizard({
               onChange={(e) => setUrl(e.target.value)}
               rows={2}
               placeholder="https://…authkey=…"
-              className="mt-2 w-full rounded-xl border border-black/[0.08] bg-white px-3 py-2 text-sm outline-none ring-[#189b8e]/30 focus:ring-2"
+              className="mt-3 w-full rounded-2xl border border-black/[0.08] px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#189b8e]/25"
             />
             <button
               type="button"
               disabled={blocked || !url.trim()}
-              className="mt-2 w-full rounded-lg border border-[#189b8e] py-2 text-xs font-bold text-[#189b8e] disabled:opacity-50"
+              className="mt-3 rounded-2xl border border-[#189b8e] px-5 py-2.5 text-sm font-bold text-[#189b8e] disabled:opacity-50"
               onClick={() => void importManualUrl()}
             >
               Импортировать
@@ -657,16 +590,13 @@ export default function WishImportWizard({
         )}
 
         {feedbackError && (
-          <div className="flex gap-2.5 rounded-xl border border-red-200 bg-red-50 px-3 py-3 text-sm leading-relaxed text-red-800">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <div>
-              <p className="font-bold">Ошибка импорта</p>
-              <p className="mt-0.5">{feedbackError}</p>
-            </div>
+          <div className="rounded-2xl bg-red-50 px-4 py-3.5 text-sm leading-relaxed text-red-800">
+            <p className="font-bold">Не удалось импортировать</p>
+            <p className="mt-1">{feedbackError}</p>
           </div>
         )}
         {message && !feedbackError && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-sm font-medium text-emerald-900">
+          <div className="rounded-2xl bg-emerald-50 px-4 py-3.5 text-sm font-medium text-emerald-900">
             {message}
           </div>
         )}
@@ -684,7 +614,7 @@ export default function WishImportWizard({
               role="dialog"
               aria-modal="true"
               aria-labelledby="paimon-replace-title"
-              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-panel"
+              className="w-full max-w-md rounded-3xl bg-white p-7 shadow-panel"
               onClick={(e) => e.stopPropagation()}
             >
               <h3
@@ -693,17 +623,17 @@ export default function WishImportWizard({
               >
                 Заменить данные?
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-foreground/75">
+              <p className="mt-2 text-base leading-relaxed text-foreground/70">
                 {replaceConfirm.kind === "drive"
-                  ? "Импорт с Google Drive удалит все текущие молитвы этого игрового аккаунта и заменит их данными из файла."
-                  : "Импорт из paimon.moe удалит все текущие молитвы этого игрового аккаунта и заменит их данными из файла."}
+                  ? "Импорт с Google Drive удалит все текущие молитвы этого аккаунта."
+                  : "Импорт из paimon.moe удалит все текущие молитвы этого аккаунта."}
               </p>
-              <div className="mt-6 flex gap-2.5">
+              <div className="mt-6 flex gap-3">
                 <button
                   type="button"
                   disabled={blocked}
                   onClick={() => setReplaceConfirm(null)}
-                  className="flex-1 rounded-xl border border-black/[0.08] py-3 text-sm font-bold disabled:opacity-50"
+                  className="flex-1 rounded-2xl border border-black/[0.08] py-3 text-sm font-bold disabled:opacity-50"
                 >
                   Отмена
                 </button>
@@ -711,7 +641,7 @@ export default function WishImportWizard({
                   type="button"
                   disabled={blocked}
                   onClick={confirmReplaceImport}
-                  className="flex-1 rounded-xl bg-[#189b8e] py-3 text-sm font-bold text-white disabled:opacity-50"
+                  className="flex-1 rounded-2xl bg-[#189b8e] py-3 text-sm font-bold text-white disabled:opacity-50"
                 >
                   Продолжить
                 </button>
@@ -724,25 +654,20 @@ export default function WishImportWizard({
   );
 }
 
-function Step({
+function SimpleStep({
   n,
-  title,
   children,
 }: {
   n: number;
-  title: string;
   children: React.ReactNode;
 }) {
   return (
-    <li className="flex gap-3">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#189b8e] text-xs font-bold text-white">
+    <div className="flex gap-4">
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#189b8e]/10 text-sm font-bold text-[#189b8e]">
         {n}
       </span>
-      <div className="min-w-0 flex-1">
-        <p className="font-bold text-foreground">{title}</p>
-        <div className="mt-1 text-foreground/70">{children}</div>
-      </div>
-    </li>
+      <div className="min-w-0 flex-1 pt-0.5">{children}</div>
+    </div>
   );
 }
 
@@ -758,7 +683,7 @@ function ImportActions({
       type="button"
       disabled={busy}
       onClick={onPaste}
-      className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#189b8e] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#147f74] disabled:opacity-70 sm:w-auto"
+      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#147f74] disabled:opacity-70 sm:w-auto"
     >
       {busy ? (
         <>
