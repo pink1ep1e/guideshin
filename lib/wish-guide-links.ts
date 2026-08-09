@@ -1,8 +1,14 @@
 import { slugFromName } from "@/lib/slug";
 
 export type GuideLinkIndex = {
-  charactersByKey: Map<string, { slug: string; name: string }>;
-  weaponsByKey: Map<string, { slug: string; name: string }>;
+  charactersByKey: Map<
+    string,
+    { slug: string; name: string; image: string | null }
+  >;
+  weaponsByKey: Map<
+    string,
+    { slug: string; name: string; image: string | null }
+  >;
 };
 
 function normalizeKey(raw: string): string {
@@ -126,7 +132,6 @@ function aliasKeys(name: string): string[] {
   const keys = new Set<string>([key]);
   const mapped = EN_TO_RU[key];
   if (mapped) keys.add(normalizeKey(mapped));
-  // без пробелов / дефисов
   keys.add(key.replace(/\s+/g, ""));
   const slug = slugFromName(name);
   if (slug) keys.add(normalizeKey(slug.replace(/-/g, " ")));
@@ -134,21 +139,27 @@ function aliasKeys(name: string): string[] {
 }
 
 export function buildGuideLinkIndex(input: {
-  characters: { slug: string; name: string }[];
-  weapons: { slug: string; name: string }[];
+  characters: { slug: string; name: string; image?: string | null }[];
+  weapons: { slug: string; name: string; image?: string | null }[];
 }): GuideLinkIndex {
-  const charactersByKey = new Map<string, { slug: string; name: string }>();
-  const weaponsByKey = new Map<string, { slug: string; name: string }>();
+  const charactersByKey = new Map<
+    string,
+    { slug: string; name: string; image: string | null }
+  >();
+  const weaponsByKey = new Map<
+    string,
+    { slug: string; name: string; image: string | null }
+  >();
 
   for (const c of input.characters) {
-    const entry = { slug: c.slug, name: c.name };
+    const entry = { slug: c.slug, name: c.name, image: c.image ?? null };
     for (const k of aliasKeys(c.name)) charactersByKey.set(k, entry);
     charactersByKey.set(normalizeKey(c.slug.replace(/-/g, " ")), entry);
     charactersByKey.set(normalizeKey(c.slug), entry);
   }
 
   for (const w of input.weapons) {
-    const entry = { slug: w.slug, name: w.name };
+    const entry = { slug: w.slug, name: w.name, image: w.image ?? null };
     for (const k of aliasKeys(w.name)) weaponsByKey.set(k, entry);
     weaponsByKey.set(normalizeKey(w.slug.replace(/-/g, " ")), entry);
   }
@@ -161,26 +172,45 @@ export function resolveGuideHref(
   itemType: string,
   index: GuideLinkIndex,
 ): string | null {
+  return resolveGuideMeta(itemName, itemType, index)?.href ?? null;
+}
+
+export function resolveGuideMeta(
+  itemName: string,
+  itemType: string,
+  index: GuideLinkIndex,
+): { href: string; image: string | null; slug: string } | null {
   const isWeapon = /weapon|оруж/i.test(itemType);
-  const isCharacter = /character|персонаж/i.test(itemType) || !isWeapon;
 
-  const map = isWeapon ? index.weaponsByKey : index.charactersByKey;
-  for (const k of aliasKeys(itemName)) {
-    const hit = map.get(k);
-    if (hit) {
-      return isWeapon
-        ? `/wiki/weapons/${hit.slug}`
-        : `/wiki/characters/${hit.slug}`;
-    }
-  }
-
-  // fallback: если тип неясен — пробуем оба
-  if (!isWeapon && isCharacter) {
+  const tryMap = (
+    map: GuideLinkIndex["charactersByKey"],
+    kind: "weapon" | "character",
+  ) => {
     for (const k of aliasKeys(itemName)) {
-      const hit = index.weaponsByKey.get(k);
-      if (hit) return `/wiki/weapons/${hit.slug}`;
+      const hit = map.get(k);
+      if (hit) {
+        return {
+          href:
+            kind === "weapon"
+              ? `/wiki/weapons/${hit.slug}`
+              : `/wiki/characters/${hit.slug}`,
+          image: hit.image,
+          slug: hit.slug,
+        };
+      }
     }
+    return null;
+  };
+
+  if (isWeapon) {
+    return (
+      tryMap(index.weaponsByKey, "weapon") ||
+      tryMap(index.charactersByKey, "character")
+    );
   }
 
-  return null;
+  return (
+    tryMap(index.charactersByKey, "character") ||
+    tryMap(index.weaponsByKey, "weapon")
+  );
 }

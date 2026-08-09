@@ -22,27 +22,34 @@ const VIOLET = "#6b5b95";
 
 type ChartPoint = PityChartPoint & { guideHref?: string | null };
 
+function monthLabel(iso: string) {
+  return new Date(iso).toLocaleDateString("ru-RU", {
+    month: "short",
+    year: "2-digit",
+  });
+}
+
 function ChartTooltip({
   active,
   payload,
 }: {
   active?: boolean;
-  payload?: { payload: ChartPoint }[];
+  payload?: { payload: ChartPoint & { month: string } }[];
 }) {
   if (!active || !payload?.[0]) return null;
   const p = payload[0].payload;
   return (
-    <div className="rounded-2xl border border-black/[0.06] bg-white/95 px-3.5 py-2.5 text-xs shadow-panel backdrop-blur">
+    <div className="rounded-2xl border border-black/[0.08] bg-white px-3.5 py-2.5 text-xs shadow-panel">
       <p className="font-bold text-foreground">{p.name}</p>
-      <p className="mt-0.5 text-muted-foreground">
-        Pity <span className="font-bold text-foreground">{p.pity}</span>
+      <p className="mt-0.5 text-foreground/75">
+        Гарант <span className="font-bold text-foreground">{p.pity}</span>
         {" · "}
         {BANNER_LABELS[p.banner]}
       </p>
-      <p className="text-muted-foreground">
+      <p className="text-foreground/65">
         {new Date(p.time).toLocaleDateString("ru-RU", {
           day: "numeric",
-          month: "short",
+          month: "long",
           year: "numeric",
         })}
       </p>
@@ -59,7 +66,12 @@ export function WishPityAreaChart({
 }) {
   const filtered =
     banner === "all" ? data : data.filter((d) => d.banner === banner);
-  const chartData = filtered.map((d, i) => ({ ...d, index: i + 1 }));
+  const chartData = filtered.map((d, i) => ({
+    ...d,
+    index: i + 1,
+    month: monthLabel(d.time),
+    ts: new Date(d.time).getTime(),
+  }));
 
   if (chartData.length === 0) {
     return (
@@ -80,7 +92,7 @@ export function WishPityAreaChart({
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={chartData}
-          margin={{ top: 16, right: 12, left: -8, bottom: 4 }}
+          margin={{ top: 16, right: 12, left: -8, bottom: 8 }}
         >
           <defs>
             <linearGradient id="wishPityGrad" x1="0" y1="0" x2="0" y2="1">
@@ -95,16 +107,12 @@ export function WishPityAreaChart({
             vertical={false}
           />
           <XAxis
-            dataKey="index"
-            tick={{ fontSize: 11, fill: "#6b7280", fontWeight: 600 }}
+            dataKey="month"
+            tick={{ fontSize: 11, fill: "#4b5563", fontWeight: 600 }}
             axisLine={false}
             tickLine={false}
-            label={{
-              value: "№ 5★",
-              position: "insideBottomRight",
-              offset: -2,
-              style: { fill: "#9ca3af", fontSize: 10 },
-            }}
+            interval="preserveStartEnd"
+            minTickGap={28}
           />
           <YAxis
             domain={[0, 90]}
@@ -117,6 +125,7 @@ export function WishPityAreaChart({
           <Area
             type="monotone"
             dataKey="pity"
+            name="гарант"
             stroke={TEAL}
             strokeWidth={3}
             fill="url(#wishPityGrad)"
@@ -128,6 +137,33 @@ export function WishPityAreaChart({
         </AreaChart>
       </ResponsiveContainer>
     </motion.div>
+  );
+}
+
+function RateTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: { dataKey?: string; value?: number; color?: string }[];
+  label?: string;
+}) {
+  if (!active || !payload?.length) return null;
+  const expected = payload.find((p) => p.dataKey === "expected");
+  const actual = payload.find((p) => p.dataKey === "actual");
+  return (
+    <div className="rounded-2xl border border-black/[0.1] bg-white px-3.5 py-2.5 text-xs shadow-panel">
+      <p className="font-bold text-foreground">{label}</p>
+      {expected != null && (
+        <p className="mt-1 font-semibold text-foreground/70">
+          Ожидание: {expected.value}%
+        </p>
+      )}
+      {actual != null && (
+        <p className="font-bold text-foreground">У вас: {actual.value}%</p>
+      )}
+    </div>
   );
 }
 
@@ -184,22 +220,11 @@ export function WishRateCompare({
             tickLine={false}
             unit="%"
           />
-          <Tooltip
-            formatter={(value: number, name: string) => [
-              `${value}%`,
-              name === "actual" ? "У вас" : "Ожидание",
-            ]}
-            contentStyle={{
-              borderRadius: 16,
-              border: "1px solid rgba(0,0,0,0.06)",
-              fontSize: 12,
-              fontWeight: 600,
-            }}
-          />
+          <Tooltip content={<RateTooltip />} />
           <Bar
             dataKey="expected"
             name="expected"
-            fill="rgba(0,0,0,0.08)"
+            fill="rgba(0,0,0,0.12)"
             radius={[10, 10, 0, 0]}
             barSize={28}
             animationDuration={800}

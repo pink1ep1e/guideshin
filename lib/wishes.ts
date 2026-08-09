@@ -314,21 +314,48 @@ export function normalizeWishRow(row: Record<string, unknown>): NormalizedWish |
 export function parseWishImportPayload(payload: unknown): NormalizedWish[] {
   const rows: Record<string, unknown>[] = [];
 
+  const pushWishArrays = (obj: Record<string, unknown>) => {
+    for (const key of Object.keys(obj)) {
+      const val = obj[key];
+      if (!Array.isArray(val) || val.length === 0) continue;
+      // paimon.moe: массив массивов [type, time, name, itemType, rank]
+      if (Array.isArray(val[0])) {
+        for (const entry of val as unknown[][]) {
+          if (!Array.isArray(entry) || entry.length < 5) continue;
+          rows.push({
+            id: `paimon-${key}-${entry[1]}-${entry[2]}-${entry[0]}`,
+            gacha_type: String(entry[0]),
+            time: entry[1],
+            name: entry[2],
+            item_type: entry[3],
+            rank_type: String(entry[4]),
+          });
+        }
+        continue;
+      }
+      if (typeof val[0] === "object" && val[0]) {
+        rows.push(...(val as Record<string, unknown>[]));
+      }
+    }
+  };
+
   if (Array.isArray(payload)) {
     rows.push(...(payload as Record<string, unknown>[]));
   } else if (payload && typeof payload === "object") {
     const obj = payload as Record<string, unknown>;
-    // UIGF v2.2 / v4
     if (Array.isArray(obj.list)) rows.push(...(obj.list as Record<string, unknown>[]));
-    // paimon.moe export-ish
     if (Array.isArray(obj.wish)) rows.push(...(obj.wish as Record<string, unknown>[]));
     if (obj.data && typeof obj.data === "object") {
-      const data = obj.data as Record<string, unknown>;
-      for (const key of Object.keys(data)) {
-        const val = data[key];
-        if (Array.isArray(val)) rows.push(...(val as Record<string, unknown>[]));
+      pushWishArrays(obj.data as Record<string, unknown>);
+    }
+    // paimon.moe export: ключи вроде "wish-uid-..." или вложенный wish
+    for (const key of Object.keys(obj)) {
+      if (/^wish/i.test(key) && typeof obj[key] === "object" && obj[key]) {
+        pushWishArrays(obj[key] as Record<string, unknown>);
       }
     }
+    // Иногда сами баннеры на верхнем уровне
+    pushWishArrays(obj);
   }
 
   const out: NormalizedWish[] = [];
