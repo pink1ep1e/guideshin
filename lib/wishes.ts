@@ -88,6 +88,9 @@ export type BannerPityStats = {
     pity: number;
     time: string;
     itemType: string;
+    /** C0–C6 для персонажей, R1–R5 для оружия */
+    constellation: number;
+    copies: number;
   }[];
   count5: number;
   count4: number;
@@ -114,6 +117,18 @@ export type PityChartPoint = {
   pity: number;
   banner: GachaBannerKey;
   time: string;
+};
+
+/** Крутки по месяцам для графика. */
+export type MonthlyPullPoint = {
+  monthKey: string;
+  label: string;
+  total: number;
+  banner: GachaBannerKey | "all";
+  character: number;
+  weapon: number;
+  permanent: number;
+  chronicled: number;
 };
 
 export type WishOverview = {
@@ -148,7 +163,12 @@ export function computeBannerStats(
   let pity5 = 0;
   const guaranteed5 = false;
   let last5Star: string | null = null;
-  const fiveStars: BannerPityStats["fiveStars"] = [];
+  const fiveStarPulls: {
+    name: string;
+    pity: number;
+    time: string;
+    itemType: string;
+  }[] = [];
   const fourPities: number[] = [];
   let count5 = 0;
   let count4 = 0;
@@ -169,19 +189,61 @@ export function computeBannerStats(
     }
     if (rank === "5") {
       count5 += 1;
-      if (/weapon|оруж/i.test(pull.itemType)) count5Weapon += 1;
+      const isWeapon = /weapon|оруж/i.test(pull.itemType);
+      if (isWeapon) count5Weapon += 1;
       else count5Char += 1;
-      fiveStars.push({
-        name: pull.itemName,
-        pity: pity5,
-        time: new Date(pull.wishTime).toISOString(),
-        itemType: pull.itemType,
-      });
-      last5Star = pull.itemName;
+
+      const skipCard =
+        (key === "character" && isWeapon) ||
+        (key === "weapon" && !isWeapon);
+
+      if (!skipCard) {
+        fiveStarPulls.push({
+          name: pull.itemName,
+          pity: pity5,
+          time: new Date(pull.wishTime).toISOString(),
+          itemType: pull.itemType,
+        });
+        last5Star = pull.itemName;
+      }
       pity5 = 0;
       pity4 = 0;
     }
   }
+
+  // Группируем копии в C0/C1… (оружие — R1/R2…)
+  const grouped = new Map<
+    string,
+    {
+      name: string;
+      pity: number;
+      time: string;
+      itemType: string;
+      constellation: number;
+      copies: number;
+    }
+  >();
+  const chrono = fiveStarPulls.slice(); // oldest → newest
+  for (const f of chrono) {
+    const isWeapon = /weapon|оруж/i.test(f.itemType);
+    const key = `${isWeapon ? "w" : "c"}:${f.name.trim().toLowerCase()}`;
+    const prev = grouped.get(key);
+    if (!prev) {
+      grouped.set(key, {
+        ...f,
+        constellation: isWeapon ? 1 : 0,
+        copies: 1,
+      });
+    } else {
+      prev.copies += 1;
+      prev.constellation = isWeapon ? prev.copies : prev.copies - 1;
+      prev.pity = f.pity;
+      prev.time = f.time;
+    }
+  }
+  const fiveStars = [...grouped.values()].sort(
+    (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
+  );
 
   const total = filtered.length;
   const avg = (arr: number[]) =>
@@ -197,7 +259,7 @@ export function computeBannerStats(
     pity4Max,
     guaranteed5,
     last5Star,
-    fiveStars: fiveStars.slice().reverse(),
+    fiveStars,
     count5,
     count4,
     count3,
@@ -205,7 +267,7 @@ export function computeBannerStats(
     count5Weapon,
     rate5: total ? (count5 / total) * 100 : 0,
     rate4: total ? (count4 / total) * 100 : 0,
-    avgPity5: avg(fiveStars.map((f) => f.pity)),
+    avgPity5: avg(fiveStarPulls.map((f) => f.pity)),
     avgPity4: avg(fourPities),
     primogems: total * 160,
     remaining5: Math.max(0, pity5Max - pity5),
@@ -222,9 +284,11 @@ export function computeWishOverview(pulls: WishPullLike[]): WishOverview {
   const total = pulls.length;
   const count5 = pulls.filter((p) => String(p.rankType) === "5").length;
   const count4 = pulls.filter((p) => String(p.rankType) === "4").length;
-  const chart = buildPityChart(pulls);
-  const avgPity5 = chart.length
-    ? chart.reduce((a, b) => a + b.pity, 0) / chart.length
+  const bannerAvgs = computeAllBannerStats(pulls)
+    .map((s) => s.avgPity5)
+    .filter((n): n is number => n != null);
+  const avgPity5 = bannerAvgs.length
+    ? bannerAvgs.reduce((a, b) => a + b, 0) / bannerAvgs.length
     : null;
 
   return {
@@ -250,8 +314,9 @@ export function buildPityChart(
   const points: PityChartPoint[] = [];
   for (const key of keys) {
     const stats = computeBannerStats(pulls, key);
-    const chrono = [...stats.fiveStars].reverse();
-    for (const f of chrono) {
+    // Разворачиваем копии для графика гаранта — берём avg pity по уникальным не подходит;
+    // pity chart больше не основной — оставляем совместимость.
+    for (const f of stats.fiveStars) {
       points.push({
         index: 0,
         name: f.name,
@@ -263,6 +328,61 @@ export function buildPityChart(
   }
   points.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
   return points.map((p, i) => ({ ...p, index: i + 1 }));
+}
+
+/** Крутки по календарным месяцам. */
+export function buildMonthlyPullChart(
+  pulls: WishPullLike[],
+): MonthlyPullPoint[] {
+  const byMonth = new Map<
+    string,
+    {
+      total: number;
+      character: number;
+      weapon: number;
+      permanent: number;
+      chronicled: number;
+    }
+  >();
+
+  for (const p of pulls) {
+    const d = new Date(p.wishTime);
+    if (Number.isNaN(d.getTime())) continue;
+    const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    let row = byMonth.get(monthKey);
+    if (!row) {
+      row = {
+        total: 0,
+        character: 0,
+        weapon: 0,
+        permanent: 0,
+        chronicled: 0,
+      };
+      byMonth.set(monthKey, row);
+    }
+    row.total += 1;
+    const banner = bannerKeyFromGachaType(p.gachaType);
+    if (banner === "character") row.character += 1;
+    else if (banner === "weapon") row.weapon += 1;
+    else if (banner === "permanent") row.permanent += 1;
+    else if (banner === "chronicled") row.chronicled += 1;
+  }
+
+  return [...byMonth.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([monthKey, counts]) => {
+      const [y, m] = monthKey.split("-").map(Number);
+      const label = new Date(y, m - 1, 1).toLocaleDateString("ru-RU", {
+        month: "short",
+        year: "2-digit",
+      });
+      return {
+        monthKey,
+        label,
+        banner: "all" as const,
+        ...counts,
+      };
+    });
 }
 
 export function pityChipTone(pity: number, max = 90): "good" | "mid" | "bad" {

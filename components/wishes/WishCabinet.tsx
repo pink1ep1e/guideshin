@@ -9,7 +9,6 @@ import { CloudDownload, LogOut, Plus, X } from "lucide-react";
 import type {
   BannerPityStats,
   GachaBannerKey,
-  PityChartPoint,
   WishImportProgress,
   WishOverview,
 } from "@/lib/wishes";
@@ -21,7 +20,7 @@ import {
   fetchAllWishesFromAuthUrl,
 } from "@/lib/wishes";
 import WishImportWizard from "@/components/wishes/WishImportWizard";
-import { WishPityAreaChart, WishRateCompare } from "@/components/wishes/WishCharts";
+import { WishMonthlyPullChart, WishRateCompare } from "@/components/wishes/WishCharts";
 import { AnimatedNumber } from "@/components/wishes/WishMotion";
 import { friendlyWishImportError } from "@/lib/wish-errors";
 import {
@@ -34,6 +33,7 @@ import {
 import FancySelect from "@/components/ui/FancySelect";
 import type { CommunityLuck, FiftyFiftyStats } from "@/lib/wish-luck";
 import { SERVER_LABEL, WISH_SERVER_OPTIONS } from "@/lib/wish-servers";
+import type { MonthlyPullPoint } from "@/lib/wishes";
 
 type FiveStar = BannerPityStats["fiveStars"][number] & {
   guideHref?: string | null;
@@ -71,10 +71,7 @@ type WishDashboard = {
   total: number;
   overview: WishOverview;
   fifty: FiftyFiftyStats;
-  pityChart: (PityChartPoint & {
-    guideHref?: string | null;
-    image?: string | null;
-  })[];
+  monthlyChart: MonthlyPullPoint[];
   stats: Stat[];
   luck: CommunityLuck | null;
   recent: {
@@ -557,10 +554,10 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
                 <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                   <div>
                     <h2 className="font-genshin text-2xl text-foreground">
-                      Гарант 5★ по месяцам
+                      Молитвы по месяцам
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      Чем ниже точка — тем раньше выпал 5★
+                      Сколько круток сделано в каждом месяце
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -585,8 +582,8 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
                     ))}
                   </div>
                 </div>
-                <WishPityAreaChart
-                  data={data?.pityChart ?? []}
+                <WishMonthlyPullChart
+                  data={data?.monthlyChart ?? []}
                   banner={chartFilter}
                 />
               </section>
@@ -1004,6 +1001,11 @@ function FiveStarCard({ item }: { item: FiveStar }) {
         )}
 
         <span className="absolute right-1 top-1 z-20 rounded-md bg-black/70 px-1 py-0.5 text-[10px] font-bold text-white">
+          {/weapon|оруж/i.test(item.itemType)
+            ? `R${item.constellation ?? 1}`
+            : `C${item.constellation ?? 0}`}
+        </span>
+        <span className="absolute bottom-1 right-1 z-20 rounded-md bg-black/55 px-1 py-0.5 text-[9px] font-bold text-white/90">
           {item.pity}
         </span>
       </div>

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { withPrisma } from "@/prisma/prisma-client";
 import {
-  buildPityChart,
+  buildMonthlyPullChart,
   computeAllBannerStats,
   computeWishOverview,
 } from "@/lib/wishes";
@@ -95,43 +95,79 @@ export async function GET(req: Request) {
   const overview = computeWishOverview(pullsForStats);
   const fifty = computeFiftyFifty(pullsForStats);
 
-  const pityChart = buildPityChart(pullsForStats).map((p) => {
-    const meta = resolveGuideMeta(p.name, "Character", guideIndex);
+  const monthlyChart = buildMonthlyPullChart(pullsForStats);
+
+  const stats = computeAllBannerStats(pullsForStats).map((stat) => {
+    const enriched = stat.fiveStars
+      .map((row) => {
+        const meta = resolveGuideMeta(
+          row.name,
+          row.itemType || "Character",
+          guideIndex,
+        );
+        const displayName = meta?.name ?? row.name;
+        const isWeapon = /weapon|оруж/i.test(row.itemType);
+        const char = !isWeapon
+          ? data.characters.find(
+              (c) =>
+                c.name.toLowerCase() === displayName.toLowerCase() ||
+                meta?.slug === c.slug,
+            )
+          : null;
+        const weapon = isWeapon
+          ? data.weapons.find(
+              (w) =>
+                w.name.toLowerCase() === displayName.toLowerCase() ||
+                meta?.slug === w.slug,
+            )
+          : null;
+        const rarity =
+          char?.rarity ??
+          weapon?.rarity ??
+          null;
+        return {
+          ...row,
+          name: displayName,
+          guideHref: meta?.href ?? null,
+          image: meta?.image ?? (char?.image ?? weapon?.image ?? null),
+          element: char?.element ?? null,
+          rarity: rarity ?? "LEGEND",
+        };
+      })
+      // Уже импортированные 4★ не показываем в истории 5★
+      .filter((row) => row.rarity === "LEGEND");
+
+    // Схлопываем EN/RU дубли после локализации имён
+    const merged = new Map<string, (typeof enriched)[number]>();
+    for (const row of enriched) {
+      const isWeapon = /weapon|оруж/i.test(row.itemType);
+      const key = `${isWeapon ? "w" : "c"}:${row.name.trim().toLowerCase()}`;
+      const prev = merged.get(key);
+      if (!prev) {
+        merged.set(key, { ...row });
+        continue;
+      }
+      prev.copies += row.copies;
+      prev.constellation = isWeapon ? prev.copies : Math.max(0, prev.copies - 1);
+      if (new Date(row.time) > new Date(prev.time)) {
+        prev.pity = row.pity;
+        prev.time = row.time;
+        prev.image = row.image || prev.image;
+        prev.guideHref = row.guideHref || prev.guideHref;
+        prev.element = row.element || prev.element;
+      }
+    }
+
     return {
-      ...p,
-      name: meta?.name ?? p.name,
-      guideHref: meta?.href ?? null,
-      image: meta?.image ?? null,
+      ...stat,
+      fiveStars: [...merged.values()].sort(
+        (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
+      ),
+      last5StarHref: stat.last5Star
+        ? resolveGuideHref(stat.last5Star, "Character", guideIndex)
+        : null,
     };
   });
-
-  const stats = computeAllBannerStats(pullsForStats).map((stat) => ({
-    ...stat,
-    fiveStars: stat.fiveStars.map((row) => {
-      const meta = resolveGuideMeta(
-        row.name,
-        row.itemType || "Character",
-        guideIndex,
-      );
-      const displayName = meta?.name ?? row.name;
-      const char = data.characters.find(
-        (c) =>
-          c.name.toLowerCase() === displayName.toLowerCase() ||
-          meta?.slug === c.slug,
-      );
-      return {
-        ...row,
-        name: displayName,
-        guideHref: meta?.href ?? null,
-        image: meta?.image ?? null,
-        element: char?.element ?? null,
-        rarity: char?.rarity ?? (/weapon|оруж/i.test(row.itemType) ? "LEGEND" : "LEGEND"),
-      };
-    }),
-    last5StarHref: stat.last5Star
-      ? resolveGuideHref(stat.last5Star, "Character", guideIndex)
-      : null,
-  }));
 
   const recent = data.pulls.slice(0, 50).map((p) => {
     const meta = resolveGuideMeta(p.itemName, p.itemType, guideIndex);
@@ -183,7 +219,7 @@ export async function GET(req: Request) {
     })),
     overview,
     fifty,
-    pityChart,
+    monthlyChart,
     total: data.pulls.length,
     stats,
     recent,

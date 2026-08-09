@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Check,
   ClipboardPaste,
@@ -59,7 +60,15 @@ export default function WishImportWizard({
   const [url, setUrl] = useState("");
   const [driveUrl, setDriveUrl] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [replaceConfirm, setReplaceConfirm] = useState<
+    null | { kind: "file"; file: File } | { kind: "drive" }
+  >(null);
+  const [mounted, setMounted] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -120,11 +129,6 @@ export default function WishImportWizard({
     async (file: File) => {
       setLocalError(null);
       onClearFeedback?.();
-
-      const ok = window.confirm(
-        "Импорт из paimon.moe удалит все текущие молитвы этого игрового аккаунта и заменит их данными из файла. Продолжить?",
-      );
-      if (!ok) return;
 
       try {
         onProgressChange?.({
@@ -320,6 +324,17 @@ export default function WishImportWizard({
     onImportPulls,
     onProgressChange,
   ]);
+
+  const confirmReplaceImport = useCallback(() => {
+    if (!replaceConfirm) return;
+    const pending = replaceConfirm;
+    setReplaceConfirm(null);
+    if (pending.kind === "file") {
+      void handleFile(pending.file);
+    } else {
+      void importFromDriveLink();
+    }
+  }, [handleFile, importFromDriveLink, replaceConfirm]);
 
   const feedbackError = localError || error;
   const blocked = busy || Boolean(progress);
@@ -520,7 +535,7 @@ export default function WishImportWizard({
                   className="hidden"
                   onChange={(e) => {
                     const f = e.target.files?.[0];
-                    if (f) void handleFile(f);
+                    if (f) setReplaceConfirm({ kind: "file", file: f });
                     e.target.value = "";
                   }}
                 />
@@ -545,12 +560,7 @@ export default function WishImportWizard({
                 <button
                   type="button"
                   disabled={blocked || !driveUrl.trim()}
-                  onClick={() => {
-                    const ok = window.confirm(
-                      "Импорт с Drive также заменит текущие молитвы этого аккаунта. Продолжить?",
-                    );
-                    if (ok) void importFromDriveLink();
-                  }}
+                  onClick={() => setReplaceConfirm({ kind: "drive" })}
                   className="mt-2 inline-flex items-center gap-2 rounded-xl border-2 border-[#189b8e] px-3.5 py-2.5 text-sm font-bold text-[#189b8e] disabled:opacity-50"
                 >
                   <Cloud className="h-4 w-4" />
@@ -627,6 +637,55 @@ export default function WishImportWizard({
           </div>
         )}
       </div>
+
+      {mounted &&
+        replaceConfirm &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-black/45 p-4"
+            onClick={() => !blocked && setReplaceConfirm(null)}
+            role="presentation"
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="paimon-replace-title"
+              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-panel"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3
+                id="paimon-replace-title"
+                className="font-genshin text-2xl text-foreground"
+              >
+                Заменить данные?
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/75">
+                {replaceConfirm.kind === "drive"
+                  ? "Импорт с Google Drive удалит все текущие молитвы этого игрового аккаунта и заменит их данными из файла."
+                  : "Импорт из paimon.moe удалит все текущие молитвы этого игрового аккаунта и заменит их данными из файла."}
+              </p>
+              <div className="mt-6 flex gap-2.5">
+                <button
+                  type="button"
+                  disabled={blocked}
+                  onClick={() => setReplaceConfirm(null)}
+                  className="flex-1 rounded-xl border border-black/[0.08] py-3 text-sm font-bold disabled:opacity-50"
+                >
+                  Отмена
+                </button>
+                <button
+                  type="button"
+                  disabled={blocked}
+                  onClick={confirmReplaceImport}
+                  className="flex-1 rounded-xl bg-[#189b8e] py-3 text-sm font-bold text-white disabled:opacity-50"
+                >
+                  Продолжить
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

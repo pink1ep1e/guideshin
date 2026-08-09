@@ -206,31 +206,33 @@ function resolveFromLookup(id: string, lookup?: PaimonRarityLookup) {
       if (hit) return hit;
     }
   }
-
-  // Частичное совпадение по токенам (крылатый / хомы / тиори)
-  const tokens = [localized, ...candidates]
-    .flatMap((c) => c.split(" "))
-    .filter((t) => t.length >= 4);
-  for (const [key, hit] of lookup.byKey) {
-    if (key.includes(" ")) continue; // skip spaced duplicates for speed
-    for (const t of tokens) {
-      if (key.includes(t) || t.includes(key)) return hit;
-    }
-  }
   return null;
 }
 
+/**
+ * Редкость из каталога. Поле `rate` у paimon.moe — исход 50:50 (0/1/2), НЕ редкость.
+ * Pity: у 4★ обычно 1–10, у 5★ 1–90 (ранний 5★ тоже может быть ≤10).
+ */
 function rankFromPaimonPull(
-  pull: { id?: string; rate?: number; pity?: number },
+  pull: { id?: string; pity?: number },
   lookup?: PaimonRarityLookup,
 ): string {
   const hit = resolveFromLookup(String(pull.id || ""), lookup);
   if (hit) return hit.rank;
-  if (pull.rate === undefined || pull.rate === null) return "3";
   const pity = Number(pull.pity) || 0;
   if (pity > 10) return "5";
-  return "4";
+  if (pity >= 1) return "4";
+  return "3";
 }
+
+const KNOWN_GACHA_TYPES = new Set([
+  "100",
+  "200",
+  "301",
+  "302",
+  "400",
+  "500",
+]);
 
 export type PaimonParseProgress = {
   bannerLabel: string;
@@ -302,11 +304,17 @@ export function parsePaimonMoeExport(
 
       const resolved = resolveFromLookup(p.id, lookup);
       const display = resolved?.name || titleFromId(p.id);
-      const gachaType = String(p.code ?? defaultGacha);
-      const itemType =
-        /weapon/i.test(String(p.type)) || defaultGacha === "302"
-          ? "Weapon"
-          : "Character";
+      const codeStr = p.code != null ? String(p.code) : "";
+      const gachaType = KNOWN_GACHA_TYPES.has(codeStr)
+        ? codeStr
+        : defaultGacha;
+      const itemType = /weapon/i.test(String(p.type))
+        ? "Weapon"
+        : /character/i.test(String(p.type))
+          ? "Character"
+          : defaultGacha === "302"
+            ? "Weapon"
+            : "Character";
       const rankType = rankFromPaimonPull(p, lookup);
       const slug = paimonIdToSlug(p.id);
       const hoyoId = `paimon-${gachaType}-${p.time.replace(/\s+/g, "T")}-${slug}-${index}`;
