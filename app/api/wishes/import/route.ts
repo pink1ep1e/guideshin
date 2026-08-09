@@ -5,6 +5,8 @@ import { withPrisma } from "@/prisma/prisma-client";
 import {
   fetchAllWishesFromAuthUrl,
   parseWishImportPayload,
+  planWishMerge,
+  syntheticDuplicateDbIds,
   type NormalizedWish,
 } from "@/lib/wishes";
 import {
@@ -130,6 +132,8 @@ export async function POST(req: Request) {
 
     const result = await withPrisma(async (prisma) => {
       let previousPulls: unknown = null;
+      let pullsToSave = pulls;
+
       if (replace) {
         const existing = await prisma.wishPull.findMany({
           where: { accountId: account.id },
@@ -145,6 +149,34 @@ export async function POST(req: Request) {
         });
         previousPulls = existing.length ? existing : null;
         await prisma.wishPull.deleteMany({ where: { accountId: account.id } });
+      } else {
+        const existing = await prisma.wishPull.findMany({
+          where: { accountId: account.id },
+          select: {
+            id: true,
+            hoyoId: true,
+            gachaType: true,
+            itemName: true,
+            wishTime: true,
+          },
+        });
+
+        // Уже лежащие дубли paimon ↔ Hoyoverse
+        const stale = syntheticDuplicateDbIds(existing);
+        if (stale.length) {
+          await prisma.wishPull.deleteMany({
+            where: { id: { in: stale } },
+          });
+        }
+        const remaining = existing.filter((p) => !stale.includes(p.id));
+
+        const planned = planWishMerge(remaining, pulls);
+        if (planned.toDeleteIds.length) {
+          await prisma.wishPull.deleteMany({
+            where: { id: { in: planned.toDeleteIds } },
+          });
+        }
+        pullsToSave = planned.toInsert;
       }
 
       const batch = await prisma.wishImportBatch.create({
@@ -152,7 +184,7 @@ export async function POST(req: Request) {
           accountId: account.id,
           source,
           label: body.label || null,
-          pullCount: pulls.length,
+          pullCount: pullsToSave.length,
           replacedPrevious: Boolean(replace && previousPulls),
           previousPulls: previousPulls as object | undefined,
         },
@@ -160,8 +192,8 @@ export async function POST(req: Request) {
 
       let inserted = 0;
       const chunk = 200;
-      for (let i = 0; i < pulls.length; i += chunk) {
-        const slice = pulls.slice(i, i + chunk);
+      for (let i = 0; i < pullsToSave.length; i += chunk) {
+        const slice = pullsToSave.slice(i, i + chunk);
         const created = await prisma.wishPull.createMany({
           data: slice.map((pull) => ({
             accountId: account.id,

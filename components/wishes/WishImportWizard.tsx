@@ -413,17 +413,23 @@ export default function WishImportWizard({
         {platform === "pc" && (
           <div className="space-y-6 text-[15px] leading-relaxed text-foreground/75 sm:text-base">
             <SimpleStep n={1}>
-              В игре откройте <strong className="text-foreground">Молитва → История</strong>,
-              дождитесь загрузки и закройте окно.
+              <p>
+                В игре откройте{" "}
+                <strong className="text-foreground">Молитва → История</strong>,
+                дождитесь загрузки и закройте окно.
+              </p>
             </SimpleStep>
             <SimpleStep n={2}>
-              Win+R → введите <strong className="text-foreground">powershell</strong> →
-              вставьте команду:
+              <p>
+                Win+R → введите{" "}
+                <strong className="text-foreground">powershell</strong> →
+                вставьте команду:
+              </p>
               <button
                 type="button"
                 disabled={!oneLiner || blocked}
                 onClick={() => void copyScript()}
-                className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl border border-black/[0.08] bg-[#f7faf9] px-4 py-3.5 text-left transition hover:border-[#189b8e]/35 hover:bg-[#eef8f6] disabled:opacity-50"
+                className="flex w-full items-center justify-between gap-3 rounded-2xl border border-black/[0.08] bg-[#f7faf9] px-4 py-3.5 text-left transition hover:border-[#189b8e]/35 hover:bg-[#eef8f6] disabled:opacity-50"
               >
                 <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-foreground/80">
                   {oneLiner || "Загрузка команды…"}
@@ -442,7 +448,7 @@ export default function WishImportWizard({
               </button>
             </SimpleStep>
             <SimpleStep n={3}>
-              Вернитесь сюда и вставьте ссылку из буфера.
+              <p>Вернитесь сюда и вставьте ссылку из буфера.</p>
               <ImportActions
                 busy={busy}
                 onPaste={() => void pasteAndImport()}
@@ -454,13 +460,13 @@ export default function WishImportWizard({
         {platform === "android" && (
           <div className="space-y-6 text-[15px] leading-relaxed text-foreground/75 sm:text-base">
             <SimpleStep n={1}>
-              Откройте историю молитв в игре и дождитесь загрузки.
+              <p>Откройте историю молитв в игре и дождитесь загрузки.</p>
             </SimpleStep>
             <SimpleStep n={2}>
-              В окне истории нажмите «Поделиться» → «Копировать ссылку».
+              <p>В окне истории нажмите «Поделиться» → «Копировать ссылку».</p>
             </SimpleStep>
             <SimpleStep n={3}>
-              Вставьте ссылку сюда.
+              <p>Вставьте ссылку сюда.</p>
               <ImportActions
                 busy={busy}
                 onPaste={() => void pasteAndImport()}
@@ -472,13 +478,13 @@ export default function WishImportWizard({
         {platform === "ios" && (
           <div className="space-y-6 text-[15px] leading-relaxed text-foreground/75 sm:text-base">
             <SimpleStep n={1}>
-              Откройте историю молитв в игре и дождитесь загрузки.
+              <p>Откройте историю молитв в игре и дождитесь загрузки.</p>
             </SimpleStep>
             <SimpleStep n={2}>
-              «Поделиться» → «Скопировать» — ссылка попадёт в буфер.
+              <p>«Поделиться» → «Скопировать» — ссылка попадёт в буфер.</p>
             </SimpleStep>
             <SimpleStep n={3}>
-              Вернитесь на сайт и вставьте ссылку.
+              <p>Вернитесь на сайт и вставьте ссылку.</p>
               <ImportActions
                 busy={busy}
                 onPaste={() => void pasteAndImport()}
@@ -493,7 +499,9 @@ export default function WishImportWizard({
               Импорт из paimon.moe заменит все текущие молитвы этого аккаунта.
             </p>
             <SimpleStep n={1}>
-              В paimon.moe: Settings → Export & Import Data → Download Data.
+              <p>
+                В paimon.moe: Settings → Export & Import Data → Download Data.
+              </p>
             </SimpleStep>
             <SimpleStep n={2}>
               <input
@@ -511,25 +519,25 @@ export default function WishImportWizard({
                 type="button"
                 disabled={blocked}
                 onClick={() => fileRef.current?.click()}
-                className="mt-1 inline-flex items-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3 text-sm font-bold text-white disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3 text-sm font-bold text-white disabled:opacity-50 sm:w-fit"
               >
                 <Upload className="h-4 w-4" />
                 Выбрать JSON-файл
               </button>
             </SimpleStep>
             <SimpleStep n={3}>
-              Или публичная ссылка Google Drive:
+              <p>Или публичная ссылка Google Drive:</p>
               <input
                 value={driveUrl}
                 onChange={(e) => setDriveUrl(e.target.value)}
                 placeholder="https://drive.google.com/file/d/…"
-                className="mt-3 w-full rounded-2xl border border-black/[0.08] px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#189b8e]/25"
+                className="w-full rounded-2xl border border-black/[0.08] px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#189b8e]/25"
               />
               <button
                 type="button"
                 disabled={blocked || !driveUrl.trim()}
                 onClick={() => setReplaceConfirm({ kind: "drive" })}
-                className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-[#189b8e] px-5 py-3 text-sm font-bold text-[#189b8e] disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-[#189b8e] px-5 py-3 text-sm font-bold text-[#189b8e] disabled:opacity-50 sm:w-fit"
               >
                 <Cloud className="h-4 w-4" />
                 Импорт с Drive
@@ -662,11 +670,11 @@ function SimpleStep({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex gap-4">
-      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#189b8e]/10 text-sm font-bold text-[#189b8e]">
+    <div className="flex items-start gap-4">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#189b8e]/10 text-sm font-bold text-[#189b8e]">
         {n}
       </span>
-      <div className="min-w-0 flex-1 pt-0.5">{children}</div>
+      <div className="flex min-w-0 flex-1 flex-col gap-3">{children}</div>
     </div>
   );
 }
@@ -683,7 +691,7 @@ function ImportActions({
       type="button"
       disabled={busy}
       onClick={onPaste}
-      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#147f74] disabled:opacity-70 sm:w-auto"
+      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#147f74] disabled:opacity-70 sm:w-fit"
     >
       {busy ? (
         <>

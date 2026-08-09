@@ -1,5 +1,9 @@
 import type { WishPullLike } from "@/lib/wishes";
-import { GACHA_TYPES, gachaTypesForBanner } from "@/lib/wishes";
+import {
+  GACHA_TYPES,
+  dedupeWishPulls,
+  gachaTypesForBanner,
+} from "@/lib/wishes";
 
 /** Стандартные 5★ персонажи (проигрыш 50:50 на ивенте). */
 export const STANDARD_5_STAR_KEYS = new Set(
@@ -46,7 +50,7 @@ export type FiftyFiftyStats = {
 /** 50:50 только по ивенту персонажей (5★). */
 export function computeFiftyFifty(pulls: WishPullLike[]): FiftyFiftyStats {
   const types = gachaTypesForBanner("character");
-  const chron = pulls
+  const chron = dedupeWishPulls(pulls)
     .filter(
       (p) =>
         types.includes(p.gachaType) && String(p.rankType) === "5",
@@ -224,10 +228,11 @@ export function snapshotFromPulls(
   accountId: string,
   pulls: WishPullLike[],
 ): AccountLuckSnapshot {
-  const total = pulls.length;
-  const count5 = pulls.filter((p) => String(p.rankType) === "5").length;
-  const count4 = pulls.filter((p) => String(p.rankType) === "4").length;
-  const fifty = computeFiftyFifty(pulls);
+  const unique = dedupeWishPulls(pulls);
+  const total = unique.length;
+  const count5 = unique.filter((p) => String(p.rankType) === "5").length;
+  const count4 = unique.filter((p) => String(p.rankType) === "4").length;
+  const fifty = computeFiftyFifty(unique);
 
   // средний гарант ≈ total/count5 как грубая оценка для сообщества
   const eventTypes = [
@@ -236,7 +241,7 @@ export function snapshotFromPulls(
     GACHA_TYPES.permanent,
     GACHA_TYPES.chronicled,
   ];
-  const eventPulls = pulls.filter((p) => eventTypes.includes(p.gachaType));
+  const eventPulls = unique.filter((p) => eventTypes.includes(p.gachaType));
   const event5 = eventPulls.filter((p) => String(p.rankType) === "5").length;
 
   return {

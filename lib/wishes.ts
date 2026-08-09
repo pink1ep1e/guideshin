@@ -1,3 +1,5 @@
+import { localizeWishLookupKey } from "@/lib/wish-guide-links";
+
 export const GACHA_TYPES = {
   novice: "100",
   permanent: "200",
@@ -71,6 +73,154 @@ export type WishPullLike = {
   wishTime: Date | string;
   raw?: { paimon_rate?: number } | null;
 };
+
+/** Синтетические id из paimon / fallback — не совпадают с Hoyoverse. */
+export function isSyntheticWishId(hoyoId: string): boolean {
+  return /^(paimon-|gen-)/i.test(String(hoyoId || ""));
+}
+
+function wishItemNameKey(name: string): string {
+  return localizeWishLookupKey(String(name || ""));
+}
+
+/**
+ * Ключ «той же» крутки для слияния paimon ↔ Hoyoverse
+ * (разные hoyoId, одно событие).
+ */
+export function wishContentKey(p: {
+  gachaType: string;
+  itemName: string;
+  wishTime: Date | string;
+}): string {
+  const t = new Date(p.wishTime).getTime();
+  const sec = Number.isFinite(t) ? Math.floor(t / 1000) : 0;
+  // 400 — второй ивент персонажей, для дедупа = 301
+  const gacha = p.gachaType === "400" ? "301" : p.gachaType;
+  return `${gacha}|${sec}|${wishItemNameKey(p.itemName)}`;
+}
+
+/**
+ * Убирает дубли paimon+URL: если есть официальная запись Hoyoverse,
+ * синтетические с тем же content-key отбрасываются.
+ * Несколько реальных круток с одним ключом (одинаковый 3★ в одной секунде) сохраняются.
+ */
+export function dedupeWishPulls<T extends WishPullLike>(pulls: T[]): T[] {
+  const groups = new Map<string, T[]>();
+  for (const p of pulls) {
+    const k = wishContentKey(p);
+    const list = groups.get(k);
+    if (list) list.push(p);
+    else groups.set(k, [p]);
+  }
+  const out: T[] = [];
+  for (const group of groups.values()) {
+    const real = group.filter((p) => !isSyntheticWishId(p.hoyoId));
+    const keep = real.length > 0 ? real : group;
+    const seen = new Set<string>();
+    for (const p of keep) {
+      if (seen.has(p.hoyoId)) continue;
+      seen.add(p.hoyoId);
+      out.push(p);
+    }
+  }
+  return out;
+}
+
+/** DB id синтетических строк, дублирующих официальные Hoyoverse. */
+export function syntheticDuplicateDbIds(
+  pulls: {
+    id: string;
+    hoyoId: string;
+    gachaType: string;
+    itemName: string;
+    wishTime: Date | string;
+  }[],
+): string[] {
+  const byKey = new Map<
+    string,
+    { hasReal: boolean; syntheticIds: string[] }
+  >();
+  for (const p of pulls) {
+    const k = wishContentKey(p);
+    let g = byKey.get(k);
+    if (!g) {
+      g = { hasReal: false, syntheticIds: [] };
+      byKey.set(k, g);
+    }
+    if (isSyntheticWishId(p.hoyoId)) g.syntheticIds.push(p.id);
+    else g.hasReal = true;
+  }
+  const toDelete: string[] = [];
+  for (const g of byKey.values()) {
+    if (g.hasReal && g.syntheticIds.length) {
+      toDelete.push(...g.syntheticIds);
+    }
+  }
+  return toDelete;
+}
+
+/**
+ * Готовит пачку к merge: пропускает уже известные крутки,
+ * при появлении Hoyoverse — помечает paimon-дубли на удаление.
+ */
+export function planWishMerge<
+  T extends {
+    hoyoId: string;
+    gachaType: string;
+    itemName: string;
+    wishTime: Date | string;
+  },
+>(
+  existing: {
+    id: string;
+    hoyoId: string;
+    gachaType: string;
+    itemName: string;
+    wishTime: Date | string;
+  }[],
+  incoming: T[],
+): { toInsert: T[]; toDeleteIds: string[] } {
+  const keyCounts = new Map<string, number>();
+  const paimonIdsByKey = new Map<string, string[]>();
+
+  for (const p of existing) {
+    const k = wishContentKey(p);
+    keyCounts.set(k, (keyCounts.get(k) || 0) + 1);
+    if (isSyntheticWishId(p.hoyoId)) {
+      const arr = paimonIdsByKey.get(k) || [];
+      arr.push(p.id);
+      paimonIdsByKey.set(k, arr);
+    }
+  }
+
+  const toInsert: T[] = [];
+  const toDeleteIds: string[] = [];
+  const seenIncoming = new Set<string>();
+
+  for (const pull of incoming) {
+    if (seenIncoming.has(pull.hoyoId)) continue;
+    seenIncoming.add(pull.hoyoId);
+
+    const k = wishContentKey(pull);
+    const count = keyCounts.get(k) || 0;
+    if (count > 0) {
+      if (!isSyntheticWishId(pull.hoyoId)) {
+        const paimons = paimonIdsByKey.get(k);
+        if (paimons && paimons.length > 0) {
+          toDeleteIds.push(paimons.shift()!);
+          keyCounts.set(k, count - 1);
+          toInsert.push(pull);
+          continue;
+        }
+      }
+      keyCounts.set(k, count - 1);
+      continue;
+    }
+    toInsert.push(pull);
+  }
+
+  return { toInsert, toDeleteIds };
+}
 
 export type BannerPityStats = {
   key: GachaBannerKey;
@@ -151,13 +301,19 @@ export function computeBannerStats(
   const pity4Max = 10;
   const softPityAt = key === "weapon" ? 63 : 74;
 
-  const filtered = pulls
+  const filtered = dedupeWishPulls(pulls)
     .filter((p) => types.includes(p.gachaType))
     .slice()
-    .sort(
-      (a, b) =>
-        new Date(a.wishTime).getTime() - new Date(b.wishTime).getTime(),
-    );
+    .sort((a, b) => {
+      const dt =
+        new Date(a.wishTime).getTime() - new Date(b.wishTime).getTime();
+      if (dt !== 0) return dt;
+      // Официальные id раньше синтетических при равном времени
+      const as = isSyntheticWishId(a.hoyoId) ? 1 : 0;
+      const bs = isSyntheticWishId(b.hoyoId) ? 1 : 0;
+      if (as !== bs) return as - bs;
+      return a.hoyoId.localeCompare(b.hoyoId);
+    });
 
   let pity4 = 0;
   let pity5 = 0;
@@ -281,10 +437,11 @@ export function computeAllBannerStats(pulls: WishPullLike[]) {
 }
 
 export function computeWishOverview(pulls: WishPullLike[]): WishOverview {
-  const total = pulls.length;
-  const count5 = pulls.filter((p) => String(p.rankType) === "5").length;
-  const count4 = pulls.filter((p) => String(p.rankType) === "4").length;
-  const bannerAvgs = computeAllBannerStats(pulls)
+  const unique = dedupeWishPulls(pulls);
+  const total = unique.length;
+  const count5 = unique.filter((p) => String(p.rankType) === "5").length;
+  const count4 = unique.filter((p) => String(p.rankType) === "4").length;
+  const bannerAvgs = computeAllBannerStats(unique)
     .map((s) => s.avgPity5)
     .filter((n): n is number => n != null);
   const avgPity5 = bannerAvgs.length
@@ -345,7 +502,7 @@ export function buildMonthlyPullChart(
     }
   >();
 
-  for (const p of pulls) {
+  for (const p of dedupeWishPulls(pulls)) {
     const d = new Date(p.wishTime);
     if (Number.isNaN(d.getTime())) continue;
     const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;

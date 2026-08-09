@@ -49,6 +49,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           image: user.image,
           kind: "user" as const,
+          role: user.role || "user",
         };
       },
     }),
@@ -166,7 +167,7 @@ export const authOptions: NextAuthOptions = {
             | "user"
             | "admin";
         token.kind = kind;
-        token.role = (user as { role?: string }).role;
+        token.role = (user as { role?: string }).role || "user";
         token.uid = user.id;
         if (user.email) token.email = user.email;
 
@@ -175,34 +176,52 @@ export const authOptions: NextAuthOptions = {
           const dbUser = await withPrisma((prisma) =>
             prisma.user.findUnique({
               where: { email: user.email!.toLowerCase() },
-              select: { id: true },
+              select: { id: true, role: true },
             }),
           );
           if (dbUser) {
             token.uid = dbUser.id;
             token.sub = dbUser.id;
+            token.role = dbUser.role || "user";
           }
         } else if (kind === "user" && user.id) {
           token.sub = user.id;
+          const dbUser = await withPrisma((prisma) =>
+            prisma.user.findUnique({
+              where: { id: user.id },
+              select: { role: true },
+            }),
+          );
+          if (dbUser) token.role = dbUser.role || "user";
         }
-      } else if (
-        token.kind !== "admin" &&
-        typeof token.email === "string" &&
-        token.email
-      ) {
+      } else if (token.kind !== "admin") {
         const uid = String(token.uid || token.sub || "");
-        // Google sub часто чисто числовой / длинный — чиним на cuid из БД
         const looksForeign = !uid || /^\d+$/.test(uid) || uid.length > 36;
-        if (looksForeign) {
+
+        if (looksForeign && typeof token.email === "string" && token.email) {
           const dbUser = await withPrisma((prisma) =>
             prisma.user.findUnique({
               where: { email: token.email!.toLowerCase() },
-              select: { id: true },
+              select: { id: true, role: true },
             }),
           );
           if (dbUser) {
             token.uid = dbUser.id;
             token.sub = dbUser.id;
+            token.kind = "user";
+            token.role = dbUser.role || "user";
+          }
+        } else if (uid) {
+          // Подтягиваем роль (назначение admin без повторного логина)
+          const dbUser = await withPrisma((prisma) =>
+            prisma.user.findUnique({
+              where: { id: uid },
+              select: { id: true, role: true },
+            }),
+          );
+          if (dbUser) {
+            token.uid = dbUser.id;
+            token.role = dbUser.role || "user";
             token.kind = "user";
           }
         }
@@ -213,7 +232,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = (token.uid as string) || (token.sub as string);
         session.user.kind = (token.kind as "user" | "admin") || "user";
-        session.user.role = token.role as string | undefined;
+        session.user.role = (token.role as string) || "user";
       }
       return session;
     },

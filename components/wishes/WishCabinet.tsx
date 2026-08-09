@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CloudDownload, LogOut, Plus, X } from "lucide-react";
+import { CloudDownload, LogOut, Plus, Shield, X } from "lucide-react";
 import type {
   BannerPityStats,
   GachaBannerKey,
@@ -112,7 +112,13 @@ function Primogem({ className = "" }: { className?: string }) {
   );
 }
 
-export default function WishCabinet({ userName }: { userName?: string | null }) {
+export default function WishCabinet({
+  userName,
+  isAdmin = false,
+}: {
+  userName?: string | null;
+  isAdmin?: boolean;
+}) {
   const [data, setData] = useState<WishDashboard | null>(null);
   const [accountId, setAccountId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -420,6 +426,15 @@ export default function WishCabinet({ userName }: { userName?: string | null }) 
             </h1>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            {isAdmin ? (
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-2 rounded-2xl border border-black/[0.08] bg-white px-5 py-3 text-base font-bold text-foreground/80 transition hover:bg-black/[0.03]"
+              >
+                <Shield className="h-5 w-5 text-[#189b8e]" />
+                Админ-панель
+              </Link>
+            ) : null}
             <button
               type="button"
               onClick={() => setImportOpen(true)}

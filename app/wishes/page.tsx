@@ -17,5 +17,12 @@ export default async function WishesPage() {
     redirect("/auth/login?callbackUrl=/wishes");
   }
 
-  return <WishCabinet userName={session.user.name || session.user.email} />;
+  const isAdmin = String(session.user.role || "").toLowerCase() === "admin";
+
+  return (
+    <WishCabinet
+      userName={session.user.name || session.user.email}
+      isAdmin={isAdmin}
+    />
+  );
 }

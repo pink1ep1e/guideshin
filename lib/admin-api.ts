@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import slugify from "slugify";
 import { authOptions } from "@/lib/auth";
+import { isAdminSession } from "@/lib/admin-auth";
 import { withPrisma } from "@/prisma/prisma-client";
+
+export { isAdminSession, isAdminToken } from "@/lib/admin-auth";
 
 export async function requireAdmin() {
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.kind !== "admin") return null;
+  if (!isAdminSession(session)) return null;
   return session;
 }
 

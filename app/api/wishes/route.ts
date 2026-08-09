@@ -6,6 +6,8 @@ import {
   buildMonthlyPullChart,
   computeAllBannerStats,
   computeWishOverview,
+  dedupeWishPulls,
+  syntheticDuplicateDbIds,
 } from "@/lib/wishes";
 import {
   buildGuideLinkIndex,
@@ -43,6 +45,22 @@ export async function GET(req: Request) {
 
     const account =
       accounts.find((a) => a.id === requestedAccountId) || accounts[0];
+
+    // Сначала читаем id для чистки дублей paimon↔Hoyoverse
+    const pullIds = await prisma.wishPull.findMany({
+      where: { accountId: account.id },
+      select: {
+        id: true,
+        hoyoId: true,
+        gachaType: true,
+        itemName: true,
+        wishTime: true,
+      },
+    });
+    const stale = syntheticDuplicateDbIds(pullIds);
+    if (stale.length) {
+      await prisma.wishPull.deleteMany({ where: { id: { in: stale } } });
+    }
 
     const [pulls, characters, weapons, allAccounts] = await Promise.all([
       prisma.wishPull.findMany({
@@ -87,10 +105,12 @@ export async function GET(req: Request) {
     weapons: data.weapons,
   });
 
-  const pullsForStats = data.pulls.map((p) => ({
-    ...p,
-    raw: p.raw as { paimon_rate?: number } | null,
-  }));
+  const pullsForStats = dedupeWishPulls(
+    data.pulls.map((p) => ({
+      ...p,
+      raw: p.raw as { paimon_rate?: number } | null,
+    })),
+  );
 
   const overview = computeWishOverview(pullsForStats);
   const fifty = computeFiftyFifty(pullsForStats);
@@ -169,15 +189,15 @@ export async function GET(req: Request) {
     };
   });
 
-  const recent = data.pulls.slice(0, 50).map((p) => {
+  const recent = pullsForStats.slice(0, 50).map((p) => {
     const meta = resolveGuideMeta(p.itemName, p.itemType, guideIndex);
     return {
-      id: p.id,
+      id: (p as { id?: string }).id || p.hoyoId,
       itemName: meta?.name ?? p.itemName,
       itemType: p.itemType,
       rankType: p.rankType,
       gachaType: p.gachaType,
-      wishTime: p.wishTime.toISOString(),
+      wishTime: new Date(p.wishTime).toISOString(),
       guideHref: meta?.href ?? null,
       image: meta?.image ?? null,
     };
@@ -186,10 +206,12 @@ export async function GET(req: Request) {
   const peerSnapshots = data.allAccounts.map((a) =>
     snapshotFromPulls(
       a.id,
-      a.pulls.map((p) => ({
-        ...p,
-        raw: p.raw as { paimon_rate?: number } | null,
-      })),
+      dedupeWishPulls(
+        a.pulls.map((p) => ({
+          ...p,
+          raw: p.raw as { paimon_rate?: number } | null,
+        })),
+      ),
     ),
   );
 
@@ -220,7 +242,7 @@ export async function GET(req: Request) {
     overview,
     fifty,
     monthlyChart,
-    total: data.pulls.length,
+    total: pullsForStats.length,
     stats,
     recent,
     luck,

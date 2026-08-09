@@ -1,11 +1,12 @@
 import { withAuth } from "next-auth/middleware";
+import { isAdminToken } from "@/lib/admin-auth";
 
 export default withAuth({
   pages: {
-    signIn: "/admin/login",
+    signIn: "/auth/login",
   },
   callbacks: {
-    authorized: ({ token }) => token?.kind === "admin",
+    authorized: ({ token }) => isAdminToken(token),
   },
 });
 

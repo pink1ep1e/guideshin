@@ -1,18 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { withPrisma } from "@/prisma/prisma-client";
+import { requireAdmin, unauthorized, withPrisma } from "@/lib/admin-api";
 import { slugFromName } from "@/lib/slug";
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session) return null;
-  return session;
-}
 
 export async function GET() {
   const session = await requireAdmin();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return unauthorized();
 
   const characters = await withPrisma((prisma) =>
     prisma.character.findMany({ orderBy: { createdAt: "desc" } }),
@@ -22,7 +14,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await requireAdmin();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return unauthorized();
 
   const body = await req.json();
 

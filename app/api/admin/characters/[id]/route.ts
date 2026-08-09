@@ -1,22 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { withPrisma } from "@/prisma/prisma-client";
+import { requireAdmin, unauthorized, withPrisma } from "@/lib/admin-api";
 
 type Params = { params: Promise<{ id: string }> };
 
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session) return null;
-  return session;
-}
-
 export async function GET(_req: NextRequest, { params }: Params) {
   const session = await requireAdmin();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return unauthorized();
 
   const { id } = await params;
-  const character = await withPrisma((prisma) => prisma.character.findUnique({ where: { id: Number(id) } }));
+  const character = await withPrisma((prisma) =>
+    prisma.character.findUnique({ where: { id: Number(id) } }),
+  );
   if (!character) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   return NextResponse.json(character);
@@ -24,7 +18,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
 export async function PUT(req: NextRequest, { params }: Params) {
   const session = await requireAdmin();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return unauthorized();
 
   const { id } = await params;
   const body = await req.json();
@@ -44,9 +38,13 @@ export async function PUT(req: NextRequest, { params }: Params) {
         sticker: body.sticker || null,
         shortDesc: body.shortDesc || null,
         contentHtml: body.contentHtml || "",
-        levelMaterials: Array.isArray(body.levelMaterials) ? body.levelMaterials : [],
+        levelMaterials: Array.isArray(body.levelMaterials)
+          ? body.levelMaterials
+          : [],
         talents: Array.isArray(body.talents) ? body.talents : [],
-        constellations: Array.isArray(body.constellations) ? body.constellations : [],
+        constellations: Array.isArray(body.constellations)
+          ? body.constellations
+          : [],
         published: body.published ?? true,
         order: body.order ?? 0,
       },
@@ -58,10 +56,12 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const session = await requireAdmin();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return unauthorized();
 
   const { id } = await params;
-  await withPrisma((prisma) => prisma.character.delete({ where: { id: Number(id) } }));
+  await withPrisma((prisma) =>
+    prisma.character.delete({ where: { id: Number(id) } }),
+  );
 
   return NextResponse.json({ ok: true });
 }

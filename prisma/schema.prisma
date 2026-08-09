@@ -240,6 +240,8 @@ model User {
   image        String?
   /// bcrypt; null если только Google
   passwordHash String?
+  /// user | admin — admin открывает /admin
+  role         String    @default("user")
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
