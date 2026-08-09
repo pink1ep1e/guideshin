@@ -11,17 +11,17 @@ function Write-Ok($msg) { Write-Host $msg -ForegroundColor Green }
 function Write-Warn($msg) { Write-Host $msg -ForegroundColor Yellow }
 function Write-Err($msg) { Write-Host $msg -ForegroundColor Red }
 
-function Find-AuthUrlInText([string]$text) {
+function Find-LatestAuthUrlInText([string]$text) {
   if ([string]::IsNullOrWhiteSpace($text)) { return $null }
-  $m = [regex]::Match(
+  # Берём ПОСЛЕДНЮЮ ссылку — в логах/кэше она самая свежая
+  $matches = [regex]::Matches(
     $text,
     'https://[^\s"''<>]+authkey=[^\s"''<>]+',
     [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
   )
-  if ($m.Success) {
-    return ($m.Value -replace '[\\]+$', '' -replace '[\x00-\x1F]+', '')
-  }
-  return $null
+  if ($matches.Count -eq 0) { return $null }
+  $value = $matches[$matches.Count - 1].Value
+  return ($value -replace '[\\]+$', '' -replace '[\x00-\x1F]+', '')
 }
 
 function Read-FileAsLatin1([string]$path) {
@@ -32,14 +32,17 @@ function Read-FileAsLatin1([string]$path) {
   }
 }
 
-$candidates = New-Object System.Collections.Generic.List[string]
+$candidates = New-Object System.Collections.Generic.List[object]
 
 @(
   "$env:USERPROFILE\AppData\LocalLow\miHoYo\Genshin Impact\output_log.txt",
   "$env:USERPROFILE\AppData\LocalLow\HoYoverse\Genshin Impact\output_log.txt",
   "$env:USERPROFILE\AppData\LocalLow\miHoYo\GenshinImpact\output_log.txt"
 ) | ForEach-Object {
-  if (Test-Path -LiteralPath $_) { [void]$candidates.Add($_) }
+  if (Test-Path -LiteralPath $_) {
+    $item = Get-Item -LiteralPath $_
+    [void]$candidates.Add([pscustomobject]@{ Path = $item.FullName; Time = $item.LastWriteTimeUtc })
+  }
 }
 
 $cacheRoots = @(
@@ -49,9 +52,11 @@ $cacheRoots = @(
 foreach ($root in $cacheRoots) {
   if (-not (Test-Path -LiteralPath $root)) { continue }
   Get-ChildItem -LiteralPath $root -Recurse -Filter "data_2" -ErrorAction SilentlyContinue |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 8 |
-    ForEach-Object { [void]$candidates.Add($_.FullName) }
+    Sort-Object LastWriteTimeUtc -Descending |
+    Select-Object -First 12 |
+    ForEach-Object {
+      [void]$candidates.Add([pscustomobject]@{ Path = $_.FullName; Time = $_.LastWriteTimeUtc })
+    }
 }
 
 $installHints = @(
@@ -65,9 +70,11 @@ foreach ($hint in $installHints) {
   if (-not (Test-Path -LiteralPath $hint)) { continue }
   Get-ChildItem -LiteralPath $hint -Recurse -Filter "data_2" -ErrorAction SilentlyContinue |
     Where-Object { $_.FullName -match "webCaches" } |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 4 |
-    ForEach-Object { [void]$candidates.Add($_.FullName) }
+    Sort-Object LastWriteTimeUtc -Descending |
+    Select-Object -First 6 |
+    ForEach-Object {
+      [void]$candidates.Add([pscustomobject]@{ Path = $_.FullName; Time = $_.LastWriteTimeUtc })
+    }
 }
 
 if ($candidates.Count -eq 0) {
@@ -76,22 +83,29 @@ if ($candidates.Count -eq 0) {
   exit 1
 }
 
+# Сначала самые свежие файлы
+$ordered = $candidates |
+  Sort-Object Time -Descending |
+  Group-Object Path |
+  ForEach-Object { $_.Group | Select-Object -First 1 }
+
 $url = $null
-foreach ($path in ($candidates | Select-Object -Unique)) {
-  $text = Read-FileAsLatin1 $path
-  $found = Find-AuthUrlInText $text
+$source = $null
+foreach ($entry in $ordered) {
+  $text = Read-FileAsLatin1 $entry.Path
+  $found = Find-LatestAuthUrlInText $text
   if ($found) {
     $url = $found
-    Write-Host "Source: $path" -ForegroundColor DarkGray
+    $source = $entry.Path
     break
   }
 }
 
 if (-not $url) {
   Write-Err "authkey URL not found."
-  Write-Warn "1) Open Wish History in game and wait"
-  Write-Warn "2) Close the history window"
-  Write-Warn "3) Run this command again"
+  Write-Warn "1) Switch to the needed Genshin account"
+  Write-Warn "2) Open Wish History and wait until it fully loads"
+  Write-Warn "3) Close history and run this command again"
   exit 1
 }
 
@@ -100,6 +114,7 @@ try {
   Write-Ok "OK! Link copied to clipboard."
   Write-Host ""
   Write-Host "Back to Guideshin -> paste from clipboard." -ForegroundColor Cyan
+  Write-Host "Source: $source" -ForegroundColor DarkGray
   Write-Host ""
   Write-Host $url -ForegroundColor DarkGray
 } catch {

@@ -101,7 +101,12 @@ export default function WishImportWizard({
     setLocalError(null);
     onClearFeedback?.();
     try {
-      const text = (await navigator.clipboard.readText()).trim();
+      let text = (await navigator.clipboard.readText()).trim();
+      // Если в буфере текст со скрипта — вытаскиваем URL с authkey
+      if (!looksLikeWishAuthUrl(text)) {
+        const m = text.match(/https?:\/\/[^\s"'<>]+authkey=[^\s"'<>]+/i);
+        if (m) text = m[0].replace(/[\\]+$/, "");
+      }
       if (!looksLikeWishAuthUrl(text)) {
         setLocalError(
           "В буфере нет ссылки. Сначала получите её по инструкции выше.",

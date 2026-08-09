@@ -404,28 +404,41 @@ export type NormalizedWish = {
 
 /** Нормализация одной записи из Hoyoverse API / UIGF / paimon. */
 export function normalizeWishRow(row: Record<string, unknown>): NormalizedWish | null {
-  const hoyoId = String(
-    row.id ?? row.gacha_id ?? row.uigf_gacha_type ?? row.hoyoId ?? "",
-  );
   const gachaType = String(
     row.gacha_type ?? row.uigf_gacha_type ?? row.gachaType ?? "",
   );
-  const itemName = String(row.name ?? row.item_name ?? row.itemName ?? "");
+  const itemName = String(row.name ?? row.item_name ?? row.itemName ?? "").trim();
   const itemType = String(
     row.item_type ?? row.itemType ?? row.item_type_name ?? "Unknown",
   );
-  const rankType = String(row.rank_type ?? row.rankType ?? row.rank ?? "");
+  const rankType = String(row.rank_type ?? row.rankType ?? row.rank ?? "").trim();
   const timeRaw = row.time ?? row.wishTime ?? row.datetime;
-  if (!hoyoId || !gachaType || !itemName || !rankType || !timeRaw) return null;
+  if (!gachaType || !itemName || !rankType || !timeRaw) return null;
 
-  const wishTime = new Date(String(timeRaw).replace(" ", "T") + (String(timeRaw).includes("T") || String(timeRaw).includes("Z") ? "" : "+08:00"));
+  const timeStr = String(timeRaw).trim();
+  let wishTime = new Date(
+    /[TzZ]|[+-]\d{2}:?\d{2}$/.test(timeStr)
+      ? timeStr
+      : timeStr.replace(" ", "T") + "+08:00",
+  );
+  if (Number.isNaN(wishTime.getTime())) {
+    wishTime = new Date(timeStr.replace(" ", "T"));
+  }
   if (Number.isNaN(wishTime.getTime())) return null;
+
+  const hoyoId = String(
+    row.id ?? row.gacha_id ?? row.hoyoId ?? "",
+  ).trim() || `gen-${gachaType}-${timeStr}-${itemName}`;
 
   return {
     hoyoId,
     gachaType,
     itemName,
-    itemType: /weapon|оружие/i.test(itemType) ? "Weapon" : /character|персонаж/i.test(itemType) ? "Character" : itemType,
+    itemType: /weapon|оружие/i.test(itemType)
+      ? "Weapon"
+      : /character|персонаж/i.test(itemType)
+        ? "Character"
+        : itemType,
     rankType,
     wishTime,
     raw: row,
@@ -490,21 +503,27 @@ export function parseWishImportPayload(payload: unknown): NormalizedWish[] {
 /**
  * Достаёт query-параметр из сырой строки URL.
  * Нельзя использовать URLSearchParams.get для authkey: `+` превращается в пробел.
+ * Возвращает значение как в URL (с %XX), плюсы нормализует в %2B.
  */
 export function extractQueryParam(rawUrl: string, key: string): string | null {
-  const m = rawUrl.match(new RegExp(`[?&#]${key}=([^&]*)`, "i"));
+  const m = rawUrl.match(new RegExp(`[?&#]${key}=([^&#]*)`, "i"));
   if (!m) return null;
-  const encoded = m[1].replace(/\+/g, "%2B");
+  return m[1].replace(/\+/g, "%2B");
+}
+
+/** Декодирует param для сравнения / отображения; для authkey в API лучше raw. */
+export function decodeQueryParamValue(raw: string): string {
   try {
-    return decodeURIComponent(encoded);
+    return decodeURIComponent(raw.replace(/\+/g, "%2B"));
   } catch {
-    return m[1];
+    return raw;
   }
 }
 
 export function resolveGachaApiHosts(rawUrl: string): string[] {
   const gameBiz = (
-    extractQueryParam(rawUrl, "game_biz") || "hk4e_global"
+    decodeQueryParamValue(extractQueryParam(rawUrl, "game_biz") || "") ||
+    "hk4e_global"
   ).toLowerCase();
   const isCn = gameBiz.includes("cn") || /mihoyo\.com/i.test(rawUrl);
 
@@ -534,30 +553,41 @@ export function buildGachaLogUrl(
   const trimmed = rawInput.trim();
   if (!trimmed) return null;
 
-  const authkey =
+  // authkey оставляем в исходном %-виде — повторный encode через URLSearchParams ломает ключ
+  const authkeyRaw =
     extractQueryParam(trimmed, "authkey") ||
     extractQueryParam(trimmed, "auth_key");
-  if (!authkey) return null;
+  if (!authkeyRaw) return null;
 
-  const gameBiz = extractQueryParam(trimmed, "game_biz") || "hk4e_global";
-  const lang = extractQueryParam(trimmed, "lang") || "ru";
-  const region = extractQueryParam(trimmed, "region");
-  const authkeyVer = extractQueryParam(trimmed, "authkey_ver") || "1";
-  const signType = extractQueryParam(trimmed, "sign_type") || "2";
+  const gameBiz =
+    decodeQueryParamValue(extractQueryParam(trimmed, "game_biz") || "") ||
+    "hk4e_global";
+  const lang =
+    decodeQueryParamValue(extractQueryParam(trimmed, "lang") || "") || "ru";
+  const regionRaw = extractQueryParam(trimmed, "region");
+  const region = regionRaw ? decodeQueryParamValue(regionRaw) : null;
+  const authkeyVer =
+    decodeQueryParamValue(extractQueryParam(trimmed, "authkey_ver") || "") ||
+    "1";
+  const signType =
+    decodeQueryParamValue(extractQueryParam(trimmed, "sign_type") || "") || "2";
 
   const base = apiBase || resolveGachaApiHosts(trimmed)[0];
   const url = new URL(base);
-  url.searchParams.set("authkey_ver", authkeyVer);
-  url.searchParams.set("sign_type", signType);
-  url.searchParams.set("auth_appid", "webview_gacha");
-  url.searchParams.set("lang", lang);
-  url.searchParams.set("game_biz", gameBiz);
-  if (region) url.searchParams.set("region", region);
-  url.searchParams.set("authkey", authkey);
-  url.searchParams.set("gacha_type", gachaType);
-  url.searchParams.set("page", "1");
-  url.searchParams.set("size", "20");
-  url.searchParams.set("end_id", endId);
+  // Собираем query вручную: authkey уже закодирован
+  const q = new URLSearchParams();
+  q.set("authkey_ver", authkeyVer);
+  q.set("sign_type", signType);
+  q.set("auth_appid", "webview_gacha");
+  q.set("lang", lang);
+  q.set("game_biz", gameBiz);
+  if (region) q.set("region", region);
+  q.set("gacha_type", gachaType);
+  q.set("page", "1");
+  q.set("size", "20");
+  q.set("end_id", endId);
+  // authkey вставляем отдельно, без searchParams (иначе +/% ломаются)
+  url.search = `${q.toString()}&authkey=${authkeyRaw}`;
 
   return url.toString();
 }
@@ -731,6 +761,7 @@ export async function fetchAllWishesFromAuthUrl(
 
   const all: NormalizedWish[] = [];
   const seen = new Set<string>();
+  let apiRowsTotal = 0;
 
   for (let ti = 0; ti < types.length; ti++) {
     const gachaType = types[ti];
@@ -776,7 +807,6 @@ export async function fetchAllWishesFromAuthUrl(
 
       if (json.retcode !== 0) {
         if (isTransientHoyoverse(json)) {
-          // ретраи исчерпаны — мягкое сообщение без сырого текста API
           return {
             pulls: [],
             error:
@@ -795,6 +825,7 @@ export async function fetchAllWishesFromAuthUrl(
       if (list.length === 0) break;
 
       for (const row of list) {
+        apiRowsTotal += 1;
         const n = normalizeWishRow({ ...row, gacha_type: gachaType });
         if (!n || seen.has(n.hoyoId)) continue;
         seen.add(n.hoyoId);
@@ -819,10 +850,17 @@ export async function fetchAllWishesFromAuthUrl(
   }
 
   if (all.length === 0) {
+    if (apiRowsTotal > 0) {
+      return {
+        pulls: [],
+        error:
+          "Ответ Hoyoverse получен, но записи не удалось разобрать. Обновите страницу и попробуйте снова.",
+      };
+    }
     return {
       pulls: [],
       error:
-        "Молитв не найдено. Откройте историю в игре, дождитесь загрузки и получите свежую ссылку.",
+        "По этой ссылке история пустая. Откройте историю молитв именно на нужном игровом аккаунте, дождитесь загрузки и снова скопируйте ссылку скриптом.",
     };
   }
 
