@@ -28,6 +28,9 @@ import {
   WishCabinetTour,
   WishTourTrigger,
 } from "@/components/wishes/WishCabinetTour";
+import WishAccountEditDialog, {
+  AccountEditHintButton,
+} from "@/components/wishes/WishAccountEditDialog";
 import { WishMonthlyPullChart, WishRateCompare } from "@/components/wishes/WishCharts";
 import { AnimatedNumber } from "@/components/wishes/WishMotion";
 import { friendlyWishImportError } from "@/lib/wish-errors";
@@ -60,6 +63,7 @@ type GameAccount = {
   label: string;
   uid: string | null;
   server: string;
+  avatarUrl?: string | null;
 };
 
 type ImportHistoryItem = {
@@ -143,6 +147,7 @@ export default function WishCabinet({
   const [imports, setImports] = useState<ImportHistoryItem[]>([]);
   const [undoId, setUndoId] = useState<string | null>(null);
   const [tourOpen, setTourOpen] = useState(false);
+  const [editAccount, setEditAccount] = useState<GameAccount | null>(null);
 
   const loadImports = useCallback(async (id: string) => {
     try {
@@ -481,25 +486,60 @@ export default function WishCabinet({
             {data.accounts.map((a) => {
               const active = a.id === data.account.id;
               return (
-                <button
+                <div
                   key={a.id}
-                  type="button"
-                  onClick={() => selectAccount(a.id)}
-                  className={`min-h-14 rounded-2xl px-5 py-3 text-left text-base transition ${
+                  className={`group relative flex min-h-14 items-center gap-1 rounded-2xl pr-1 transition ${
                     active
                       ? "bg-[#189b8e] text-white shadow-soft"
                       : "bg-white text-foreground/80 ring-1 ring-black/[0.06] hover:bg-black/[0.03]"
                   }`}
                 >
-                  <span className="block font-bold leading-tight">{a.label}</span>
-                  <span
-                    className={`mt-0.5 block text-sm ${
-                      active ? "text-white/80" : "text-muted-foreground"
-                    }`}
+                  <button
+                    type="button"
+                    onClick={() => selectAccount(a.id)}
+                    className="flex min-h-14 items-center gap-3 rounded-2xl px-4 py-2.5 text-left text-base"
                   >
-                    {SERVER_LABEL[a.server] || a.server}
-                  </span>
-                </button>
+                    <span
+                      className={`relative h-10 w-10 shrink-0 overflow-hidden rounded-xl ${
+                        active ? "bg-white/20" : "bg-[#eef8f6]"
+                      }`}
+                    >
+                      {a.avatarUrl ? (
+                        <Image
+                          src={a.avatarUrl}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          sizes="40px"
+                        />
+                      ) : (
+                        <span
+                          className={`flex h-full items-center justify-center text-sm font-bold ${
+                            active ? "text-white/80" : "text-[#189b8e]/70"
+                          }`}
+                        >
+                          {a.label.slice(0, 1).toUpperCase()}
+                        </span>
+                      )}
+                    </span>
+                    <span>
+                      <span className="block font-bold leading-tight">
+                        {a.label}
+                      </span>
+                      <span
+                        className={`mt-0.5 block text-sm ${
+                          active ? "text-white/80" : "text-muted-foreground"
+                        }`}
+                      >
+                        {SERVER_LABEL[a.server] || a.server}
+                      </span>
+                    </span>
+                  </button>
+                  <AccountEditHintButton
+                    active={active}
+                    onClick={() => setEditAccount(a)}
+                  />
+                </div>
               );
             })}
             <button
@@ -899,6 +939,28 @@ export default function WishCabinet({
         hasPulls={hasPulls}
         active={tourOpen}
         onActiveChange={setTourOpen}
+      />
+
+      <WishAccountEditDialog
+        account={editAccount}
+        open={Boolean(editAccount)}
+        busy={busy}
+        onClose={() => setEditAccount(null)}
+        onSaved={(updated) => {
+          setData((prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              account:
+                prev.account.id === updated.id
+                  ? { ...prev.account, ...updated }
+                  : prev.account,
+              accounts: prev.accounts.map((a) =>
+                a.id === updated.id ? { ...a, ...updated } : a,
+              ),
+            };
+          });
+        }}
       />
 
       {/* Auto-import dialog */}

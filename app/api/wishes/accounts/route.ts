@@ -63,6 +63,7 @@ export async function GET() {
       label: a.label,
       uid: a.uid,
       server: a.server,
+      avatarUrl: a.avatarUrl,
       pullCount: a._count.pulls,
     })),
     servers: WISH_SERVERS,
@@ -99,6 +100,7 @@ export async function POST(req: Request) {
       label: account.label,
       uid: account.uid,
       server: account.server,
+      avatarUrl: account.avatarUrl,
       pullCount: 0,
     },
   });
@@ -116,6 +118,7 @@ export async function PATCH(req: Request) {
     label?: string;
     server?: string;
     uid?: string | null;
+    avatarUrl?: string | null;
   };
 
   if (!body.id) {
@@ -137,6 +140,10 @@ export async function PATCH(req: Request) {
         server:
           body.server !== undefined ? normalizeServer(body.server) : undefined,
         uid: body.uid !== undefined ? body.uid?.trim() || null : undefined,
+        avatarUrl:
+          body.avatarUrl !== undefined
+            ? body.avatarUrl?.trim() || null
+            : undefined,
       },
     });
   });
@@ -152,6 +159,7 @@ export async function PATCH(req: Request) {
       label: updated.label,
       uid: updated.uid,
       server: updated.server,
+      avatarUrl: updated.avatarUrl,
     },
   });
 }

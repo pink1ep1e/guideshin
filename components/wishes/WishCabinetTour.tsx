@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { BookOpen, ChevronLeft, ChevronRight, X } from "lucide-react";
 
-const TOUR_STORAGE_KEY = "guideshin-wish-tour-v1";
+const TOUR_STORAGE_KEY = "guideshin-wish-tour-v2";
 
 export type WishTourStep = {
   id: string;
@@ -25,7 +25,7 @@ const DASHBOARD_STEPS: WishTourStep[] = [
     id: "accounts",
     target: "tour-accounts",
     title: "Игровые аккаунты",
-    body: "Каждый профиль Genshin хранится отдельно: свой сервер, свои крутки и гаранты. Переключайтесь между ними или добавьте новый.",
+    body: "Каждый профиль хранится отдельно. Можно переименовать и поставить аватарку персонажа (карандаш на карточке). Импорт идёт в выбранный аккаунт.",
   },
   {
     id: "overview",
@@ -88,7 +88,7 @@ const EMPTY_STEPS: WishTourStep[] = [
     id: "accounts-empty",
     target: "tour-accounts",
     title: "Аккаунты",
-    body: "Можно вести несколько профилей Genshin. Импорт всегда идёт в выбранный сейчас аккаунт.",
+    body: "Можно вести несколько профилей Genshin, переименовывать их и ставить аватар. Импорт всегда идёт в выбранный сейчас аккаунт.",
   },
 ];
 
@@ -116,10 +116,10 @@ function measure(target: string): Spot | null {
   if (!(el instanceof HTMLElement)) return null;
   const r = el.getBoundingClientRect();
   if (r.width < 4 || r.height < 4) return null;
-  const pad = 10;
+  const pad = 8;
   return {
-    top: r.top - pad,
-    left: r.left - pad,
+    top: Math.max(0, r.top - pad),
+    left: Math.max(0, r.left - pad),
     width: r.width + pad * 2,
     height: r.height + pad * 2,
   };
@@ -142,6 +142,7 @@ export function WishCabinetTour({ hasPulls, active, onActiveChange }: Props) {
   const [spot, setSpot] = useState<Spot | null>(null);
   const [mounted, setMounted] = useState(false);
   const [available, setAvailable] = useState<WishTourStep[]>([]);
+  const maskId = "wish-tour-mask";
 
   useEffect(() => {
     setMounted(true);
@@ -149,7 +150,9 @@ export function WishCabinetTour({ hasPulls, active, onActiveChange }: Props) {
 
   const resolveSteps = useCallback(() => {
     const pool = hasPulls ? DASHBOARD_STEPS : EMPTY_STEPS;
-    return pool.filter((s) => document.querySelector(`[data-tour="${s.target}"]`));
+    return pool.filter((s) =>
+      document.querySelector(`[data-tour="${s.target}"]`),
+    );
   }, [hasPulls]);
 
   useEffect(() => {
@@ -181,11 +184,13 @@ export function WishCabinetTour({ hasPulls, active, onActiveChange }: Props) {
     }
     scrollToTarget(step.target);
     const sync = () => setSpot(measure(step.target));
-    const t = window.setTimeout(sync, 320);
+    const t1 = window.setTimeout(sync, 80);
+    const t2 = window.setTimeout(sync, 360);
     window.addEventListener("resize", sync);
     window.addEventListener("scroll", sync, true);
     return () => {
-      window.clearTimeout(t);
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
       window.removeEventListener("resize", sync);
       window.removeEventListener("scroll", sync, true);
     };
@@ -229,10 +234,12 @@ export function WishCabinetTour({ hasPulls, active, onActiveChange }: Props) {
   if (!mounted || !active || !step) return null;
 
   const isLast = stepIndex >= available.length - 1;
+  const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
+  const vh = typeof window !== "undefined" ? window.innerHeight : 800;
   const cardBelow =
-    spot && spot.top + spot.height + 220 < window.innerHeight
+    spot && spot.top + spot.height + 230 < vh
       ? true
-      : !(spot && spot.top > 220);
+      : !(spot && spot.top > 230);
 
   const overlay = (
     <AnimatePresence>
@@ -243,66 +250,72 @@ export function WishCabinetTour({ hasPulls, active, onActiveChange }: Props) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        {spot ? (
-          <>
-            <button
-              type="button"
-              aria-label="Закрыть обучение"
-              className="absolute left-0 right-0 top-0 bg-[#062e2a]/62"
-              style={{ height: Math.max(0, spot.top) }}
-              onClick={() => close(true)}
-            />
-            <button
-              type="button"
-              aria-label="Закрыть обучение"
-              className="absolute bottom-0 left-0 right-0 bg-[#062e2a]/62"
-              style={{ top: spot.top + spot.height }}
-              onClick={() => close(true)}
-            />
-            <button
-              type="button"
-              aria-label="Закрыть обучение"
-              className="absolute bg-[#062e2a]/62"
-              style={{
-                top: spot.top,
-                left: 0,
-                width: Math.max(0, spot.left),
-                height: spot.height,
-              }}
-              onClick={() => close(true)}
-            />
-            <button
-              type="button"
-              aria-label="Закрыть обучение"
-              className="absolute bg-[#062e2a]/62"
-              style={{
-                top: spot.top,
-                left: spot.left + spot.width,
-                right: 0,
-                height: spot.height,
-              }}
-              onClick={() => close(true)}
-            />
-            <motion.div
-              className="pointer-events-none absolute rounded-[22px] border-2 border-[#189b8e] shadow-[0_0_0_6px_rgba(24,155,142,0.22)]"
-              initial={false}
-              animate={{
-                top: Math.max(8, spot.top),
-                left: Math.max(8, spot.left),
-                width: Math.min(spot.width, window.innerWidth - 16),
-                height: spot.height,
-              }}
-              transition={{ type: "spring", stiffness: 380, damping: 32 }}
-            />
-          </>
-        ) : (
-          <button
-            type="button"
-            aria-label="Закрыть обучение"
-            className="absolute inset-0 bg-[#062e2a]/55"
-            onClick={() => close(true)}
+        {/* Затемнение с «дыркой» вокруг целевого блока */}
+        <svg
+          className="pointer-events-none absolute inset-0 h-full w-full"
+          width={vw}
+          height={vh}
+          aria-hidden
+        >
+          <defs>
+            <mask id={maskId}>
+              <rect x="0" y="0" width={vw} height={vh} fill="white" />
+              {spot ? (
+                <rect
+                  x={spot.left}
+                  y={spot.top}
+                  width={spot.width}
+                  height={spot.height}
+                  rx="18"
+                  ry="18"
+                  fill="black"
+                />
+              ) : null}
+            </mask>
+          </defs>
+          <rect
+            x="0"
+            y="0"
+            width={vw}
+            height={vh}
+            fill="rgba(6, 35, 32, 0.72)"
+            mask={`url(#${maskId})`}
           />
-        )}
+        </svg>
+
+        {/* Клики по затемнению закрывают тур; дырка не перехватывает */}
+        <button
+          type="button"
+          aria-label="Закрыть обучение"
+          className="absolute inset-0 cursor-default bg-transparent"
+          style={
+            spot
+              ? {
+                  clipPath: `polygon(
+                    0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%,
+                    ${spot.left}px ${spot.top}px,
+                    ${spot.left}px ${spot.top + spot.height}px,
+                    ${spot.left + spot.width}px ${spot.top + spot.height}px,
+                    ${spot.left + spot.width}px ${spot.top}px,
+                    ${spot.left}px ${spot.top}px
+                  )`,
+                }
+              : undefined
+          }
+          onClick={() => close(true)}
+        />
+
+        {spot ? (
+          <div
+            className="pointer-events-none absolute rounded-[18px] border-2 border-[#189b8e] shadow-[0_0_0_4px_rgba(24,155,142,0.35)]"
+            style={{
+              top: spot.top,
+              left: spot.left,
+              width: spot.width,
+              height: spot.height,
+            }}
+          />
+        ) : null}
 
         <motion.div
           key={step.id}
@@ -315,16 +328,11 @@ export function WishCabinetTour({ hasPulls, active, onActiveChange }: Props) {
             spot
               ? {
                   top: cardBelow
-                    ? Math.min(
-                        spot.top + spot.height + 14,
-                        window.innerHeight - 210,
-                      )
+                    ? Math.min(spot.top + spot.height + 14, vh - 210)
                     : Math.max(12, spot.top - 14),
                   left: Math.min(
                     Math.max(12, spot.left),
-                    window.innerWidth -
-                      Math.min(420, window.innerWidth - 24) -
-                      12,
+                    vw - Math.min(420, vw - 24) - 12,
                   ),
                   transform: cardBelow ? undefined : "translateY(-100%)",
                 }

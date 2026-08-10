@@ -280,6 +280,8 @@ model WishAccount {
   label     String   @default("Основной")
   /// europe | asia | america | china
   server    String   @default("europe")
+  /// URL иконки персонажа из каталога (аватар аккаунта)
+  avatarUrl String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
