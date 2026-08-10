@@ -29,26 +29,28 @@ export function buildGuideTemplate(name = "Персонаж"): string {
     <h2 class="font-genshin mb-4 text-2xl tracking-wide text-foreground">Рекомендуемое оружие</h2>
     <div class="flex flex-wrap gap-3">
       <!-- Карточка оружия 5★ -->
-      <div class="w-[122px] overflow-hidden rounded-[8px] bg-[#d4cfc8] shadow-[0_2px_6px_rgba(0,0,0,0.18)] ring-1 ring-black/20">
-        <div class="relative aspect-[5/6] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
-          <img src="/images/mini-artifacts/Zolotaya-truppa.webp" alt="Сигнатурка" class="absolute left-1/2 top-[46%] h-[108%] w-[108%] max-w-none -translate-x-1/2 -translate-y-1/2 object-contain" />
-          <img src="/images/stars/Quality_star_5.svg" alt="" class="absolute bottom-1 left-1/2 h-3.5 w-auto -translate-x-1/2" />
+      <div class="w-[122px] overflow-hidden rounded-[18px] bg-card shadow-panel ring-1 ring-black/[0.06]">
+        <div class="relative h-[122px] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
+          <img src="/images/mini-artifacts/Zolotaya-truppa.webp" alt="Сигнатурка" class="h-full w-full object-cover" />
+          <div class="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/40 to-transparent"></div>
+          <img src="/images/stars/Quality_star_5.svg" alt="" class="absolute bottom-1.5 left-1/2 h-4 w-auto -translate-x-1/2" />
         </div>
-        <div class="border-t border-black/10 bg-[#ece8e3] px-1 py-1 text-center">
-          <p class="text-[12px] font-semibold leading-tight text-[#2f2f2f]">Сигнатурка</p>
-          <p class="mt-0.5 text-[10px] font-bold text-[#189b8e]">Лучший выбор</p>
+        <div class="px-1.5 py-2.5 text-center">
+          <p class="font-genshin text-[13px] leading-tight text-foreground">Сигнатурка</p>
+          <p class="mt-1 text-[10px] font-bold text-[#189b8e]">Лучший выбор</p>
         </div>
       </div>
 
       <!-- Карточка оружия 4★ -->
-      <div class="w-[122px] overflow-hidden rounded-[8px] bg-[#d4cfc8] shadow-[0_2px_6px_rgba(0,0,0,0.18)] ring-1 ring-black/20">
-        <div class="relative aspect-[5/6] bg-cover bg-center" style="background-image:url(/images/epic-bg.jpg)">
-          <img src="/images/mini-artifacts/Pozolochennye-sny.webp" alt="Альтернатива" class="absolute left-1/2 top-[46%] h-[108%] w-[108%] max-w-none -translate-x-1/2 -translate-y-1/2 object-contain" />
-          <img src="/images/stars/Quality_star_4.svg" alt="" class="absolute bottom-1 left-1/2 h-3.5 w-auto -translate-x-1/2" />
+      <div class="w-[122px] overflow-hidden rounded-[18px] bg-card shadow-panel ring-1 ring-black/[0.06]">
+        <div class="relative h-[122px] bg-cover bg-center" style="background-image:url(/images/epic-bg.jpg)">
+          <img src="/images/mini-artifacts/Pozolochennye-sny.webp" alt="Альтернатива" class="h-full w-full object-cover" />
+          <div class="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/40 to-transparent"></div>
+          <img src="/images/stars/Quality_star_4.svg" alt="" class="absolute bottom-1.5 left-1/2 h-4 w-auto -translate-x-1/2" />
         </div>
-        <div class="border-t border-black/10 bg-[#ece8e3] px-1 py-1 text-center">
-          <p class="text-[12px] font-semibold leading-tight text-[#2f2f2f]">Альтернатива</p>
-          <p class="mt-0.5 text-[10px] font-bold text-muted-foreground">F2P / 4★</p>
+        <div class="px-1.5 py-2.5 text-center">
+          <p class="font-genshin text-[13px] leading-tight text-foreground">Альтернатива</p>
+          <p class="mt-1 text-[10px] font-bold text-muted-foreground">F2P / 4★</p>
         </div>
       </div>
     </div>
@@ -61,23 +63,21 @@ export function buildGuideTemplate(name = "Персонаж"): string {
     <p class="mb-1 text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">Артефакты</p>
     <h2 class="font-genshin mb-4 text-2xl tracking-wide text-foreground">Сеты</h2>
     <div class="flex flex-wrap gap-3">
-      <div class="w-[122px] overflow-hidden rounded-[8px] bg-[#d4cfc8] shadow-[0_2px_6px_rgba(0,0,0,0.18)] ring-1 ring-black/20">
-        <div class="relative aspect-[5/6] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
-          <img src="/images/mini-artifacts/Zolotaya-truppa.webp" alt="Золотая труппа" class="h-full w-full object-cover object-top" />
-          <img src="/images/stars/Quality_star_5.svg" alt="" class="absolute bottom-1 left-1/2 h-3.5 w-auto -translate-x-1/2" />
+      <div class="w-[122px] overflow-hidden rounded-[18px] bg-card shadow-panel ring-1 ring-black/[0.06]">
+        <div class="relative h-[122px] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
+          <img src="/images/mini-artifacts/Zolotaya-truppa.webp" alt="Золотая труппа" class="h-full w-full object-cover" />
+          <div class="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/40 to-transparent"></div>
+          <img src="/images/stars/Quality_star_5.svg" alt="" class="absolute bottom-1.5 left-1/2 h-4 w-auto -translate-x-1/2" />
         </div>
-        <div class="flex min-h-[1.85rem] items-center justify-center border-t border-black/10 bg-[#ece8e3] px-1 py-1">
-          <p class="line-clamp-2 text-center text-[12px] font-semibold leading-snug text-[#2f2f2f]">Золотая труппа</p>
-        </div>
+        <p class="font-genshin line-clamp-2 min-h-[2.5em] px-1.5 py-2.5 text-center text-[12px] leading-snug tracking-wide text-[#1e1e1e]">Золотая труппа</p>
       </div>
-      <div class="w-[122px] overflow-hidden rounded-[8px] bg-[#d4cfc8] shadow-[0_2px_6px_rgba(0,0,0,0.18)] ring-1 ring-black/20">
-        <div class="relative aspect-[5/6] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
-          <img src="/images/mini-artifacts/Okhota-na-ten.webp" alt="Охотник" class="h-full w-full object-cover object-top" />
-          <img src="/images/stars/Quality_star_5.svg" alt="" class="absolute bottom-1 left-1/2 h-3.5 w-auto -translate-x-1/2" />
+      <div class="w-[122px] overflow-hidden rounded-[18px] bg-card shadow-panel ring-1 ring-black/[0.06]">
+        <div class="relative h-[122px] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
+          <img src="/images/mini-artifacts/Okhota-na-ten.webp" alt="Охотник" class="h-full w-full object-cover" />
+          <div class="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/40 to-transparent"></div>
+          <img src="/images/stars/Quality_star_5.svg" alt="" class="absolute bottom-1.5 left-1/2 h-4 w-auto -translate-x-1/2" />
         </div>
-        <div class="flex min-h-[1.85rem] items-center justify-center border-t border-black/10 bg-[#ece8e3] px-1 py-1">
-          <p class="line-clamp-2 text-center text-[12px] font-semibold leading-snug text-[#2f2f2f]">Охотник</p>
-        </div>
+        <p class="font-genshin line-clamp-2 min-h-[2.5em] px-1.5 py-2.5 text-center text-[12px] leading-snug tracking-wide text-[#1e1e1e]">Охотник</p>
       </div>
     </div>
     <div class="mt-4 rounded-[16px] bg-[#189b8e]/8 p-4 text-sm font-medium text-foreground/80">
@@ -96,37 +96,33 @@ export function buildGuideTemplate(name = "Персонаж"): string {
         <span class="rounded-full bg-[#189b8e]/12 px-3 py-1 text-xs font-bold text-[#189b8e]">Топ</span>
       </div>
       <div class="flex flex-wrap gap-3">
-        <div class="w-[100px] overflow-hidden rounded-[8px] bg-[#d4cfc8] ring-1 ring-black/20">
-          <div class="relative aspect-[5/6] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
-            <img src="/images/mini-characters/Furina.webp" alt="Фурина" class="h-full w-full object-cover object-top" />
+        <div class="w-[100px] overflow-hidden rounded-[14px] bg-card ring-1 ring-black/[0.06]">
+          <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
+            <img src="/images/mini-characters/Furina.webp" alt="Фурина" class="h-full w-full object-cover" />
             <img src="/images/default-elements/Hydro.svg" alt="" class="absolute left-1 top-1 h-5 w-5 drop-shadow" />
-            <img src="/images/stars/Quality_star_1.svg" alt="" class="absolute right-1 top-1 h-3.5 w-auto" />
           </div>
-          <p class="border-t border-black/10 bg-[#ece8e3] px-1 py-1 text-center text-[11px] font-semibold text-[#2f2f2f]">Фурина</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Фурина</p>
         </div>
-        <div class="w-[100px] overflow-hidden rounded-[8px] bg-[#d4cfc8] ring-1 ring-black/20">
-          <div class="relative aspect-[5/6] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
-            <img src="/images/mini-characters/neuvillette.webp" alt="Нёвиллет" class="h-full w-full object-cover object-top" />
+        <div class="w-[100px] overflow-hidden rounded-[14px] bg-card ring-1 ring-black/[0.06]">
+          <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
+            <img src="/images/mini-characters/neuvillette.webp" alt="Нёвиллет" class="h-full w-full object-cover" />
             <img src="/images/default-elements/Hydro.svg" alt="" class="absolute left-1 top-1 h-5 w-5 drop-shadow" />
-            <img src="/images/stars/Quality_star_1.svg" alt="" class="absolute right-1 top-1 h-3.5 w-auto" />
           </div>
-          <p class="border-t border-black/10 bg-[#ece8e3] px-1 py-1 text-center text-[11px] font-semibold text-[#2f2f2f]">Нёвиллет</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Нёвиллет</p>
         </div>
-        <div class="w-[100px] overflow-hidden rounded-[8px] bg-[#d4cfc8] ring-1 ring-black/20">
-          <div class="relative aspect-[5/6] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
-            <img src="/images/mini-characters/kazuha.webp" alt="Кадзуха" class="h-full w-full object-cover object-top" />
+        <div class="w-[100px] overflow-hidden rounded-[14px] bg-card ring-1 ring-black/[0.06]">
+          <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
+            <img src="/images/mini-characters/kazuha.webp" alt="Кадзуха" class="h-full w-full object-cover" />
             <img src="/images/default-elements/Anemo.svg" alt="" class="absolute left-1 top-1 h-5 w-5 drop-shadow" />
-            <img src="/images/stars/Quality_star_1.svg" alt="" class="absolute right-1 top-1 h-3.5 w-auto" />
           </div>
-          <p class="border-t border-black/10 bg-[#ece8e3] px-1 py-1 text-center text-[11px] font-semibold text-[#2f2f2f]">Кадзуха</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Кадзуха</p>
         </div>
-        <div class="w-[100px] overflow-hidden rounded-[8px] bg-[#d4cfc8] ring-1 ring-black/20">
-          <div class="relative aspect-[5/6] bg-cover bg-center" style="background-image:url(/images/epic-bg.jpg)">
-            <img src="/images/mini-characters/bennett.webp" alt="Беннет" class="h-full w-full object-cover object-top" />
+        <div class="w-[100px] overflow-hidden rounded-[14px] bg-card ring-1 ring-black/[0.06]">
+          <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/epic-bg.jpg)">
+            <img src="/images/mini-characters/bennett.webp" alt="Беннет" class="h-full w-full object-cover" />
             <img src="/images/default-elements/Pyro.svg" alt="" class="absolute left-1 top-1 h-5 w-5 drop-shadow" />
-            <img src="/images/stars/Quality_star_1.svg" alt="" class="absolute right-1 top-1 h-3.5 w-auto" />
           </div>
-          <p class="border-t border-black/10 bg-[#ece8e3] px-1 py-1 text-center text-[11px] font-semibold text-[#2f2f2f]">Беннет</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Беннет</p>
         </div>
       </div>
       <p class="mt-3 text-sm font-medium text-muted-foreground">
@@ -140,29 +136,29 @@ export function buildGuideTemplate(name = "Персонаж"): string {
         <span class="rounded-full bg-navy/[0.06] px-3 py-1 text-xs font-bold text-navy/70">F2P</span>
       </div>
       <div class="flex flex-wrap gap-3">
-        <div class="w-[100px] overflow-hidden rounded-[8px] bg-[#d4cfc8] ring-1 ring-black/20">
-          <div class="relative aspect-[5/6] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
-            <img src="/images/mini-characters/Furina.webp" alt="Фурина" class="h-full w-full object-cover object-top" />
+        <div class="w-[100px] overflow-hidden rounded-[14px] bg-card ring-1 ring-black/[0.06]">
+          <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/legend-bg.jpg)">
+            <img src="/images/mini-characters/Furina.webp" alt="Фурина" class="h-full w-full object-cover" />
           </div>
-          <p class="border-t border-black/10 bg-[#ece8e3] px-1 py-1 text-center text-[11px] font-semibold text-[#2f2f2f]">Фурина</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Фурина</p>
         </div>
-        <div class="w-[100px] overflow-hidden rounded-[8px] bg-[#d4cfc8] ring-1 ring-black/20">
-          <div class="relative aspect-[5/6] bg-cover bg-center" style="background-image:url(/images/epic-bg.jpg)">
-            <img src="/images/mini-characters/xingqiu.webp" alt="Син Цю" class="h-full w-full object-cover object-top" />
+        <div class="w-[100px] overflow-hidden rounded-[14px] bg-card ring-1 ring-black/[0.06]">
+          <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/epic-bg.jpg)">
+            <img src="/images/mini-characters/xingqiu.webp" alt="Син Цю" class="h-full w-full object-cover" />
           </div>
-          <p class="border-t border-black/10 bg-[#ece8e3] px-1 py-1 text-center text-[11px] font-semibold text-[#2f2f2f]">Син Цю</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Син Цю</p>
         </div>
-        <div class="w-[100px] overflow-hidden rounded-[8px] bg-[#d4cfc8] ring-1 ring-black/20">
-          <div class="relative aspect-[5/6] bg-cover bg-center" style="background-image:url(/images/epic-bg.jpg)">
-            <img src="/images/mini-characters/sucrose.webp" alt="Сахароза" class="h-full w-full object-cover object-top" />
+        <div class="w-[100px] overflow-hidden rounded-[14px] bg-card ring-1 ring-black/[0.06]">
+          <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/epic-bg.jpg)">
+            <img src="/images/mini-characters/sucrose.webp" alt="Сахароза" class="h-full w-full object-cover" />
           </div>
-          <p class="border-t border-black/10 bg-[#ece8e3] px-1 py-1 text-center text-[11px] font-semibold text-[#2f2f2f]">Сахароза</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Сахароза</p>
         </div>
-        <div class="w-[100px] overflow-hidden rounded-[8px] bg-[#d4cfc8] ring-1 ring-black/20">
-          <div class="relative aspect-[5/6] bg-cover bg-center" style="background-image:url(/images/epic-bg.jpg)">
-            <img src="/images/mini-characters/bennett.webp" alt="Беннет" class="h-full w-full object-cover object-top" />
+        <div class="w-[100px] overflow-hidden rounded-[14px] bg-card ring-1 ring-black/[0.06]">
+          <div class="relative h-[100px] bg-cover bg-center" style="background-image:url(/images/epic-bg.jpg)">
+            <img src="/images/mini-characters/bennett.webp" alt="Беннет" class="h-full w-full object-cover" />
           </div>
-          <p class="border-t border-black/10 bg-[#ece8e3] px-1 py-1 text-center text-[11px] font-semibold text-[#2f2f2f]">Беннет</p>
+          <p class="font-genshin px-1 py-1.5 text-center text-[11px] tracking-wide text-[#1e1e1e]">Беннет</p>
         </div>
       </div>
     </div>

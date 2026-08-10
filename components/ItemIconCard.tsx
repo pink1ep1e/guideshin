@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import InventoryCard from "@/components/InventoryCard";
 import ItemHoverPreview from "@/components/ItemHoverPreview";
 import { rarityBg } from "@/lib/genshin";
 import type { WeaponHoverMeta } from "@/lib/wiki-guide-data";
@@ -15,7 +14,7 @@ type ItemIconCardProps = {
   size?: "sm" | "md" | "lg";
   className?: string;
   /**
-   * Только иконка (таблицы). По умолчанию — карточка в стиле инвентаря.
+   * Только иконка (таблицы). По умолчанию — карточка в стиле персонажей.
    */
   compact?: boolean;
   /** Нейтральный фон / cover (враги / источники). */
@@ -73,7 +72,7 @@ function QtyBadge({
       className={
         compact
           ? "absolute bottom-1 right-1 z-20 rounded-full bg-[#189b8e] px-1.5 py-0.5 text-[10px] font-extrabold leading-none text-white shadow-sm"
-          : "absolute right-1.5 top-1.5 z-20 rounded-full bg-[#189b8e] px-2 py-0.5 text-[11px] font-extrabold leading-none text-white shadow-sm"
+          : "absolute bottom-1.5 right-1.5 z-20 rounded-full bg-[#189b8e] px-2 py-0.5 text-[11px] font-extrabold leading-none text-white shadow-sm"
       }
     >
       ×{formatQty(qty)}
@@ -105,8 +104,8 @@ export default function ItemIconCard({
   if (compact) {
     const box = (
       <div
-        className={`relative overflow-hidden rounded-[8px] bg-cover bg-center shadow-sm ring-1 ring-black/20 ${COMPACT_SIZES[size]} ${className} ${
-          isNeutral ? "bg-[#cfc8bf]" : ""
+        className={`relative overflow-hidden rounded-[10px] bg-cover bg-center shadow-sm ring-1 ring-black/[0.06] ${COMPACT_SIZES[size]} ${className} ${
+          isNeutral ? "bg-[#f3f0ea]" : ""
         }`}
         style={isNeutral ? undefined : { backgroundImage: `url(${rarityBg(stars)})` }}
         title={name}
@@ -150,32 +149,57 @@ export default function ItemIconCard({
     );
   }
 
+  // Карточка в стиле персонажей: квадрат + звёзды + фиксированная подпись
   const widthClass = fluid ? "w-full" : CARD_WIDTHS[size];
   const card = (
-    <InventoryCard
-      name={name}
-      image={image}
-      href={href ?? undefined}
-      rarityStars={stars}
-      fit={fit}
-      layout="item"
-      fluid={fluid}
-      widthClass={widthClass}
-      className={className}
-      neutral={isNeutral}
-      overlay={
-        showQty && qty !== undefined && qty !== null && qty !== "" ? (
+    <div
+      className={`group relative flex h-full flex-col overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)] ${widthClass} ${className}`}
+    >
+      <div
+        className={`relative aspect-square w-full overflow-hidden bg-cover bg-center ${
+          isNeutral ? "bg-[#f3f0ea]" : ""
+        }`}
+        style={isNeutral ? undefined : { backgroundImage: `url(${rarityBg(stars)})` }}
+      >
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={image}
+            alt={name}
+            className={
+              isNeutral
+                ? "relative z-0 h-full w-full object-cover"
+                : "absolute left-1/2 top-1/2 z-0 h-[118%] w-[118%] max-w-none -translate-x-1/2 -translate-y-1/2 object-contain"
+            }
+          />
+        ) : (
+          <span className="relative z-0 flex h-full items-center justify-center px-2 text-center text-[10px] font-bold text-muted-foreground">
+            Нет иконки
+          </span>
+        )}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+        {!isNeutral ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`/images/stars/Quality_star_${stars}.svg`}
+            alt=""
+            className="absolute bottom-1.5 left-1/2 z-20 h-3.5 w-auto -translate-x-1/2"
+          />
+        ) : null}
+        {showQty && qty !== undefined && qty !== null && qty !== "" ? (
           <QtyBadge qty={qty} />
-        ) : null
-      }
-    />
+        ) : null}
+      </div>
+
+      <div className="relative z-10 flex min-h-[2.75rem] shrink-0 items-center justify-center px-1.5 pb-2 pt-1.5">
+        <p className="font-genshin line-clamp-2 w-full text-center text-[12px] leading-snug tracking-wide text-[#1e1e1e] [overflow-wrap:anywhere]">
+          {name}
+        </p>
+      </div>
+    </div>
   );
 
-  if (!preview) {
-    return fluid ? card : <div className="inline-block h-full shrink-0">{card}</div>;
-  }
-
-  return (
+  const wrapped = preview ? (
     <ItemHoverPreview
       name={name}
       image={image}
@@ -185,7 +209,24 @@ export default function ItemIconCard({
       fit={fit}
       className={fluid ? "block h-full w-full" : "inline-block h-full shrink-0"}
     >
-      {card}
+      {href ? (
+        <Link href={href} className="block h-full transition hover:opacity-95">
+          {card}
+        </Link>
+      ) : (
+        card
+      )}
     </ItemHoverPreview>
+  ) : href ? (
+    <Link
+      href={href}
+      className={`block h-full transition hover:opacity-95 ${fluid ? "w-full" : "inline-block shrink-0"}`}
+    >
+      {card}
+    </Link>
+  ) : (
+    <div className={fluid ? "h-full w-full" : "inline-block h-full shrink-0"}>{card}</div>
   );
+
+  return wrapped;
 }

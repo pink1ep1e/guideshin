@@ -16,6 +16,12 @@ export default function RegisterPage() {
       artEyebrow="Новый аккаунт"
       artTitle="Сохраните молитвы в облаке"
       artText="Никнейм увидите в кабинете. Импорт с ПК, телефона или paimon.moe — в пару шагов."
+      highlights={[
+        { title: "Облако", text: "История молитв не пропадёт" },
+        { title: "Гарант", text: "Pity по всем баннерам" },
+        { title: "Импорт", text: "ПК, телефон или paimon.moe" },
+      ]}
+      showMascot
     >
       <Suspense
         fallback={
