@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { Pencil, Trash2, X } from "lucide-react";
@@ -22,6 +22,7 @@ type Props = {
   account: EditableAccount | null;
   open: boolean;
   busy?: boolean;
+  defaultAvatarUrl?: string | null;
   onClose: () => void;
   onSaved: (account: EditableAccount) => void;
 };
@@ -30,6 +31,7 @@ export default function WishAccountEditDialog({
   account,
   open,
   busy,
+  defaultAvatarUrl,
   onClose,
   onSaved,
 }: Props) {
@@ -40,6 +42,7 @@ export default function WishAccountEditDialog({
   const [avatarName, setAvatarName] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const pickerWrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!account || !open) return;
@@ -51,6 +54,20 @@ export default function WishAccountEditDialog({
   }, [account, open]);
 
   if (!account) return null;
+
+  const previewSrc = avatarUrl || defaultAvatarUrl || null;
+
+  function focusAvatarPicker() {
+    const input = pickerWrapRef.current?.querySelector("input");
+    if (input instanceof HTMLInputElement) {
+      input.focus();
+      input.click();
+      pickerWrapRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }
 
   async function save() {
     setSaving(true);
@@ -101,7 +118,7 @@ export default function WishAccountEditDialog({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
-            className="relative w-full max-w-lg rounded-3xl bg-white p-6 shadow-panel sm:p-8"
+            className="relative max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 shadow-panel sm:p-8"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -122,10 +139,15 @@ export default function WishAccountEditDialog({
             </p>
 
             <div className="mt-5 flex items-center gap-4">
-              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#eef8f6] ring-1 ring-black/[0.06]">
-                {avatarUrl ? (
+              <button
+                type="button"
+                onClick={focusAvatarPicker}
+                className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#eef8f6] ring-1 ring-black/[0.06]"
+                title="Выбрать аватар"
+              >
+                {previewSrc ? (
                   <Image
-                    src={avatarUrl}
+                    src={previewSrc}
                     alt=""
                     fill
                     className="object-cover"
@@ -136,13 +158,22 @@ export default function WishAccountEditDialog({
                     ?
                   </div>
                 )}
-              </div>
+                <span className="absolute inset-0 flex items-center justify-center bg-[#0a2a26]/50 opacity-0 transition group-hover:opacity-100">
+                  <Pencil className="h-6 w-6 text-white" />
+                </span>
+              </button>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-bold text-foreground">
-                  {avatarName || (avatarUrl ? "Персонаж выбран" : "Без аватарки")}
+                  {avatarName ||
+                    (avatarUrl
+                      ? "Персонаж выбран"
+                      : "Путешественник (по умолчанию)")}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {SERVER_LABEL[server] || server}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Нажмите на аватар или найдите персонажа ниже
                 </p>
                 {avatarUrl ? (
                   <button
@@ -154,7 +185,7 @@ export default function WishAccountEditDialog({
                     className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-red-600 hover:underline"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
-                    Убрать аватар
+                    Сбросить на Путешественника
                   </button>
                 ) : null}
               </div>
@@ -179,7 +210,7 @@ export default function WishAccountEditDialog({
               />
             </div>
 
-            <div className="mt-4">
+            <div className="mt-4" ref={pickerWrapRef}>
               <p className="mb-1.5 text-xs font-bold uppercase tracking-[0.06em] text-muted-foreground">
                 Аватар персонажа
               </p>
@@ -243,7 +274,7 @@ export function AccountEditHintButton({
         e.stopPropagation();
         onClick();
       }}
-      className={`rounded-lg p-1.5 transition ${
+      className={`mr-0.5 rounded-lg p-1.5 transition ${
         active
           ? "bg-white/20 text-white hover:bg-white/30"
           : "bg-black/[0.04] text-foreground/60 hover:bg-black/[0.08] hover:text-foreground"

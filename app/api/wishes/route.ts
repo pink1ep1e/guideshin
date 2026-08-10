@@ -19,11 +19,19 @@ import {
   resolveGuideMeta,
 } from "@/lib/wish-guide-links";
 import { resolveWishUser } from "@/lib/wish-auth";
-import {
-  buildCommunityLuck,
-  computeFiftyFifty,
-  snapshotFromPulls,
-} from "@/lib/wish-luck";
+import { computeFiftyFifty } from "@/lib/wish-luck";
+import { loadWishGuideCatalog } from "@/lib/wish-catalog-cache";
+
+const PULL_SELECT = {
+  id: true,
+  hoyoId: true,
+  gachaType: true,
+  itemName: true,
+  itemType: true,
+  rankType: true,
+  wishTime: true,
+  raw: true,
+} as const;
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -39,10 +47,24 @@ export async function GET(req: Request) {
     let accounts = await prisma.wishAccount.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        label: true,
+        uid: true,
+        server: true,
+        avatarUrl: true,
+      },
     });
     if (accounts.length === 0) {
       const created = await prisma.wishAccount.create({
         data: { userId: user.id, label: "Основной", server: "europe" },
+        select: {
+          id: true,
+          label: true,
+          uid: true,
+          server: true,
+          avatarUrl: true,
+        },
       });
       accounts = [created];
     }
@@ -50,58 +72,33 @@ export async function GET(req: Request) {
     const account =
       accounts.find((a) => a.id === requestedAccountId) || accounts[0];
 
-    // Сначала читаем id для чистки дублей paimon↔Hoyoverse
-    const pullIds = await prisma.wishPull.findMany({
-      where: { accountId: account.id },
-      select: {
-        id: true,
-        hoyoId: true,
-        gachaType: true,
-        itemName: true,
-        wishTime: true,
-      },
-    });
-    const stale = syntheticDuplicateDbIds(pullIds);
-    if (stale.length) {
-      await prisma.wishPull.deleteMany({ where: { id: { in: stale } } });
-    }
-
-    const [pulls, characters, weapons, allAccounts] = await Promise.all([
+    const [pulls, catalog] = await Promise.all([
       prisma.wishPull.findMany({
         where: { accountId: account.id },
         orderBy: { wishTime: "desc" },
         take: 12000,
+        select: PULL_SELECT,
       }),
-      prisma.character.findMany({
-        where: { published: true },
-        select: { slug: true, name: true, image: true, rarity: true, element: true },
-      }),
-      prisma.weapon.findMany({
-        where: { published: true },
-        select: { slug: true, name: true, image: true, rarity: true },
-      }),
-      prisma.wishAccount.findMany({
-        where: { pulls: { some: {} } },
-        take: 100,
-        select: {
-          id: true,
-          pulls: {
-            select: {
-              hoyoId: true,
-              gachaType: true,
-              itemName: true,
-              itemType: true,
-              rankType: true,
-              wishTime: true,
-              raw: true,
-            },
-            take: 4000,
-          },
-        },
-      }),
+      loadWishGuideCatalog(prisma),
     ]);
 
-    return { account, accounts, pulls, characters, weapons, allAccounts };
+    const stale = syntheticDuplicateDbIds(pulls);
+    if (stale.length) {
+      await prisma.wishPull.deleteMany({ where: { id: { in: stale } } });
+    }
+
+    const pullsClean = stale.length
+      ? pulls.filter((p) => !stale.includes(p.id))
+      : pulls;
+
+    return {
+      account,
+      accounts,
+      pulls: pullsClean,
+      characters: catalog.characters,
+      weapons: catalog.weapons,
+      defaultAvatarUrl: catalog.defaultAvatarUrl,
+    };
   });
 
   const guideIndex = buildGuideLinkIndex({
@@ -113,6 +110,15 @@ export async function GET(req: Request) {
     characters: data.characters,
     weapons: data.weapons,
   });
+
+  const charByName = new Map(
+    data.characters.map((c) => [c.name.toLowerCase(), c] as const),
+  );
+  const charBySlug = new Map(data.characters.map((c) => [c.slug, c] as const));
+  const weaponByName = new Map(
+    data.weapons.map((w) => [w.name.toLowerCase(), w] as const),
+  );
+  const weaponBySlug = new Map(data.weapons.map((w) => [w.slug, w] as const));
 
   const pullsForStats = applyCatalogRanksToPulls(
     dedupeWishPulls(
@@ -126,7 +132,6 @@ export async function GET(req: Request) {
 
   const overview = computeWishOverview(pullsForStats);
   const fifty = computeFiftyFifty(pullsForStats);
-
   const monthlyChart = buildMonthlyPullChart(pullsForStats);
 
   const stats = computeAllBannerStats(pullsForStats).map((stat) => {
@@ -141,25 +146,18 @@ export async function GET(req: Request) {
           meta?.name ?? localizeWishDisplayName(row.name);
         const isWeapon = /weapon|оруж/i.test(row.itemType);
         const char = !isWeapon
-          ? data.characters.find(
-              (c) =>
-                c.name.toLowerCase() === displayName.toLowerCase() ||
-                meta?.slug === c.slug,
-            )
+          ? (meta?.slug ? charBySlug.get(meta.slug) : undefined) ||
+            charByName.get(displayName.toLowerCase())
           : null;
         const weapon = isWeapon
-          ? data.weapons.find(
-              (w) =>
-                w.name.toLowerCase() === displayName.toLowerCase() ||
-                meta?.slug === w.slug,
-            )
+          ? (meta?.slug ? weaponBySlug.get(meta.slug) : undefined) ||
+            weaponByName.get(displayName.toLowerCase())
           : null;
         const catalogRarity = char?.rarity ?? weapon?.rarity ?? null;
         const forcedFour =
           !isWeapon &&
           (isForcedFourStarName(displayName) || isForcedFourStarName(row.name));
 
-        // В fiveStars уже только rankType=5; убираем ложные 4★ из каталога/allowlist
         const rarity =
           forcedFour ||
           catalogRarity === "EPIC" ||
@@ -179,7 +177,6 @@ export async function GET(req: Request) {
       })
       .filter((row) => row.rarity === "LEGEND");
 
-    // Схлопываем EN/RU дубли после локализации имён
     const merged = new Map<string, (typeof enriched)[number]>();
     for (const row of enriched) {
       const isWeapon = /weapon|оруж/i.test(row.itemType);
@@ -211,7 +208,7 @@ export async function GET(req: Request) {
     };
   });
 
-  const recent = pullsForStats.slice(0, 50).map((p) => {
+  const recent = pullsForStats.slice(0, 40).map((p) => {
     const meta = resolveGuideMeta(p.itemName, p.itemType, guideIndex);
     return {
       id: (p as { id?: string }).id || p.hoyoId,
@@ -224,29 +221,6 @@ export async function GET(req: Request) {
       image: meta?.image ?? null,
     };
   });
-
-  const peerSnapshots = data.allAccounts.map((a) =>
-    snapshotFromPulls(
-      a.id,
-      dedupeWishPulls(
-        a.pulls.map((p) => ({
-          ...p,
-          raw: p.raw as { paimon_rate?: number } | null,
-        })),
-      ),
-    ),
-  );
-
-  const luck = buildCommunityLuck(
-    {
-      total: overview.total,
-      rate5: overview.rate5,
-      rate4: overview.rate4,
-      avgGarant5: overview.avgPity5,
-      fifty,
-    },
-    peerSnapshots,
-  );
 
   return NextResponse.json({
     account: {
@@ -263,12 +237,13 @@ export async function GET(req: Request) {
       server: a.server,
       avatarUrl: a.avatarUrl,
     })),
+    defaultAvatarUrl: data.defaultAvatarUrl,
     overview,
     fifty,
     monthlyChart,
     total: pullsForStats.length,
     stats,
     recent,
-    luck,
+    luck: null,
   });
 }

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createPortal } from "react-dom";
 import { signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CloudDownload, Lightbulb, LogOut, MessageCircleWarning, BookOpen, Plus, Shield, X } from "lucide-react";
+import { CloudDownload, Lightbulb, LogOut, MessageCircleWarning, BookOpen, Pencil, Plus, Shield, X } from "lucide-react";
 import { SITE_TELEGRAM } from "@/lib/site";
 import type {
   BannerPityStats,
@@ -80,6 +80,7 @@ type ImportHistoryItem = {
 type WishDashboard = {
   account: GameAccount;
   accounts: GameAccount[];
+  defaultAvatarUrl?: string | null;
   total: number;
   overview: WishOverview;
   fifty: FiftyFiftyStats;
@@ -170,9 +171,25 @@ export default function WishCabinet({
         const res = await fetch(`/api/wishes${q}`);
         if (!res.ok) throw new Error("fail");
         const json = (await res.json()) as WishDashboard;
-        setData(json);
+        setData({ ...json, luck: json.luck ?? null });
         setAccountId(json.account.id);
         void loadImports(json.account.id);
+
+        // Удачливость грузим отдельно — не тормозит первый экран
+        void fetch(
+          `/api/wishes/luck?accountId=${encodeURIComponent(json.account.id)}`,
+        )
+          .then(async (r) => {
+            if (!r.ok) return;
+            const body = (await r.json()) as { luck?: CommunityLuck };
+            if (!body.luck) return;
+            setData((prev) =>
+              prev && prev.account.id === json.account.id
+                ? { ...prev, luck: body.luck! }
+                : prev,
+            );
+          })
+          .catch(() => undefined);
       } catch {
         setError("Не удалось загрузить данные. Попробуйте обновить страницу.");
       } finally {
@@ -485,10 +502,11 @@ export default function WishCabinet({
           >
             {data.accounts.map((a) => {
               const active = a.id === data.account.id;
+              const avatarSrc = a.avatarUrl || data.defaultAvatarUrl || null;
               return (
                 <div
                   key={a.id}
-                  className={`group relative flex min-h-14 items-center gap-1 rounded-2xl pr-1 transition ${
+                  className={`group relative flex min-h-14 items-center gap-0.5 rounded-2xl pl-1.5 pr-2.5 transition ${
                     active
                       ? "bg-[#189b8e] text-white shadow-soft"
                       : "bg-white text-foreground/80 ring-1 ring-black/[0.06] hover:bg-black/[0.03]"
@@ -496,43 +514,54 @@ export default function WishCabinet({
                 >
                   <button
                     type="button"
-                    onClick={() => selectAccount(a.id)}
-                    className="flex min-h-14 items-center gap-3 rounded-2xl px-4 py-2.5 text-left text-base"
+                    title="Сменить аватар"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditAccount(a);
+                    }}
+                    className={`group/avatar relative h-10 w-10 shrink-0 overflow-hidden rounded-xl ${
+                      active ? "bg-white/20" : "bg-[#eef8f6]"
+                    }`}
                   >
-                    <span
-                      className={`relative h-10 w-10 shrink-0 overflow-hidden rounded-xl ${
-                        active ? "bg-white/20" : "bg-[#eef8f6]"
-                      }`}
-                    >
-                      {a.avatarUrl ? (
-                        <Image
-                          src={a.avatarUrl}
-                          alt=""
-                          fill
-                          className="object-cover"
-                          sizes="40px"
-                        />
-                      ) : (
-                        <span
-                          className={`flex h-full items-center justify-center text-sm font-bold ${
-                            active ? "text-white/80" : "text-[#189b8e]/70"
-                          }`}
-                        >
-                          {a.label.slice(0, 1).toUpperCase()}
-                        </span>
-                      )}
-                    </span>
-                    <span>
-                      <span className="block font-bold leading-tight">
-                        {a.label}
-                      </span>
+                    {avatarSrc ? (
+                      <Image
+                        src={avatarSrc}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        sizes="40px"
+                      />
+                    ) : (
                       <span
-                        className={`mt-0.5 block text-sm ${
-                          active ? "text-white/80" : "text-muted-foreground"
+                        className={`flex h-full items-center justify-center text-sm font-bold ${
+                          active ? "text-white/80" : "text-[#189b8e]/70"
                         }`}
                       >
-                        {SERVER_LABEL[a.server] || a.server}
+                        {a.label.slice(0, 1).toUpperCase()}
                       </span>
+                    )}
+                    <span
+                      className={`absolute inset-0 flex items-center justify-center opacity-0 transition group-hover/avatar:opacity-100 ${
+                        active ? "bg-black/35" : "bg-[#0a2a26]/45"
+                      }`}
+                    >
+                      <Pencil className="h-4 w-4 text-white drop-shadow" />
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => selectAccount(a.id)}
+                    className="min-h-14 flex-1 rounded-2xl px-3 py-2.5 text-left text-base"
+                  >
+                    <span className="block font-bold leading-tight">
+                      {a.label}
+                    </span>
+                    <span
+                      className={`mt-0.5 block text-sm ${
+                        active ? "text-white/80" : "text-muted-foreground"
+                      }`}
+                    >
+                      {SERVER_LABEL[a.server] || a.server}
                     </span>
                   </button>
                   <AccountEditHintButton
@@ -945,6 +974,7 @@ export default function WishCabinet({
         account={editAccount}
         open={Boolean(editAccount)}
         busy={busy}
+        defaultAvatarUrl={data?.defaultAvatarUrl}
         onClose={() => setEditAccount(null)}
         onSaved={(updated) => {
           setData((prev) => {
