@@ -353,31 +353,34 @@ export default function WishExtrasPanel({
         </section>
       )}
 
-      <section
-        data-tour="tour-share"
-        className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h2 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
-              Карточка для сторис
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Статистика, гаранты и 5★ за полгода — одним PNG
-            </p>
+      {/* Временно скрыто: карточка для сторис */}
+      {false && (
+        <section
+          data-tour="tour-share"
+          className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
+                Карточка для сторис
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Статистика, гаранты и 5★ за полгода — одним PNG
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={shareBusy}
+              onClick={() => void drawShare()}
+              className="inline-flex items-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3 text-base font-bold text-white transition hover:bg-[#147f74] disabled:opacity-60"
+            >
+              <Share2 className="h-5 w-5" />
+              {shareBusy ? "Собираем…" : "Скачать карточку"}
+            </button>
           </div>
-          <button
-            type="button"
-            disabled={shareBusy}
-            onClick={() => void drawShare()}
-            className="inline-flex items-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3 text-base font-bold text-white transition hover:bg-[#147f74] disabled:opacity-60"
-          >
-            <Share2 className="h-5 w-5" />
-            {shareBusy ? "Собираем…" : "Скачать карточку"}
-          </button>
-        </div>
-        <canvas ref={shareRef} className="hidden" />
-      </section>
+          <canvas ref={shareRef} className="hidden" />
+        </section>
+      )}
 
       {accounts.length > 1 && (
         <section
