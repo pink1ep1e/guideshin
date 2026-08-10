@@ -561,30 +561,6 @@ export default function WishCabinet({
               })}
             </div>
 
-            <WishExtrasPanel
-              accountId={data!.account.id}
-              accountLabel={data!.account.label}
-              stats={DASHBOARD_BANNERS.map((key) => statsByKey.get(key)!).filter(
-                Boolean,
-              )}
-              overview={data!.overview}
-              recentFiveStars={DASHBOARD_BANNERS.flatMap((key) => {
-                const s = statsByKey.get(key);
-                if (!s) return [];
-                return s.fiveStars.map((f) => ({
-                  name: f.name,
-                  image: f.image,
-                  time: f.time,
-                  itemType: f.itemType,
-                  banner: s.label,
-                }));
-              }).sort(
-                (a, b) =>
-                  new Date(b.time).getTime() - new Date(a.time).getTime(),
-              )}
-              accounts={data!.accounts}
-            />
-
             <div
               data-tour="tour-charts"
               className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]"
@@ -644,6 +620,30 @@ export default function WishCabinet({
                 </p>
               </section>
             </div>
+
+            <WishExtrasPanel
+              accountId={data!.account.id}
+              accountLabel={data!.account.label}
+              stats={DASHBOARD_BANNERS.map((key) => statsByKey.get(key)!).filter(
+                Boolean,
+              )}
+              overview={data!.overview}
+              recentFiveStars={DASHBOARD_BANNERS.flatMap((key) => {
+                const s = statsByKey.get(key);
+                if (!s) return [];
+                return s.fiveStars.map((f) => ({
+                  name: f.name,
+                  image: f.image,
+                  time: f.time,
+                  itemType: f.itemType,
+                  banner: s.label,
+                }));
+              }).sort(
+                (a, b) =>
+                  new Date(b.time).getTime() - new Date(a.time).getTime(),
+              )}
+              accounts={data!.accounts}
+            />
 
             {/* Luck vs community */}
             {data?.luck && (

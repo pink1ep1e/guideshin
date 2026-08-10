@@ -1,7 +1,16 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Bell, GitCompare, Share2 } from "lucide-react";
+import {
+  Bell,
+  Crosshair,
+  Dices,
+  GitCompare,
+  Share2,
+  Sparkles,
+  Swords,
+  Trophy,
+} from "lucide-react";
 import type { GachaBannerKey } from "@/lib/wishes";
 import FancySelect from "@/components/ui/FancySelect";
 import { SERVER_LABEL, WISH_SERVER_OPTIONS } from "@/lib/wish-servers";
@@ -33,8 +42,10 @@ type CompareSnap = {
   total: number;
   rate5: number;
   avgPity5: number | null;
-  characterPity: string;
-  weaponPity: string;
+  characterPity: number;
+  characterMax: number;
+  weaponPity: number;
+  weaponMax: number;
 };
 
 type Props = {
@@ -119,13 +130,30 @@ export default function WishExtrasPanel({
         total: json.overview.total,
         rate5: json.overview.rate5,
         avgPity5: json.overview.avgPity5,
-        characterPity: ch ? `${ch.pity5}/${ch.pity5Max}` : "—",
-        weaponPity: wp ? `${wp.pity5}/${wp.pity5Max}` : "—",
+        characterPity: ch?.pity5 ?? 0,
+        characterMax: ch?.pity5Max ?? 90,
+        weaponPity: wp?.pity5 ?? 0,
+        weaponMax: wp?.pity5Max ?? 80,
       });
     } finally {
       setCompareBusy(false);
     }
   }, [accountId, compareId]);
+
+  const selfCompare = useMemo(() => {
+    const ch = stats.find((s) => s.key === "character");
+    const wp = stats.find((s) => s.key === "weapon");
+    return {
+      label: accountLabel,
+      total: overview.total,
+      rate5: overview.rate5,
+      avgPity5: overview.avgPity5,
+      characterPity: ch?.pity5 ?? 0,
+      characterMax: ch?.pity5Max ?? 90,
+      weaponPity: wp?.pity5 ?? 0,
+      weaponMax: wp?.pity5Max ?? 80,
+    } satisfies CompareSnap;
+  }, [accountLabel, overview, stats]);
 
   const drawShare = useCallback(async () => {
     const canvas = shareRef.current;
@@ -367,7 +395,10 @@ export default function WishExtrasPanel({
               <FancySelect
                 label="Второй аккаунт"
                 value={compareId}
-                onChange={setCompareId}
+                onChange={(id) => {
+                  setCompareId(id);
+                  setCompare(null);
+                }}
                 options={compareOptions}
                 placeholder="Выберите второй аккаунт"
                 className="[&_button]:min-h-[52px] [&_button]:rounded-2xl [&_button]:px-4 [&_button]:py-3 [&_button]:text-base"
@@ -379,36 +410,11 @@ export default function WishExtrasPanel({
               onClick={() => void runCompare()}
               className="min-h-[52px] rounded-2xl bg-[#189b8e] px-6 py-3 text-base font-bold text-white disabled:opacity-50"
             >
-              Сравнить
+              {compareBusy ? "Сравниваем…" : "Сравнить"}
             </button>
           </div>
           {compare && (
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <CompareCard
-                title={accountLabel}
-                total={overview.total}
-                rate5={overview.rate5}
-                avgPity5={overview.avgPity5}
-                characterPity={
-                  stats.find((s) => s.key === "character")
-                    ? `${stats.find((s) => s.key === "character")!.pity5}/${stats.find((s) => s.key === "character")!.pity5Max}`
-                    : "—"
-                }
-                weaponPity={
-                  stats.find((s) => s.key === "weapon")
-                    ? `${stats.find((s) => s.key === "weapon")!.pity5}/${stats.find((s) => s.key === "weapon")!.pity5Max}`
-                    : "—"
-                }
-              />
-              <CompareCard
-                title={compare.label}
-                total={compare.total}
-                rate5={compare.rate5}
-                avgPity5={compare.avgPity5}
-                characterPity={compare.characterPity}
-                weaponPity={compare.weaponPity}
-              />
-            </div>
+            <CompareArena left={selfCompare} right={compare} />
           )}
         </section>
       )}
@@ -416,33 +422,263 @@ export default function WishExtrasPanel({
   );
 }
 
-function CompareCard({
-  title,
-  total,
-  rate5,
-  avgPity5,
-  characterPity,
-  weaponPity,
+function CompareArena({
+  left,
+  right,
 }: {
-  title: string;
-  total: number;
-  rate5: number;
-  avgPity5: number | null;
-  characterPity: string;
-  weaponPity: string;
+  left: CompareSnap;
+  right: CompareSnap;
+}) {
+  const rows: CompareRow[] = [
+    {
+      key: "total",
+      label: "Молитв",
+      icon: Dices,
+      left: left.total,
+      right: right.total,
+      format: (n) => Math.round(n).toLocaleString("ru-RU"),
+      higherWins: true,
+      tip: "Больше молитв — больше статистики, но не обязательно больше удачи.",
+    },
+    {
+      key: "rate5",
+      label: "Шанс 5★",
+      icon: Sparkles,
+      left: left.rate5,
+      right: right.rate5,
+      format: (n) => `${n.toFixed(2)}%`,
+      higherWins: true,
+      tip: "Доля пятизвёздных среди всех молитв. База игры ≈1,6%.",
+    },
+    {
+      key: "avg",
+      label: "Средний гарант",
+      icon: Crosshair,
+      left: left.avgPity5,
+      right: right.avgPity5,
+      format: (n) => (n == null ? "—" : n.toFixed(1)),
+      higherWins: false,
+      tip: "Среднее число круток между 5★. Меньше — обычно везло раньше.",
+    },
+    {
+      key: "char",
+      label: "Персонажи",
+      icon: Trophy,
+      left: left.characterPity,
+      right: right.characterPity,
+      max: Math.max(left.characterMax, right.characterMax, 90),
+      format: (n, side) =>
+        `${Math.round(n ?? 0)}/${side === "left" ? left.characterMax : right.characterMax}`,
+      higherWins: null,
+      tip: "Текущий счётчик до жёсткого гаранта на баннере персонажей.",
+      showBar: true,
+    },
+    {
+      key: "weapon",
+      label: "Оружие",
+      icon: Swords,
+      left: left.weaponPity,
+      right: right.weaponPity,
+      max: Math.max(left.weaponMax, right.weaponMax, 80),
+      format: (n, side) =>
+        `${Math.round(n ?? 0)}/${side === "left" ? left.weaponMax : right.weaponMax}`,
+      higherWins: null,
+      tip: "Текущий счётчик до жёсткого гаранта на баннере оружия.",
+      showBar: true,
+    },
+  ];
+
+  return (
+    <div className="mt-6 rounded-3xl border border-black/[0.05] bg-gradient-to-br from-[#f4faf9] via-white to-[#f7f5ef]">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-black/[0.05] px-4 py-4 sm:px-6">
+        <CompareHeader name={left.label} side="left" />
+        <span className="rounded-full bg-[#189b8e]/12 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#189b8e]">
+          VS
+        </span>
+        <CompareHeader name={right.label} side="right" />
+      </div>
+
+      <div className="divide-y divide-black/[0.04] px-3 py-2 sm:px-4">
+        {rows.map((row) => (
+          <CompareMetricRow key={row.key} row={row} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+type CompareRow = {
+  key: string;
+  label: string;
+  icon: typeof Dices;
+  left: number | null;
+  right: number | null;
+  format: (n: number | null, side: "left" | "right") => string;
+  /** true = bigger better, false = smaller better, null = neutral */
+  higherWins: boolean | null;
+  tip: string;
+  max?: number;
+  showBar?: boolean;
+};
+
+function CompareHeader({
+  name,
+  side,
+}: {
+  name: string;
+  side: "left" | "right";
 }) {
   return (
-    <div className="rounded-2xl border border-black/[0.05] bg-[#f7faf9] p-4">
-      <p className="font-bold text-foreground">{title}</p>
-      <ul className="mt-3 space-y-1.5 text-sm text-foreground/75">
-        <li>Молитв: {total.toLocaleString("ru-RU")}</li>
-        <li>Шанс 5★: {rate5.toFixed(2)}%</li>
-        <li>
-          Средний гарант: {avgPity5 == null ? "—" : avgPity5.toFixed(1)}
-        </li>
-        <li>Персонажи: {characterPity}</li>
-        <li>Оружие: {weaponPity}</li>
-      </ul>
+    <div className={side === "right" ? "text-right" : "text-left"}>
+      <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+        {side === "left" ? "Вы" : "Соперник"}
+      </p>
+      <p className="truncate font-genshin text-xl text-foreground sm:text-2xl">
+        {name}
+      </p>
+    </div>
+  );
+}
+
+function CompareMetricRow({ row }: { row: CompareRow }) {
+  const [tip, setTip] = useState(false);
+  const Icon = row.icon;
+  const l = row.left;
+  const r = row.right;
+  let winner: "left" | "right" | "tie" | "none" = "none";
+  if (l != null && r != null && row.higherWins != null) {
+    if (l === r) winner = "tie";
+    else if (row.higherWins) winner = l > r ? "left" : "right";
+    else winner = l < r ? "left" : "right";
+  }
+
+  const maxBar = row.max ?? Math.max(l ?? 0, r ?? 0, 1);
+
+  return (
+    <div
+      className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 py-3.5 sm:gap-4"
+      onMouseEnter={() => setTip(true)}
+      onMouseLeave={() => setTip(false)}
+    >
+      <div className="min-w-0">
+        <p
+          className={`font-genshin text-xl tabular-nums sm:text-2xl ${
+            winner === "left" ? "text-[#189b8e]" : "text-foreground"
+          }`}
+        >
+          {row.format(l, "left")}
+        </p>
+        {row.showBar ? (
+          <PityMiniBar value={l ?? 0} max={maxBar} accent="#189b8e" align="left" />
+        ) : (
+          <RelativeBar
+            value={l}
+            other={r}
+            higherWins={row.higherWins}
+            side="left"
+            accent="#189b8e"
+          />
+        )}
+      </div>
+
+      <div className="flex w-[7.5rem] flex-col items-center gap-1 text-center sm:w-36">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-black/[0.06]">
+          <Icon className="h-4 w-4 text-[#189b8e]" />
+        </span>
+        <p className="text-xs font-bold text-foreground/80">{row.label}</p>
+        {winner === "left" || winner === "right" ? (
+          <span className="rounded-full bg-[#189b8e]/10 px-2 py-0.5 text-[10px] font-bold text-[#147f74]">
+            {winner === "left" ? "← лучше" : "лучше →"}
+          </span>
+        ) : winner === "tie" ? (
+          <span className="text-[10px] font-bold text-muted-foreground">
+            ничья
+          </span>
+        ) : (
+          <span className="text-[10px] font-medium text-muted-foreground">
+            сейчас
+          </span>
+        )}
+      </div>
+
+      <div className="min-w-0 text-right">
+        <p
+          className={`font-genshin text-xl tabular-nums sm:text-2xl ${
+            winner === "right" ? "text-[#c99212]" : "text-foreground"
+          }`}
+        >
+          {row.format(r, "right")}
+        </p>
+        {row.showBar ? (
+          <PityMiniBar value={r ?? 0} max={maxBar} accent="#c99212" align="right" />
+        ) : (
+          <RelativeBar
+            value={r}
+            other={l}
+            higherWins={row.higherWins}
+            side="right"
+            accent="#c99212"
+          />
+        )}
+      </div>
+
+      {tip ? (
+        <div className="pointer-events-none absolute left-1/2 top-[calc(100%-4px)] z-20 w-[min(280px,90vw)] -translate-x-1/2 rounded-2xl border border-black/[0.06] bg-white px-3 py-2 text-center text-xs leading-snug text-foreground/75 shadow-[0_12px_32px_-16px_rgba(15,70,60,0.45)]">
+          {row.tip}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function PityMiniBar({
+  value,
+  max,
+  accent,
+  align,
+}: {
+  value: number;
+  max: number;
+  accent: string;
+  align: "left" | "right";
+}) {
+  const pct = Math.min(100, Math.max(0, (value / Math.max(max, 1)) * 100));
+  return (
+    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
+      <div
+        className={`h-full rounded-full ${align === "right" ? "ml-auto" : ""}`}
+        style={{ width: `${pct}%`, backgroundColor: accent }}
+      />
+    </div>
+  );
+}
+
+function RelativeBar({
+  value,
+  other,
+  higherWins,
+  side,
+  accent,
+}: {
+  value: number | null;
+  other: number | null;
+  higherWins: boolean | null;
+  side: "left" | "right";
+  accent: string;
+}) {
+  if (value == null || other == null || higherWins == null) {
+    return <div className="mt-1.5 h-1.5" />;
+  }
+  const max = Math.max(Math.abs(value), Math.abs(other), 0.01);
+  const pct = Math.min(100, (Math.abs(value) / max) * 100);
+  return (
+    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
+      <div
+        className={`h-full rounded-full transition-all ${
+          side === "right" ? "ml-auto" : ""
+        }`}
+        style={{ width: `${pct}%`, backgroundColor: accent }}
+      />
     </div>
   );
 }
