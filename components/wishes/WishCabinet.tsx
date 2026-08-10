@@ -506,7 +506,7 @@ export default function WishCabinet({
               return (
                 <div
                   key={a.id}
-                  className={`group relative flex min-h-14 items-center gap-0.5 rounded-2xl pl-1.5 pr-2.5 transition ${
+                  className={`group relative flex min-h-14 items-center gap-2 rounded-2xl px-2.5 transition ${
                     active
                       ? "bg-[#189b8e] text-white shadow-soft"
                       : "bg-white text-foreground/80 ring-1 ring-black/[0.06] hover:bg-black/[0.03]"
@@ -551,7 +551,7 @@ export default function WishCabinet({
                   <button
                     type="button"
                     onClick={() => selectAccount(a.id)}
-                    className="min-h-14 flex-1 rounded-2xl px-3 py-2.5 text-left text-base"
+                    className="min-h-14 min-w-0 flex-1 py-2.5 text-left text-base"
                   >
                     <span className="block font-bold leading-tight">
                       {a.label}
