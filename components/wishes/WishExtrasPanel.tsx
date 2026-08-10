@@ -436,7 +436,8 @@ function CompareArena({
       icon: Dices,
       left: left.total,
       right: right.total,
-      format: (n) => Math.round(n).toLocaleString("ru-RU"),
+      format: (n) =>
+        n == null ? "—" : Math.round(n).toLocaleString("ru-RU"),
       higherWins: true,
       tip: "Больше молитв — больше статистики, но не обязательно больше удачи.",
     },
@@ -446,7 +447,7 @@ function CompareArena({
       icon: Sparkles,
       left: left.rate5,
       right: right.rate5,
-      format: (n) => `${n.toFixed(2)}%`,
+      format: (n) => (n == null ? "—" : `${n.toFixed(2)}%`),
       higherWins: true,
       tip: "Доля пятизвёздных среди всех молитв. База игры ≈1,6%.",
     },
