@@ -5,7 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CloudDownload, LogOut, Plus, Shield, X } from "lucide-react";
+import { CloudDownload, Lightbulb, LogOut, MessageCircleWarning, Plus, Shield, X } from "lucide-react";
+import { SITE_TELEGRAM } from "@/lib/site";
 import type {
   BannerPityStats,
   GachaBannerKey,
@@ -19,6 +20,9 @@ import {
   bannerKeyFromGachaType,
 } from "@/lib/wishes";
 import WishImportWizard from "@/components/wishes/WishImportWizard";
+import WishExtrasPanel, {
+  rememberAuthUrl,
+} from "@/components/wishes/WishExtrasPanel";
 import { WishMonthlyPullChart, WishRateCompare } from "@/components/wishes/WishCharts";
 import { AnimatedNumber } from "@/components/wishes/WishMotion";
 import { friendlyWishImportError } from "@/lib/wish-errors";
@@ -295,6 +299,7 @@ export default function WishCabinet({
           accountLabel?: string;
         };
         if (!res.ok) throw new Error(json.error || "Не удалось импортировать");
+        if (accountId) rememberAuthUrl(accountId, url);
         setMessage(
           `Готово для «${json.accountLabel || data?.account.label}»: разобрано ${json.totalParsed}, добавлено ${json.inserted}`,
         );
@@ -538,6 +543,18 @@ export default function WishCabinet({
                 return <BannerCard key={key} stat={s} delay={i * 0.05} />;
               })}
             </div>
+
+            <WishExtrasPanel
+              accountId={data!.account.id}
+              accountLabel={data!.account.label}
+              stats={DASHBOARD_BANNERS.map((key) => statsByKey.get(key)!).filter(
+                Boolean,
+              )}
+              overview={data!.overview}
+              accounts={data!.accounts}
+              onRefreshUrl={importFromUrl}
+              busy={busy}
+            />
 
             <div className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
               <section className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
@@ -785,6 +802,39 @@ export default function WishCabinet({
                 </ul>
               </section>
             )}
+
+            <section className="rounded-3xl border border-black/[0.06] bg-gradient-to-br from-[#eef8f6] to-white p-6 sm:p-8">
+              <h2 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
+                Помощь и идеи
+              </h2>
+              <p className="mt-2 max-w-2xl text-base text-foreground/65">
+                Нашли баг в импорте или хотите новую фичу — напишите в Telegram.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <a
+                  href={`${SITE_TELEGRAM}?text=${encodeURIComponent(
+                    "Привет! Сообщаю о проблеме в счётчике молитв Guideshin:\n",
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3 text-base font-bold text-white transition hover:bg-[#147f74]"
+                >
+                  <MessageCircleWarning className="h-5 w-5" />
+                  Сообщить о проблеме
+                </a>
+                <a
+                  href={`${SITE_TELEGRAM}?text=${encodeURIComponent(
+                    "Привет! Предлагаю обновление для счётчика молитв:\n",
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-[#189b8e]/35 bg-white px-5 py-3 text-base font-bold text-[#189b8e] transition hover:bg-[#189b8e]/5"
+                >
+                  <Lightbulb className="h-5 w-5" />
+                  Предложить обновление
+                </a>
+              </div>
+            </section>
           </div>
         )}
       </section>
@@ -1118,9 +1168,6 @@ function FiveStarCard({ item }: { item: FiveStar }) {
             ? `R${item.constellation ?? 1}`
             : `C${item.constellation ?? 0}`}
         </span>
-        <span className="absolute bottom-1 right-1 z-20 rounded-md bg-black/55 px-1 py-0.5 text-[9px] font-bold text-white/90">
-          {item.pity}
-        </span>
       </div>
 
       <div className="flex min-h-[1.75rem] shrink-0 items-center justify-center px-1 py-0.5">
@@ -1253,9 +1300,9 @@ function BannerCard({ stat, delay }: { stat: Stat; delay: number }) {
           До гаранта:{" "}
           <strong className="text-foreground">{stat.remaining5}</strong>
           {stat.pity5 >= stat.softPityAt ? (
-            <span className="ml-2 font-bold text-amber-700">мягкий гарант</span>
+            <span className="ml-2 font-bold text-amber-700">софт гарант</span>
           ) : (
-            <span className="ml-2">мягкий с {stat.softPityAt}</span>
+            <span className="ml-2">софт с {stat.softPityAt}</span>
           )}
         </p>
       </div>

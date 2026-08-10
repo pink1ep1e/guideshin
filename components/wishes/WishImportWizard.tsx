@@ -575,26 +575,39 @@ export default function WishImportWizard({
         )}
 
         {platform !== "paimon" && (
-          <details className="group">
-            <summary className="cursor-pointer list-none text-sm font-semibold text-foreground/50 transition hover:text-[#189b8e]">
-              Вставить ссылку вручную
-            </summary>
+          <div className="rounded-2xl border border-dashed border-black/[0.1] bg-[#f7faf9] p-4">
+            <p className="text-sm font-bold text-foreground/70">
+              Быстрый импорт по ссылке
+            </p>
+            <p className="mt-1 text-sm text-foreground/50">
+              Если ссылка уже есть — вставьте сюда, без PowerShell.
+            </p>
             <textarea
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               rows={2}
               placeholder="https://…authkey=…"
-              className="mt-3 w-full rounded-2xl border border-black/[0.08] px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#189b8e]/25"
+              className="mt-3 w-full rounded-2xl border border-black/[0.08] bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#189b8e]/25"
             />
-            <button
-              type="button"
-              disabled={blocked || !url.trim()}
-              className="mt-3 rounded-2xl border border-[#189b8e] px-5 py-2.5 text-sm font-bold text-[#189b8e] disabled:opacity-50"
-              onClick={() => void importManualUrl()}
-            >
-              Импортировать
-            </button>
-          </details>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={blocked}
+                className="rounded-2xl bg-[#189b8e] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+                onClick={() => void pasteAndImport()}
+              >
+                Из буфера
+              </button>
+              <button
+                type="button"
+                disabled={blocked || !url.trim()}
+                className="rounded-2xl border border-[#189b8e] px-5 py-2.5 text-sm font-bold text-[#189b8e] disabled:opacity-50"
+                onClick={() => void importManualUrl()}
+              >
+                Импортировать ссылку
+              </button>
+            </div>
+          </div>
         )}
 
         {feedbackError && (

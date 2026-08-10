@@ -42,11 +42,11 @@ export default function LoginForm({ googleEnabled }: { googleEnabled: boolean })
       <p className="mb-2 text-sm font-bold uppercase tracking-[0.14em] text-[#189b8e]">
         Guideshin
       </p>
-      <h1 className="font-genshin text-4xl tracking-wide text-foreground">
+      <h1 className="font-genshin text-[2.75rem] tracking-wide text-foreground sm:text-5xl">
         Вход
       </h1>
-      <p className="mt-3 text-base text-foreground/60">
-        Счётчик молитв, pity и история — в личном кабинете.
+      <p className="mt-3 text-base text-foreground/60 sm:text-[17px]">
+        Счётчик молитв и история — в личном кабинете.
       </p>
 
       {googleEnabled && (
@@ -79,7 +79,7 @@ export default function LoginForm({ googleEnabled }: { googleEnabled: boolean })
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-2xl border border-black/[0.08] bg-white px-4 py-3 text-sm outline-none ring-[#189b8e]/30 focus:ring-2"
+              className="w-full rounded-2xl border border-black/[0.08] bg-white px-4 py-3.5 text-base outline-none ring-[#189b8e]/30 focus:ring-2"
               required
             />
           </div>
@@ -92,7 +92,7 @@ export default function LoginForm({ googleEnabled }: { googleEnabled: boolean })
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-2xl border border-black/[0.08] bg-white px-4 py-3 text-sm outline-none ring-[#189b8e]/30 focus:ring-2"
+              className="w-full rounded-2xl border border-black/[0.08] bg-white px-4 py-3.5 text-base outline-none ring-[#189b8e]/30 focus:ring-2"
               required
             />
           </div>

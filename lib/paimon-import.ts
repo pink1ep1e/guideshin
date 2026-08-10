@@ -41,6 +41,7 @@ const PAIMON_ID_ALIASES: Record<string, string[]> = {
   debate_club: ["дубина переговоров", "club"],
   thrilling_tales_of_dragon_slayers: ["эпические сказания", "thrilling"],
   primordial_jade_winged_spear: [
+    "нефритовый коршун",
     "нефритовый крылатый копьё",
     "нефритовый крылатый копье",
     "primordial jade winged spear",
