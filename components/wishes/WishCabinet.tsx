@@ -33,12 +33,12 @@ import WishAccountEditDialog, {
 } from "@/components/wishes/WishAccountEditDialog";
 import { WishMonthlyPullChart, WishRateCompare } from "@/components/wishes/WishCharts";
 import { AnimatedNumber } from "@/components/wishes/WishMotion";
+import InventoryCard from "@/components/InventoryCard";
 import { friendlyWishImportError } from "@/lib/wish-errors";
 import {
   ELEMENT_SVG,
   ELEMENT_THEME,
   RARITY_STARS,
-  rarityBg,
   type ElementKey,
 } from "@/lib/genshin";
 import FancySelect from "@/components/ui/FancySelect";
@@ -1260,86 +1260,33 @@ function WishCabinetSkeleton() {
 }
 
 function FiveStarCard({ item }: { item: FiveStar }) {
-  const stars = item.rarity
-    ? (RARITY_STARS[item.rarity] ?? 5)
-    : 5;
+  const stars = item.rarity ? (RARITY_STARS[item.rarity] ?? 5) : 5;
   const elKey = (item.element || "").toUpperCase() as ElementKey;
   const elementIcon = ELEMENT_SVG[elKey];
   const theme = ELEMENT_THEME[elKey];
   const glow = theme?.glow ?? "rgba(24,155,142,0.45)";
   const isWeapon = /weapon|оруж/i.test(item.itemType);
 
-  const inner = (
-    <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-[12px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)]">
-      <div
-        className="relative aspect-square w-full overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: `url(${rarityBg(stars)})` }}
-      >
-        {item.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={item.image}
-            alt={item.name}
-            className="relative z-0 h-full w-full object-cover object-top"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center font-genshin text-lg text-white/80">
-            5★
-          </div>
-        )}
-
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-9 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
-
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={`/images/stars/Quality_star_${stars}.svg`}
-          alt=""
-          className="absolute bottom-1 left-1/2 z-20 h-2.5 w-auto -translate-x-1/2"
-        />
-
-        {!isWeapon && elementIcon && (
-          <span className="absolute left-1 top-1 z-20 flex h-5 w-5 items-center justify-center">
-            <span
-              aria-hidden
-              className="absolute inset-[-2px] rounded-full blur-[6px]"
-              style={{ backgroundColor: glow, opacity: 0.7 }}
-            />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={elementIcon}
-              alt=""
-              className="relative h-[16px] w-[16px]"
-              style={{
-                filter:
-                  "drop-shadow(0 0 1.5px rgba(0,0,0,0.45)) drop-shadow(0 1px 2px rgba(0,0,0,0.3))",
-              }}
-            />
-          </span>
-        )}
-
+  return (
+    <InventoryCard
+      name={item.name}
+      image={item.image || ""}
+      href={item.guideHref || undefined}
+      rarityStars={stars}
+      layout={isWeapon ? "item" : "character"}
+      fit={isWeapon ? "contain" : "cover"}
+      fluid
+      dense
+      elementIcon={!isWeapon ? elementIcon : null}
+      elementGlow={glow}
+      emptyLabel="5★"
+      topRight={
         <span className="absolute right-1 top-1 z-20 rounded-md bg-black/70 px-1 py-0.5 text-[10px] font-bold text-white">
-          {/weapon|оруж/i.test(item.itemType)
-            ? `R${item.constellation ?? 1}`
-            : `C${item.constellation ?? 0}`}
+          {isWeapon ? `R${item.constellation ?? 1}` : `C${item.constellation ?? 0}`}
         </span>
-      </div>
-
-      <div className="flex min-h-[1.75rem] shrink-0 items-center justify-center px-1 py-0.5">
-        <p className="font-genshin line-clamp-2 w-full text-center text-[10px] leading-snug tracking-wide text-[#1e1e1e] [overflow-wrap:anywhere] sm:text-[11px]">
-          {item.name}
-        </p>
-      </div>
-    </div>
+      }
+    />
   );
-
-  if (item.guideHref) {
-    return (
-      <Link href={item.guideHref} className="block">
-        {inner}
-      </Link>
-    );
-  }
-  return <div>{inner}</div>;
 }
 
 function LuckMetric({
