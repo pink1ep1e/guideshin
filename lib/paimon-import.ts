@@ -1,6 +1,7 @@
 import { normalizeWishRow, type NormalizedWish } from "@/lib/wishes";
 import {
   localizeWishLookupKey,
+  isForcedFourStarName,
   wishEnToRuEntries,
 } from "@/lib/wish-guide-links";
 
@@ -39,7 +40,11 @@ const PAIMON_ID_ALIASES: Record<string, string[]> = {
   black_tassel: ["чёрная кисть", "chyornaya-kist"],
   debate_club: ["дубина переговоров", "club"],
   thrilling_tales_of_dragon_slayers: ["эпические сказания", "thrilling"],
-  primordial_jade_winged_spear: ["нефритовый крылатый", "primordial"],
+  primordial_jade_winged_spear: [
+    "нефритовый крылатый копьё",
+    "нефритовый крылатый копье",
+    "primordial jade winged spear",
+  ],
   redhorn_stonethresher: ["краснорогий", "redhorn"],
   the_widsith: ["песнь разбитых струн", "widsith"],
   rust: ["ржавый лук", "rust"],
@@ -217,7 +222,11 @@ function rankFromPaimonPull(
   pull: { id?: string; pity?: number },
   lookup?: PaimonRarityLookup,
 ): string {
-  const hit = resolveFromLookup(String(pull.id || ""), lookup);
+  const id = String(pull.id || "");
+  if (isForcedFourStarName(id) || isForcedFourStarName(titleFromId(id))) {
+    return "4";
+  }
+  const hit = resolveFromLookup(id, lookup);
   if (hit) return hit.rank;
   const pity = Number(pull.pity) || 0;
   if (pity > 10) return "5";

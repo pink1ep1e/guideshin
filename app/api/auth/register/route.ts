@@ -8,11 +8,12 @@ export async function POST(req: Request) {
       email?: string;
       password?: string;
       name?: string;
+      nickname?: string;
     };
 
     const email = body.email?.trim().toLowerCase();
     const password = body.password ?? "";
-    const name = body.name?.trim() || null;
+    const name = body.name?.trim() || body.nickname?.trim() || null;
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: "Укажите корректный email" }, { status: 400 });

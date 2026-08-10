@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import AuthShell from "@/components/auth/AuthShell";
 import RegisterForm from "@/components/auth/RegisterForm";
 import { isGoogleAuthEnabled } from "@/lib/auth";
 import { SITE_NAME } from "@/lib/site";
@@ -11,10 +12,18 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <div className="container-page flex flex-1 items-center justify-center py-12">
-      <Suspense fallback={<div className="text-sm text-muted-foreground">Загрузка…</div>}>
+    <AuthShell
+      artEyebrow="Новый аккаунт"
+      artTitle="Сохраните молитвы в облаке"
+      artText="Никнейм увидите в кабинете. Импорт с ПК, телефона или paimon.moe — в пару шагов."
+    >
+      <Suspense
+        fallback={
+          <p className="text-sm text-muted-foreground">Загрузка…</p>
+        }
+      >
         <RegisterForm googleEnabled={isGoogleAuthEnabled} />
       </Suspense>
-    </div>
+    </AuthShell>
   );
 }

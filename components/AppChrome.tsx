@@ -9,7 +9,7 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
   const isAuth = pathname === "/auth" || pathname.startsWith("/auth/");
 
   if (isAuth) {
-    return <div className="min-h-screen">{children}</div>;
+    return <div className="min-h-screen bg-[#eef4f2]">{children}</div>;
   }
 
   return (

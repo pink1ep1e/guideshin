@@ -11,6 +11,10 @@ import {
 } from "@/lib/wishes";
 import {
   buildGuideLinkIndex,
+  buildCatalogRankIndex,
+  applyCatalogRanksToPulls,
+  localizeWishDisplayName,
+  isForcedFourStarName,
   resolveGuideHref,
   resolveGuideMeta,
 } from "@/lib/wish-guide-links";
@@ -105,11 +109,19 @@ export async function GET(req: Request) {
     weapons: data.weapons,
   });
 
-  const pullsForStats = dedupeWishPulls(
-    data.pulls.map((p) => ({
-      ...p,
-      raw: p.raw as { paimon_rate?: number } | null,
-    })),
+  const rankIndex = buildCatalogRankIndex({
+    characters: data.characters,
+    weapons: data.weapons,
+  });
+
+  const pullsForStats = applyCatalogRanksToPulls(
+    dedupeWishPulls(
+      data.pulls.map((p) => ({
+        ...p,
+        raw: p.raw as { paimon_rate?: number } | null,
+      })),
+    ),
+    rankIndex,
   );
 
   const overview = computeWishOverview(pullsForStats);
@@ -125,7 +137,8 @@ export async function GET(req: Request) {
           row.itemType || "Character",
           guideIndex,
         );
-        const displayName = meta?.name ?? row.name;
+        const displayName =
+          meta?.name ?? localizeWishDisplayName(row.name);
         const isWeapon = /weapon|оруж/i.test(row.itemType);
         const char = !isWeapon
           ? data.characters.find(
@@ -141,20 +154,29 @@ export async function GET(req: Request) {
                 meta?.slug === w.slug,
             )
           : null;
+        const catalogRarity = char?.rarity ?? weapon?.rarity ?? null;
+        const forcedFour =
+          !isWeapon &&
+          (isForcedFourStarName(displayName) || isForcedFourStarName(row.name));
+
+        // В fiveStars уже только rankType=5; убираем ложные 4★ из каталога/allowlist
         const rarity =
-          char?.rarity ??
-          weapon?.rarity ??
-          null;
+          forcedFour ||
+          catalogRarity === "EPIC" ||
+          catalogRarity === "RARE" ||
+          catalogRarity === "COMMON"
+            ? catalogRarity || "EPIC"
+            : "LEGEND";
+
         return {
           ...row,
           name: displayName,
           guideHref: meta?.href ?? null,
           image: meta?.image ?? (char?.image ?? weapon?.image ?? null),
           element: char?.element ?? null,
-          rarity: rarity ?? "LEGEND",
+          rarity,
         };
       })
-      // Уже импортированные 4★ не показываем в истории 5★
       .filter((row) => row.rarity === "LEGEND");
 
     // Схлопываем EN/RU дубли после локализации имён
@@ -193,7 +215,7 @@ export async function GET(req: Request) {
     const meta = resolveGuideMeta(p.itemName, p.itemType, guideIndex);
     return {
       id: (p as { id?: string }).id || p.hoyoId,
-      itemName: meta?.name ?? p.itemName,
+      itemName: meta?.name ?? localizeWishDisplayName(p.itemName),
       itemType: p.itemType,
       rankType: p.rankType,
       gachaType: p.gachaType,

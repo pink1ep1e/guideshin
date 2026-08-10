@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import AuthShell from "@/components/auth/AuthShell";
 import LoginForm from "@/components/auth/LoginForm";
 import { isGoogleAuthEnabled } from "@/lib/auth";
 import { SITE_NAME } from "@/lib/site";
@@ -11,10 +12,14 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="container-page flex flex-1 items-center justify-center py-12">
-      <Suspense fallback={<div className="text-sm text-muted-foreground">Загрузка…</div>}>
+    <AuthShell>
+      <Suspense
+        fallback={
+          <p className="text-sm text-muted-foreground">Загрузка…</p>
+        }
+      >
         <LoginForm googleEnabled={isGoogleAuthEnabled} />
       </Suspense>
-    </div>
+    </AuthShell>
   );
 }

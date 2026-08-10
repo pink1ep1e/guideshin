@@ -136,6 +136,9 @@ const EN_TO_RU: Record<string, string> = {
   "staff of homa": "посох хомы",
   "primordial jade winged spear": "нефритовый крылатый копьё",
   "primordial jade winged-spear": "нефритовый крылатый копьё",
+  "jade winged spear": "нефритовый крылатый копьё",
+  "jade winged-spear": "нефритовый крылатый копьё",
+  "primordial jade wingedspear": "нефритовый крылатый копьё",
   "redhorn stonethresher": "краснорогий камнеруб",
   "skyward blade": "небесный меч",
   "skyward spine": "небесная ось",
@@ -214,6 +217,224 @@ function aliasKeys(name: string): string[] {
 export function localizeWishLookupKey(raw: string): string {
   const spaced = normalizeKey(raw.replace(/[_-]+/g, " "));
   return EN_TO_RU[spaced] || EN_TO_RU[normalizeKey(raw)] || spaced;
+}
+
+/** Красивое RU-имя для UI (даже если оружия ещё нет в вики). */
+export function localizeWishDisplayName(raw: string): string {
+  const spaced = normalizeKey(String(raw || "").replace(/[_-]+/g, " "));
+  const mapped = EN_TO_RU[spaced] || EN_TO_RU[normalizeKey(raw)];
+  if (!mapped) return String(raw || "").trim();
+  return mapped
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+/**
+ * 4★, которых иногда ошибочно помечают как 5★ в каталоге / импорте.
+ * Не должны попадать в «История 5★» и не должны сбрасывать гарант 5★.
+ */
+export const FORCE_FOUR_STAR_KEYS = new Set(
+  [
+    "ororon",
+    "оророн",
+    "iansan",
+    "иансан",
+    "chevreuse",
+    "шеврез",
+    "gaming",
+    "га мин",
+    "гамин",
+    "sethos",
+    "сетос",
+    "kaveh",
+    "кавех",
+    "mika",
+    "мика",
+    "yaoyao",
+    "яо яо",
+    "yao yao",
+    "layla",
+    "лайла",
+    "candace",
+    "кандакия",
+    "faruzan",
+    "фарузан",
+    "collei",
+    "коллеи",
+    "dori",
+    "дори",
+    "heizou",
+    "хэйдзо",
+    "shinobu",
+    "синобу",
+    "sara",
+    "сара",
+    "gorou",
+    "горо",
+    "thoma",
+    "тома",
+    "sayu",
+    "саю",
+    "yanfei",
+    "янь фэй",
+    "rosaria",
+    "розария",
+    "xinyan",
+    "синь янь",
+    "diona",
+    "диона",
+    "sucrose",
+    "сахароза",
+    "chongyun",
+    "чунь юнь",
+    "xingqiu",
+    "син цю",
+    "beidou",
+    "бэй доу",
+    "ningguang",
+    "нин гуан",
+    "xiangling",
+    "сян лин",
+    "fischl",
+    "фишль",
+    "bennett",
+    "беннет",
+    "razor",
+    "рэйзор",
+    "noelle",
+    "ноэлль",
+    "barbara",
+    "барбара",
+    "amber",
+    "эмбер",
+    "kaeya",
+    "кэя",
+    "lisa",
+    "лиза",
+  ].map((s) => normalizeKey(s).replace(/\s+/g, "")),
+);
+
+export function isForcedFourStarName(name: string): boolean {
+  const k = normalizeKey(name).replace(/\s+/g, "");
+  const localized = normalizeKey(localizeWishLookupKey(name)).replace(
+    /\s+/g,
+    "",
+  );
+  return FORCE_FOUR_STAR_KEYS.has(k) || FORCE_FOUR_STAR_KEYS.has(localized);
+}
+
+export type CatalogRankHit = {
+  rarity: "LEGEND" | "EPIC" | "RARE" | "COMMON" | string;
+  name: string;
+  itemType: "Character" | "Weapon";
+};
+
+/** Индекс редкости по имени/алиасу для правки rankType перед подсчётом pity. */
+export function buildCatalogRankIndex(input: {
+  characters: { slug: string; name: string; rarity: string }[];
+  weapons: { slug: string; name: string; rarity: string }[];
+}): Map<string, CatalogRankHit> {
+  const map = new Map<string, CatalogRankHit>();
+  const put = (raw: string, hit: CatalogRankHit) => {
+    for (const k of aliasKeys(raw)) {
+      map.set(k, hit);
+      map.set(k.replace(/\s+/g, ""), hit);
+    }
+  };
+
+  for (const c of input.characters) {
+    const hit: CatalogRankHit = {
+      rarity: c.rarity,
+      name: c.name,
+      itemType: "Character",
+    };
+    put(c.name, hit);
+    put(c.slug.replace(/-/g, " "), hit);
+    if (isForcedFourStarName(c.name) || isForcedFourStarName(c.slug)) {
+      hit.rarity = "EPIC";
+    }
+  }
+  for (const w of input.weapons) {
+    const hit: CatalogRankHit = {
+      rarity: w.rarity,
+      name: w.name,
+      itemType: "Weapon",
+    };
+    put(w.name, hit);
+    put(w.slug.replace(/-/g, " "), hit);
+  }
+
+  for (const [en, ru] of Object.entries(EN_TO_RU)) {
+    const ruHit =
+      map.get(normalizeKey(ru)) ||
+      map.get(normalizeKey(ru).replace(/\s+/g, ""));
+    if (ruHit) {
+      map.set(normalizeKey(en), ruHit);
+      map.set(normalizeKey(en).replace(/\s+/g, ""), ruHit);
+    }
+  }
+  return map;
+}
+
+export function resolveCatalogRank(
+  itemName: string,
+  itemType: string,
+  index: Map<string, CatalogRankHit>,
+): CatalogRankHit | null {
+  for (const k of aliasKeys(itemName)) {
+    const hit = index.get(k) || index.get(k.replace(/\s+/g, ""));
+    if (hit) return hit;
+  }
+  if (isForcedFourStarName(itemName)) {
+    return {
+      rarity: "EPIC",
+      name: localizeWishDisplayName(itemName),
+      itemType: /weapon|оруж/i.test(itemType) ? "Weapon" : "Character",
+    };
+  }
+  return null;
+}
+
+/** Правит rankType/имя по каталогу (Оророн 4★, EN→RU и т.д.). */
+export function applyCatalogRanksToPulls<
+  T extends {
+    itemName: string;
+    itemType: string;
+    rankType: string;
+  },
+>(pulls: T[], index: Map<string, CatalogRankHit>): T[] {
+  return pulls.map((p) => {
+    const hit = resolveCatalogRank(p.itemName, p.itemType, index);
+    if (!hit) {
+      if (isForcedFourStarName(p.itemName) && String(p.rankType) === "5") {
+        return {
+          ...p,
+          rankType: "4",
+          itemName: localizeWishDisplayName(p.itemName),
+        };
+      }
+      // EN оружие без карточки в вики — хотя бы русское имя
+      if (/weapon|оруж/i.test(p.itemType)) {
+        const localized = localizeWishDisplayName(p.itemName);
+        if (localized !== p.itemName) return { ...p, itemName: localized };
+      }
+      return p;
+    }
+
+    let rankType = p.rankType;
+    if (hit.rarity === "LEGEND") rankType = "5";
+    else if (hit.rarity === "EPIC") rankType = "4";
+    else if (hit.rarity === "RARE" || hit.rarity === "COMMON") rankType = "3";
+
+    return {
+      ...p,
+      itemName: hit.name,
+      itemType: hit.itemType,
+      rankType,
+    };
+  });
 }
 
 export function wishEnToRuEntries(): [string, string][] {

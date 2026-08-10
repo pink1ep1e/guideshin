@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
+import AppChrome from "@/components/AppChrome";
 import { AuthSessionProvider } from "@/components/shared";
 import {
   SITE_DESCRIPTION,
@@ -109,9 +108,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="flex min-h-screen flex-col">
         <AuthSessionProvider>
           <AnalyticsProvider />
-          <Navbar />
-          <main className="flex min-h-0 flex-1 flex-col">{children}</main>
-          <Footer />
+          <AppChrome>{children}</AppChrome>
         </AuthSessionProvider>
       </body>
     </html>

@@ -211,6 +211,24 @@ export async function POST(req: Request) {
         inserted += created.count;
       }
 
+      // Финальная чистка: paimon внутри окна Hoyoverse
+      if (!replace) {
+        const all = await prisma.wishPull.findMany({
+          where: { accountId: account.id },
+          select: {
+            id: true,
+            hoyoId: true,
+            gachaType: true,
+            itemName: true,
+            wishTime: true,
+          },
+        });
+        const extra = syntheticDuplicateDbIds(all);
+        if (extra.length) {
+          await prisma.wishPull.deleteMany({ where: { id: { in: extra } } });
+        }
+      }
+
       await prisma.wishImportBatch.update({
         where: { id: batch.id },
         data: { pullCount: inserted },

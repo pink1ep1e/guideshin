@@ -99,12 +99,58 @@ export function wishContentKey(p: {
   return `${gacha}|${sec}|${wishItemNameKey(p.itemName)}`;
 }
 
+function wishTimeMs(wishTime: Date | string): number {
+  const t = new Date(wishTime).getTime();
+  return Number.isFinite(t) ? t : 0;
+}
+
+/** Диапазон дат официальных (Hoyoverse) круток. */
+export function hoyoWishTimeWindow(
+  pulls: { hoyoId: string; wishTime: Date | string }[],
+): { min: number; max: number } | null {
+  let min = Infinity;
+  let max = -Infinity;
+  for (const p of pulls) {
+    if (isSyntheticWishId(p.hoyoId)) continue;
+    const t = wishTimeMs(p.wishTime);
+    if (!t) continue;
+    if (t < min) min = t;
+    if (t > max) max = t;
+  }
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return null;
+  return { min, max };
+}
+
 /**
- * Убирает дубли paimon+URL: если есть официальная запись Hoyoverse,
- * синтетические с тем же content-key отбрасываются.
- * Несколько реальных круток с одним ключом (одинаковый 3★ в одной секунде) сохраняются.
+ * Paimon закрывает «дыру» старше окна API Hoyoverse.
+ * Внутри окна Hoyoverse — только официальные записи (имена EN/RU часто не совпадают).
  */
 export function dedupeWishPulls<T extends WishPullLike>(pulls: T[]): T[] {
+  const real = pulls.filter((p) => !isSyntheticWishId(p.hoyoId));
+  const syn = pulls.filter((p) => isSyntheticWishId(p.hoyoId));
+
+  if (real.length === 0) {
+    return dedupeByContentKey(syn);
+  }
+  if (syn.length === 0) {
+    return dedupeByContentKey(real);
+  }
+
+  const window = hoyoWishTimeWindow(real);
+  // Небольшой запас на сдвиг TZ / округление секунд
+  const padMs = 3000;
+  const keptSyn = window
+    ? syn.filter((p) => {
+        const t = wishTimeMs(p.wishTime);
+        return t < window.min - padMs;
+      })
+    : syn;
+
+  // На границе окна ещё схлопываем по content-key
+  return dedupeByContentKey([...keptSyn, ...real]);
+}
+
+function dedupeByContentKey<T extends WishPullLike>(pulls: T[]): T[] {
   const groups = new Map<string, T[]>();
   for (const p of pulls) {
     const k = wishContentKey(p);
@@ -114,8 +160,8 @@ export function dedupeWishPulls<T extends WishPullLike>(pulls: T[]): T[] {
   }
   const out: T[] = [];
   for (const group of groups.values()) {
-    const real = group.filter((p) => !isSyntheticWishId(p.hoyoId));
-    const keep = real.length > 0 ? real : group;
+    const official = group.filter((p) => !isSyntheticWishId(p.hoyoId));
+    const keep = official.length > 0 ? official : group;
     const seen = new Set<string>();
     for (const p of keep) {
       if (seen.has(p.hoyoId)) continue;
@@ -126,7 +172,11 @@ export function dedupeWishPulls<T extends WishPullLike>(pulls: T[]): T[] {
   return out;
 }
 
-/** DB id синтетических строк, дублирующих официальные Hoyoverse. */
+/**
+ * DB id синтетических строк, которые нужно удалить:
+ * 1) внутри окна Hoyoverse
+ * 2) content-key дубли официальных
+ */
 export function syntheticDuplicateDbIds(
   pulls: {
     id: string;
@@ -136,11 +186,24 @@ export function syntheticDuplicateDbIds(
     wishTime: Date | string;
   }[],
 ): string[] {
+  const toDelete = new Set<string>();
+  const window = hoyoWishTimeWindow(pulls);
+  const padMs = 3000;
+
+  if (window) {
+    for (const p of pulls) {
+      if (!isSyntheticWishId(p.hoyoId)) continue;
+      const t = wishTimeMs(p.wishTime);
+      if (t >= window.min - padMs) toDelete.add(p.id);
+    }
+  }
+
   const byKey = new Map<
     string,
     { hasReal: boolean; syntheticIds: string[] }
   >();
   for (const p of pulls) {
+    if (toDelete.has(p.id)) continue;
     const k = wishContentKey(p);
     let g = byKey.get(k);
     if (!g) {
@@ -150,18 +213,17 @@ export function syntheticDuplicateDbIds(
     if (isSyntheticWishId(p.hoyoId)) g.syntheticIds.push(p.id);
     else g.hasReal = true;
   }
-  const toDelete: string[] = [];
   for (const g of byKey.values()) {
     if (g.hasReal && g.syntheticIds.length) {
-      toDelete.push(...g.syntheticIds);
+      for (const id of g.syntheticIds) toDelete.add(id);
     }
   }
-  return toDelete;
+  return [...toDelete];
 }
 
 /**
  * Готовит пачку к merge: пропускает уже известные крутки,
- * при появлении Hoyoverse — помечает paimon-дубли на удаление.
+ * при появлении Hoyoverse — вычищает paimon в окне API и по content-key.
  */
 export function planWishMerge<
   T extends {
@@ -180,10 +242,31 @@ export function planWishMerge<
   }[],
   incoming: T[],
 ): { toInsert: T[]; toDeleteIds: string[] } {
+  const incomingReal = incoming.filter((p) => !isSyntheticWishId(p.hoyoId));
+  const combinedForWindow = [
+    ...existing.filter((p) => !isSyntheticWishId(p.hoyoId)),
+    ...incomingReal,
+  ];
+  const window = hoyoWishTimeWindow(combinedForWindow);
+  const padMs = 3000;
+
+  const toDeleteIds: string[] = [];
+  const remainingExisting = existing.filter((p) => {
+    if (!isSyntheticWishId(p.hoyoId)) return true;
+    if (window) {
+      const t = wishTimeMs(p.wishTime);
+      if (t >= window.min - padMs) {
+        toDeleteIds.push(p.id);
+        return false;
+      }
+    }
+    return true;
+  });
+
   const keyCounts = new Map<string, number>();
   const paimonIdsByKey = new Map<string, string[]>();
 
-  for (const p of existing) {
+  for (const p of remainingExisting) {
     const k = wishContentKey(p);
     keyCounts.set(k, (keyCounts.get(k) || 0) + 1);
     if (isSyntheticWishId(p.hoyoId)) {
@@ -194,7 +277,6 @@ export function planWishMerge<
   }
 
   const toInsert: T[] = [];
-  const toDeleteIds: string[] = [];
   const seenIncoming = new Set<string>();
 
   for (const pull of incoming) {
@@ -213,13 +295,19 @@ export function planWishMerge<
           continue;
         }
       }
+      // Уже есть официальная или paimon-копия вне окна
+      if (!isSyntheticWishId(pull.hoyoId)) {
+        // Официальная уже в БД с тем же ключом — не вставляем
+        keyCounts.set(k, count - 1);
+        continue;
+      }
       keyCounts.set(k, count - 1);
       continue;
     }
     toInsert.push(pull);
   }
 
-  return { toInsert, toDeleteIds };
+  return { toInsert, toDeleteIds: [...new Set(toDeleteIds)] };
 }
 
 export type BannerPityStats = {
