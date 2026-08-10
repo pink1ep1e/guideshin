@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CloudDownload, Lightbulb, LogOut, MessageCircleWarning, Plus, Shield, X } from "lucide-react";
+import { CloudDownload, Lightbulb, LogOut, MessageCircleWarning, BookOpen, Plus, Shield, X } from "lucide-react";
 import { SITE_TELEGRAM } from "@/lib/site";
 import type {
   BannerPityStats,
@@ -23,6 +24,10 @@ import WishImportWizard from "@/components/wishes/WishImportWizard";
 import WishExtrasPanel, {
   rememberAuthUrl,
 } from "@/components/wishes/WishExtrasPanel";
+import {
+  WishCabinetTour,
+  WishTourTrigger,
+} from "@/components/wishes/WishCabinetTour";
 import { WishMonthlyPullChart, WishRateCompare } from "@/components/wishes/WishCharts";
 import { AnimatedNumber } from "@/components/wishes/WishMotion";
 import { friendlyWishImportError } from "@/lib/wish-errors";
@@ -137,6 +142,7 @@ export default function WishCabinet({
   const [newServer, setNewServer] = useState("europe");
   const [imports, setImports] = useState<ImportHistoryItem[]>([]);
   const [undoId, setUndoId] = useState<string | null>(null);
+  const [tourOpen, setTourOpen] = useState(false);
 
   const loadImports = useCallback(async (id: string) => {
     try {
@@ -440,8 +446,10 @@ export default function WishCabinet({
                 Админ-панель
               </Link>
             ) : null}
+            <WishTourTrigger onClick={() => setTourOpen(true)} />
             <button
               type="button"
+              data-tour="tour-import"
               onClick={() => setImportOpen(true)}
               className="inline-flex items-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3 text-base font-bold text-white transition hover:bg-[#147f74]"
             >
@@ -466,7 +474,10 @@ export default function WishCabinet({
             <SkeletonBone className="h-14 w-28" />
           </div>
         ) : data ? (
-          <div className="mb-7 flex flex-wrap items-stretch gap-3">
+          <div
+            data-tour="tour-accounts"
+            className="mb-7 flex flex-wrap items-stretch gap-3"
+          >
             {data.accounts.map((a) => {
               const active = a.id === data.account.id;
               return (
@@ -513,6 +524,7 @@ export default function WishCabinet({
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
+              data-tour="tour-overview"
               className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
             >
               <OverviewTile label="Всего молитв" value={data!.overview.total} />
@@ -526,6 +538,7 @@ export default function WishCabinet({
                 value={data!.overview.rate5}
                 format={(n) => `${fmtPct(n)}%`}
                 hint={`${data!.overview.count5} пятизвёздных`}
+                tip="Доля пятизвёздных среди всех ваших молитв. В игре базовый шанс около 1,6% — выше значит везло чаще среднего."
               />
               <OverviewTile
                 label="Средний гарант 5★"
@@ -533,10 +546,14 @@ export default function WishCabinet({
                 format={(n) =>
                   data!.overview.avgPity5 == null ? "—" : fmtPct(n, 1)
                 }
+                tip="Среднее число круток между двумя 5★. Чем меньше — тем раньше обычно приходят легендарки (жёсткий гарант 90 / 80 на оружии)."
               />
             </motion.div>
 
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <div
+              data-tour="tour-banners"
+              className="grid gap-5 md:grid-cols-2 xl:grid-cols-4"
+            >
               {DASHBOARD_BANNERS.map((key, i) => {
                 const s = statsByKey.get(key);
                 if (!s) return null;
@@ -551,12 +568,27 @@ export default function WishCabinet({
                 Boolean,
               )}
               overview={data!.overview}
+              recentFiveStars={DASHBOARD_BANNERS.flatMap((key) => {
+                const s = statsByKey.get(key);
+                if (!s) return [];
+                return s.fiveStars.map((f) => ({
+                  name: f.name,
+                  image: f.image,
+                  time: f.time,
+                  itemType: f.itemType,
+                  banner: s.label,
+                }));
+              }).sort(
+                (a, b) =>
+                  new Date(b.time).getTime() - new Date(a.time).getTime(),
+              )}
               accounts={data!.accounts}
-              onRefreshUrl={importFromUrl}
-              busy={busy}
             />
 
-            <div className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
+            <div
+              data-tour="tour-charts"
+              className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]"
+            >
               <section className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
                 <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                   <div>
@@ -615,7 +647,10 @@ export default function WishCabinet({
 
             {/* Luck vs community */}
             {data?.luck && (
-              <section className="rounded-3xl border border-black/[0.06] bg-gradient-to-br from-[#eef8f6] to-white p-6 sm:p-8">
+              <section
+                data-tour="tour-luck"
+                className="rounded-3xl border border-black/[0.06] bg-gradient-to-br from-[#eef8f6] to-white p-6 sm:p-8"
+              >
                 <h2 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                   Удачливость среди игроков
                 </h2>
@@ -672,7 +707,10 @@ export default function WishCabinet({
               </section>
             )}
 
-            <section className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
+            <section
+              data-tour="tour-fivestars"
+              className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8"
+            >
               <h2 className="mb-4 font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                 История 5★
               </h2>
@@ -699,7 +737,10 @@ export default function WishCabinet({
               </div>
             </section>
 
-            <section className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
+            <section
+              data-tour="tour-recent"
+              className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8"
+            >
               <div className="mb-4 flex items-end justify-between">
                 <h2 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                   Последние молитвы
@@ -761,7 +802,10 @@ export default function WishCabinet({
             </section>
 
             {imports.length > 0 && (
-              <section className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
+              <section
+                data-tour="tour-imports"
+                className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8"
+              >
                 <h2 className="mb-1 font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                   История импортов
                 </h2>
@@ -803,14 +847,26 @@ export default function WishCabinet({
               </section>
             )}
 
-            <section className="rounded-3xl border border-black/[0.06] bg-gradient-to-br from-[#eef8f6] to-white p-6 sm:p-8">
+            <section
+              data-tour="tour-help"
+              className="rounded-3xl border border-black/[0.06] bg-gradient-to-br from-[#eef8f6] to-white p-6 sm:p-8"
+            >
               <h2 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                 Помощь и идеи
               </h2>
               <p className="mt-2 max-w-2xl text-base text-foreground/65">
-                Нашли баг в импорте или хотите новую фичу — напишите в Telegram.
+                Не помните, что значит блок на странице — снова откройте
+                «Обучение» сверху. Баг или идея — напишите в Telegram.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => setTourOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-[#189b8e]/35 bg-white px-5 py-3 text-base font-bold text-[#189b8e] transition hover:bg-[#189b8e]/5"
+                >
+                  <BookOpen className="h-5 w-5" />
+                  Пройти обучение
+                </button>
                 <a
                   href={`${SITE_TELEGRAM}?text=${encodeURIComponent(
                     "Привет! Сообщаю о проблеме в счётчике молитв Guideshin:\n",
@@ -838,6 +894,12 @@ export default function WishCabinet({
           </div>
         )}
       </section>
+
+      <WishCabinetTour
+        hasPulls={hasPulls}
+        active={tourOpen}
+        onActiveChange={setTourOpen}
+      />
 
       {/* Auto-import dialog */}
       <AnimatePresence>
@@ -1224,16 +1286,30 @@ function OverviewTile({
   value,
   format,
   hint,
+  tip,
   primogem,
 }: {
   label: string;
   value: number;
   format?: (n: number) => string;
   hint?: string;
+  tip?: string;
   primogem?: boolean;
 }) {
+  const [tipPos, setTipPos] = useState<{ x: number; y: number } | null>(null);
+
   return (
-    <div className="rounded-3xl border border-black/[0.06] bg-white px-5 py-4 sm:px-6 sm:py-5">
+    <div
+      className={`relative rounded-3xl border border-black/[0.06] bg-white px-5 py-4 sm:px-6 sm:py-5 ${
+        tip ? "cursor-help" : ""
+      }`}
+      onMouseMove={
+        tip
+          ? (e) => setTipPos({ x: e.clientX, y: e.clientY })
+          : undefined
+      }
+      onMouseLeave={tip ? () => setTipPos(null) : undefined}
+    >
       <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
         {label}
       </p>
@@ -1248,6 +1324,21 @@ function OverviewTile({
       {hint ? (
         <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
       ) : null}
+
+      {tip && tipPos
+        ? createPortal(
+            <div
+              className="pointer-events-none fixed z-[90] max-w-[260px] rounded-2xl border border-black/[0.06] bg-white/95 px-3.5 py-2.5 text-sm leading-snug text-foreground/80 shadow-[0_12px_40px_-16px_rgba(15,70,60,0.45)] backdrop-blur-sm"
+              style={{
+                left: Math.min(tipPos.x + 14, window.innerWidth - 280),
+                top: Math.min(tipPos.y + 16, window.innerHeight - 120),
+              }}
+            >
+              {tip}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }
@@ -1297,12 +1388,12 @@ function BannerCard({ stat, delay }: { stat: Stat; delay: number }) {
           />
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          До гаранта:{" "}
-          <strong className="text-foreground">{stat.remaining5}</strong>
           {stat.pity5 >= stat.softPityAt ? (
-            <span className="ml-2 font-bold text-amber-700">софт гарант</span>
+            <span className="font-bold text-amber-700">софт гарант</span>
           ) : (
-            <span className="ml-2">софт с {stat.softPityAt}</span>
+            <span>
+              софт с <strong className="text-foreground">{stat.softPityAt}</strong>
+            </span>
           )}
         </p>
       </div>
