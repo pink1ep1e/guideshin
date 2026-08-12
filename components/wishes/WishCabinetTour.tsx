@@ -49,7 +49,7 @@ const DASHBOARD_STEPS: WishTourStep[] = [
     id: "luck",
     target: "tour-luck",
     title: "Удачливость",
-    body: "Сравнение с другими аккаунтами Guideshin: шансы 5★/4★, 50:50 и молитвы. Ниже — серия побед 50:50 и лучший стрик.",
+    body: "Сравнение с другими аккаунтами Guideshin: шансы 5★/4★, 50:50 и молитвы.",
   },
   {
     id: "fivestars",

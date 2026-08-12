@@ -45,7 +45,6 @@ import FancySelect from "@/components/ui/FancySelect";
 import type {
   CommunityLuck,
   FiftyFiftyStats,
-  WishAchievements,
 } from "@/lib/wish-luck";
 import WishAchievementsPanel from "@/components/wishes/WishAchievementsPanel";
 import { SERVER_LABEL, WISH_SERVER_OPTIONS } from "@/lib/wish-servers";
@@ -92,7 +91,6 @@ type WishDashboard = {
   monthlyChart: MonthlyPullPoint[];
   stats: Stat[];
   luck: CommunityLuck | null;
-  achievements: WishAchievements | null;
   recent: {
     id: string;
     itemName: string;
@@ -155,9 +153,6 @@ export default function WishCabinet({
   const [undoId, setUndoId] = useState<string | null>(null);
   const [tourOpen, setTourOpen] = useState(false);
   const [editAccount, setEditAccount] = useState<GameAccount | null>(null);
-  const [achievements, setAchievements] = useState<WishAchievements | null>(
-    null,
-  );
   const [achievementsLoading, setAchievementsLoading] = useState(false);
 
   const loadImports = useCallback(async (id: string) => {
@@ -181,13 +176,12 @@ export default function WishCabinet({
         const res = await fetch(`/api/wishes${q}`);
         if (!res.ok) throw new Error("fail");
         const json = (await res.json()) as WishDashboard;
-        setData({ ...json, luck: json.luck ?? null, achievements: null });
+        setData({ ...json, luck: json.luck ?? null });
         setAccountId(json.account.id);
-        setAchievements(null);
         setAchievementsLoading(true);
         void loadImports(json.account.id);
 
-        // Достижения грузим отдельно — не тормозит первый экран
+        // Удачу грузим отдельно — не тормозит первый экран
         void fetch(
           `/api/wishes/luck?accountId=${encodeURIComponent(json.account.id)}`,
         )
@@ -195,7 +189,6 @@ export default function WishCabinet({
             if (!r.ok) return;
             const body = (await r.json()) as {
               luck?: CommunityLuck;
-              achievements?: WishAchievements;
             };
             if (body.luck) {
               setData((prev) =>
@@ -203,9 +196,6 @@ export default function WishCabinet({
                   ? { ...prev, luck: body.luck! }
                   : prev,
               );
-            }
-            if (body.achievements) {
-              setAchievements(body.achievements);
             }
           })
           .catch(() => undefined)
@@ -718,7 +708,6 @@ export default function WishCabinet({
 
             <WishAchievementsPanel
               luck={data?.luck ?? null}
-              achievements={achievements}
               loading={achievementsLoading}
             />
 
@@ -738,7 +727,7 @@ export default function WishCabinet({
                       <p className="mb-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         {BANNER_LABELS[key]}
                       </p>
-                      <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-6 sm:gap-2 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12">
+                      <div className="flex flex-wrap gap-2">
                         {s.fiveStars.map((f, i) => (
                           <FiveStarCard
                             key={`${f.name}-${f.time}-${i}`}
@@ -852,7 +841,7 @@ export default function WishCabinet({
                         type="button"
                         disabled={busy}
                         onClick={() => setUndoId(batch.id)}
-                        className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:opacity-50"
+                        className="rounded-xl border border-red-300/80 bg-red-500/10 px-3.5 py-2 text-sm font-bold text-red-700 transition hover:bg-red-500/15 disabled:opacity-50 dark:border-red-400/30 dark:bg-red-500/15 dark:text-red-300 dark:hover:bg-red-500/25"
                       >
                         Отменить
                       </button>
@@ -1000,7 +989,7 @@ export default function WishCabinet({
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
                 placeholder="Например, Traveler EU"
-                className="mt-1.5 w-full rounded-xl border border-black/[0.08] px-3.5 py-3 text-sm outline-none ring-[#189b8e]/30 focus:ring-2"
+                className="mt-1.5 w-full rounded-xl border border-black/[0.08] bg-muted/60 px-3.5 py-3 text-sm text-foreground outline-none ring-[#189b8e]/30 placeholder:text-muted-foreground focus:ring-2 dark:border-white/10 dark:bg-white/[0.04]"
               />
               <div className="mt-4">
                 <FancySelect
@@ -1216,9 +1205,9 @@ function FiveStarCard({ item }: { item: FiveStar }) {
   const isWeapon = /weapon|оруж/i.test(item.itemType);
 
   const inner = (
-    <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-lg bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_8px_18px_-12px_rgba(11,31,68,0.28)]">
+    <div className="group relative flex h-full w-[4.5rem] flex-col overflow-hidden rounded-[10px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_8px_18px_-12px_rgba(11,31,68,0.28)] sm:w-[5.25rem]">
       <div
-        className="relative aspect-square w-full overflow-hidden bg-cover bg-center"
+        className="relative aspect-[3/4] w-full overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: `url(${rarityBg(stars)})` }}
       >
         {item.image ? (
@@ -1229,32 +1218,32 @@ function FiveStarCard({ item }: { item: FiveStar }) {
             className="relative z-0 h-full w-full object-cover object-top"
           />
         ) : (
-          <div className="flex h-full items-center justify-center font-genshin text-sm text-white/80">
+          <div className="flex h-full items-center justify-center font-genshin text-base text-white/80">
             5★
           </div>
         )}
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-6 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-8 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`/images/stars/Quality_star_${stars}.svg`}
           alt=""
-          className="absolute bottom-0.5 left-1/2 z-20 h-2 w-auto -translate-x-1/2"
+          className="absolute bottom-1 left-1/2 z-20 h-2.5 w-auto -translate-x-1/2"
         />
 
         {!isWeapon && elementIcon && (
-          <span className="absolute left-0.5 top-0.5 z-20 flex h-4 w-4 items-center justify-center">
+          <span className="absolute left-1 top-1 z-20 flex h-[18px] w-[18px] items-center justify-center">
             <span
               aria-hidden
-              className="absolute inset-[-1px] rounded-full blur-[4px]"
+              className="absolute inset-[-2px] rounded-full blur-[5px]"
               style={{ backgroundColor: glow, opacity: 0.7 }}
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={elementIcon}
               alt=""
-              className="relative h-[12px] w-[12px]"
+              className="relative h-[14px] w-[14px]"
               style={{
                 filter:
                   "drop-shadow(0 0 1.5px rgba(0,0,0,0.45)) drop-shadow(0 1px 2px rgba(0,0,0,0.3))",
@@ -1263,15 +1252,15 @@ function FiveStarCard({ item }: { item: FiveStar }) {
           </span>
         )}
 
-        <span className="absolute right-0.5 top-0.5 z-20 rounded bg-black/70 px-0.5 py-px text-[8px] font-bold leading-none text-white">
+        <span className="absolute right-1 top-1 z-20 rounded-md bg-black/70 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
           {/weapon|оруж/i.test(item.itemType)
             ? `R${item.constellation ?? 1}`
             : `C${item.constellation ?? 0}`}
         </span>
       </div>
 
-      <div className="flex min-h-[1.35rem] shrink-0 items-center justify-center px-0.5 py-0.5">
-        <p className="font-genshin line-clamp-2 w-full text-center text-[8px] leading-tight tracking-wide text-[#1e1e1e] [overflow-wrap:anywhere] sm:text-[9px]">
+      <div className="flex min-h-[2rem] shrink-0 items-center justify-center px-1 py-1">
+        <p className="font-genshin line-clamp-2 w-full text-center text-[9px] leading-snug tracking-wide text-foreground [overflow-wrap:anywhere] sm:text-[10px]">
           {item.name}
         </p>
       </div>
@@ -1280,12 +1269,12 @@ function FiveStarCard({ item }: { item: FiveStar }) {
 
   if (item.guideHref) {
     return (
-      <Link href={item.guideHref} className="block">
+      <Link href={item.guideHref} className="block shrink-0">
         {inner}
       </Link>
     );
   }
-  return <div>{inner}</div>;
+  return <div className="shrink-0">{inner}</div>;
 }
 
 function OverviewTile({

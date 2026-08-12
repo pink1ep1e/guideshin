@@ -71,7 +71,7 @@ export default function WeaponCatalog({ weapons }: { weapons: WeaponCatalogItem[
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Поиск по названию оружия…"
-              className="w-full rounded-[16px] border border-black/[0.06] bg-white/90 py-3.5 pl-11 pr-11 text-sm font-medium text-foreground outline-none ring-[#189b8e]/25 placeholder:text-muted-foreground focus:ring-2"
+              className="w-full rounded-[16px] border border-black/[0.06] bg-card py-3.5 pl-11 pr-11 text-sm font-medium text-foreground outline-none ring-[#189b8e]/25 placeholder:text-muted-foreground focus:ring-2"
             />
             {query && (
               <button
@@ -107,7 +107,7 @@ export default function WeaponCatalog({ weapons }: { weapons: WeaponCatalogItem[
                     className={`rounded-xl px-3.5 py-2 text-sm font-bold transition ${
                       rarity === value
                         ? "bg-[#189b8e] text-white shadow-sm"
-                        : "bg-white/80 text-foreground/70 ring-1 ring-black/[0.06] hover:bg-[#189b8e]/10 hover:text-[#189b8e]"
+                        : "bg-black/[0.03] text-foreground/70 ring-1 ring-black/[0.06] hover:bg-[#189b8e]/10 hover:text-[#189b8e] dark:bg-white/[0.06] dark:ring-white/10"
                     }`}
                   >
                     {label}
@@ -140,7 +140,7 @@ export default function WeaponCatalog({ weapons }: { weapons: WeaponCatalogItem[
                   className={`rounded-xl px-3.5 py-2 text-sm font-bold transition ${
                     type === t
                       ? "bg-[#189b8e] text-white shadow-sm"
-                      : "bg-white/80 text-foreground/70 ring-1 ring-black/[0.06] hover:bg-[#189b8e]/10 hover:text-[#189b8e]"
+                      : "bg-black/[0.03] text-foreground/70 ring-1 ring-black/[0.06] hover:bg-[#189b8e]/10 hover:text-[#189b8e] dark:bg-white/[0.06] dark:ring-white/10"
                   }`}
                 >
                   {t}

@@ -116,17 +116,17 @@ export default async function Home() {
       {/* Wide art band */}
       <section className="container-page mt-12">
         <div className="glass-panel relative overflow-hidden text-foreground">
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 dark:opacity-20">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={HOME_ASSETS.featureWide}
               alt=""
               loading="lazy"
               decoding="async"
-              className="h-full w-full object-cover opacity-45"
+              className="h-full w-full object-cover opacity-45 dark:opacity-30"
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/92 to-white/55" />
+          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/92 to-white/55 dark:from-[hsl(var(--card))] dark:via-[hsl(var(--card)/0.94)] dark:to-[hsl(var(--card)/0.65)]" />
           <div className="relative grid gap-6 p-8 sm:p-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:p-12">
             <div>
               <p className="mb-2 text-sm font-bold uppercase tracking-[0.1em] text-[#189b8e]">

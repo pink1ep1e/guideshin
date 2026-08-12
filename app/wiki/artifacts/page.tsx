@@ -46,7 +46,7 @@ export default async function ArtifactsPage() {
     <div className="pb-8">
       <section className="container-page pt-7 sm:pt-9">
         <div className="glass-panel relative overflow-hidden p-6 sm:p-8 lg:p-10">
-          <div className="absolute inset-0 opacity-[0.18]">
+          <div className="absolute inset-0 opacity-[0.18] dark:hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={HOME_ASSETS.featureWide}
@@ -54,7 +54,7 @@ export default async function ArtifactsPage() {
               className="h-full w-full object-cover"
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-white/70" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-white/70 dark:from-[hsl(var(--card))] dark:via-[hsl(var(--card)/0.96)] dark:to-[hsl(var(--card)/0.85)]" />
           <span className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-[#189b8e]/12 blur-2xl" />
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#189b8e] to-[#67d5cc]" />
 

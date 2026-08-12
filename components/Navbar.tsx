@@ -5,7 +5,6 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { ChevronDown } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { TelegramLink } from "@/components/TelegramLink";
 import { ThemeToggle } from "@/components/shared";
 
 const navLinks = [
@@ -232,7 +231,7 @@ export default function Navbar() {
 
   return (
     <div
-      className={`flex items-center justify-center px-3 pt-5 sm:px-4 ${
+      className={`flex items-center justify-center gap-2.5 px-3 pt-5 sm:gap-3 sm:px-4 ${
         isMap ? "pointer-events-none fixed inset-x-0 top-0 z-[60]" : "relative z-50 shrink-0"
       }`}
     >
@@ -339,11 +338,6 @@ export default function Navbar() {
             </div>
 
             <div className="flex items-center gap-2 lg:justify-self-end">
-              <TelegramLink
-                placement="navbar"
-                showLabel={false}
-                className="ui-btn-secondary h-auto px-4 py-3.5 lg:px-5"
-              />
               <button
                 type="button"
                 className="ui-btn-primary h-auto flex-1 px-5 py-3.5 text-[15px] lg:flex-none"
@@ -360,11 +354,11 @@ export default function Navbar() {
                   ? "Мои молитвы"
                   : "Счётчик молитв"}
               </button>
-              <ThemeToggle />
             </div>
           </nav>
         </div>
       </header>
+      <ThemeToggle className="pointer-events-auto !h-[52px] !w-[52px] !rounded-[18px]" />
     </div>
   );
 }

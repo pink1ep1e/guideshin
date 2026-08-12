@@ -64,7 +64,7 @@ export default function CharacterHeroBanner({
       className="relative animate-reveal-up overflow-hidden rounded-[20px] bg-white/90 text-foreground shadow-panel ring-1 ring-black/[0.04]"
       style={themeVars}
     >
-      <div className="absolute inset-0 opacity-[0.22]">
+      <div className="absolute inset-0 opacity-[0.22] dark:hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={HOME_ASSETS.heroBg}
@@ -72,7 +72,7 @@ export default function CharacterHeroBanner({
           className="h-full w-full scale-105 object-cover"
         />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-white/50" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-white/50 dark:from-[hsl(var(--card))] dark:via-[hsl(var(--card)/0.96)] dark:to-[hsl(var(--card)/0.7)]" />
       <div
         className="absolute inset-0 opacity-80"
         style={{
@@ -107,7 +107,7 @@ export default function CharacterHeroBanner({
               )}
               {roleParts.length > 0 ? roleParts.join(" · ") : "Персонаж"}
             </span>
-            <span className="inline-flex items-center rounded-full bg-navy/[0.06] px-3 py-1.5 text-xs font-bold text-navy/70">
+            <span className="inline-flex items-center rounded-full bg-navy/[0.06] px-3 py-1.5 text-xs font-bold text-navy/70 dark:bg-white/[0.06] dark:text-foreground/70">
               {RARITY_LABEL[rarity]} персонаж
             </span>
             {sticker && <StickerBadge label={sticker} size="md" variant="pill" />}
@@ -122,7 +122,7 @@ export default function CharacterHeroBanner({
                 className="h-[4.25rem] w-[4.25rem] drop-shadow-md sm:h-[5rem] sm:w-[5rem]"
               />
             )}
-            <h1 className="font-genshin text-5xl tracking-wide text-navy sm:text-6xl lg:text-[4.75rem] lg:leading-[0.95]">
+            <h1 className="font-genshin text-5xl tracking-wide text-foreground sm:text-6xl lg:text-[4.75rem] lg:leading-[0.95]">
               {name}
             </h1>
           </div>

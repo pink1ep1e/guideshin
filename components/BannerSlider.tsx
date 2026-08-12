@@ -169,7 +169,7 @@ export default function BannerSlider({ slides }: Props) {
       style={themeVars}
     >
       {/* Atmosphere */}
-      <div className="absolute inset-0 opacity-[0.22]">
+      <div className="absolute inset-0 opacity-[0.22] dark:hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={HOME_ASSETS.heroBg}
@@ -177,7 +177,7 @@ export default function BannerSlider({ slides }: Props) {
           className="h-full w-full scale-105 object-cover"
         />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-white/50" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-white/50 dark:from-[hsl(var(--card))] dark:via-[hsl(var(--card)/0.96)] dark:to-[hsl(var(--card)/0.7)]" />
       <div
         className="absolute inset-0 opacity-80 transition-opacity duration-700"
         style={{
@@ -238,7 +238,7 @@ export default function BannerSlider({ slides }: Props) {
                 <img src={item.elementImg} alt="" className="h-4 w-4" />
                 {item.role}
               </span>
-              <span className="inline-flex items-center rounded-full bg-navy/[0.06] px-3 py-1.5 text-xs font-bold text-navy/70">
+              <span className="inline-flex items-center rounded-full bg-navy/[0.06] px-3 py-1.5 text-xs font-bold text-navy/70 dark:bg-white/[0.06] dark:text-foreground/70">
                 {item.rarity}★ персонаж
               </span>
             </div>
@@ -250,7 +250,7 @@ export default function BannerSlider({ slides }: Props) {
                 alt=""
                 className="h-[4.25rem] w-[4.25rem] drop-shadow-md sm:h-[5rem] sm:w-[5rem]"
               />
-              <h1 className="font-genshin text-5xl tracking-wide text-navy sm:text-6xl lg:text-[4.75rem] lg:leading-[0.95]">
+              <h1 className="font-genshin text-5xl tracking-wide text-foreground sm:text-6xl lg:text-[4.75rem] lg:leading-[0.95]">
                 {item.name}
               </h1>
             </div>
@@ -362,7 +362,7 @@ export default function BannerSlider({ slides }: Props) {
           />
 
           {/* Soft vignette over art edge */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white/40 to-transparent lg:w-24" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white/40 to-transparent dark:from-[hsl(var(--card)/0.55)] lg:w-24" />
         </div>
       </div>
     </section>
