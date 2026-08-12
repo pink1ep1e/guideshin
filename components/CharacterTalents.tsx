@@ -75,16 +75,12 @@ export default function CharacterTalents({ talents, element }: Props) {
                   <img
                     src={item.icon}
                     alt=""
-                    className={`h-[42px] w-[42px] object-contain transition sm:h-[48px] sm:w-[48px] ${
+                    className={`talent-key-icon h-[42px] w-[42px] object-contain transition sm:h-[48px] sm:w-[48px] ${
                       on ? "opacity-100" : "opacity-70 group-hover:opacity-100"
                     }`}
-                    style={{
-                      filter:
-                        "brightness(0) saturate(100%) invert(18%) sepia(18%) saturate(900%) hue-rotate(185deg)",
-                    }}
                   />
                 ) : (
-                  <span className="text-sm text-muted-foreground">{i + 1}</span>
+                  <span className="text-sm text-muted-foreground dark:text-foreground/80">{i + 1}</span>
                 )}
               </span>
             </button>

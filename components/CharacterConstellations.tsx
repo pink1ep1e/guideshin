@@ -7,9 +7,6 @@ import {
 } from "@/lib/character-constellations";
 import { getElementTheme } from "@/lib/genshin";
 
-const DARK_ICON_FILTER =
-  "brightness(0) saturate(100%) invert(18%) sepia(18%) saturate(900%) hue-rotate(185deg)";
-
 type Props = {
   constellations: CharacterConstellation[];
   element?: string;
@@ -31,9 +28,9 @@ export default function CharacterConstellations({
       <header className="guide-section-head">
         <p className="guide-eyebrow">
           <span className="guide-eyebrow-mark" aria-hidden />
-          Геймплей
+          Билд
         </p>
-        <h2 className="guide-title">Созвездие</h2>
+        <h2 className="guide-title">Созвездия</h2>
       </header>
       <div className="guide-module-line" aria-hidden />
 
@@ -70,15 +67,16 @@ export default function CharacterConstellations({
                   <img
                     src={item.icon}
                     alt=""
-                    className={`h-[42px] w-[42px] object-contain transition sm:h-[48px] sm:w-[48px] ${
+                    className={`talent-key-icon h-[42px] w-[42px] object-contain transition sm:h-[48px] sm:w-[48px] ${
                       on ? "opacity-100" : "opacity-70 group-hover:opacity-100"
                     }`}
-                    style={{ filter: DARK_ICON_FILTER }}
                   />
                 ) : (
                   <span
                     className={`text-[15px] font-semibold tabular-nums transition ${
-                      on ? "text-[#1a2744]" : "text-[#1a2744]/70"
+                      on
+                        ? "text-[#1a2744] dark:text-white"
+                        : "text-[#1a2744]/70 dark:text-white/70"
                     }`}
                   >
                     C{item.level}
@@ -90,25 +88,18 @@ export default function CharacterConstellations({
         })}
       </div>
 
-      <div className="relative z-[1] mt-6 border-t border-black/[0.06] pt-5">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className="text-[13px] font-semibold uppercase tracking-wide text-[#189b8e]">
-              C{c.level}
-            </span>
-            <h3 className="text-[1.3rem] font-semibold tracking-tight text-foreground sm:text-[1.45rem]">
-              {c.name}
-            </h3>
-          </div>
-          {c.description ? (
-            <div
-              className="constellation-desc mt-3 max-w-3xl space-y-3 text-[15px] leading-relaxed text-muted-foreground"
-              dangerouslySetInnerHTML={{
-                __html: `<p>${renderConstellationDescription(c.description)}</p>`,
-              }}
-            />
-          ) : null}
-        </div>
+      <div className="relative z-[1] mt-5">
+        <h3 className="font-genshin text-xl tracking-wide text-foreground sm:text-2xl">
+          C{c.level}: {c.name}
+        </h3>
+        {c.description ? (
+          <div
+            className="talent-desc mt-3 text-[15px] leading-relaxed text-foreground/80"
+            dangerouslySetInnerHTML={{
+              __html: `<p>${renderConstellationDescription(c.description)}</p>`,
+            }}
+          />
+        ) : null}
       </div>
     </section>
   );

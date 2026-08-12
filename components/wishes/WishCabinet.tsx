@@ -727,7 +727,7 @@ export default function WishCabinet({
                       <p className="mb-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         {BANNER_LABELS[key]}
                       </p>
-                      <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7">
+                      <div className="grid grid-cols-[repeat(auto-fill,minmax(7.25rem,7.75rem))] justify-start gap-2.5 sm:gap-3">
                         {s.fiveStars.map((f, i) => (
                           <FiveStarCard
                             key={`${f.name}-${f.time}-${i}`}

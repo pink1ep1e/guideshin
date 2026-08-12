@@ -231,12 +231,12 @@ export default function Navbar() {
 
   return (
     <div
-      className={`flex items-center justify-center gap-2.5 px-3 pt-5 sm:gap-3 sm:px-4 ${
+      className={`mx-auto flex w-full max-w-page items-center gap-2.5 px-4 pt-5 sm:gap-3 sm:px-6 lg:px-8 ${
         isMap ? "pointer-events-none fixed inset-x-0 top-0 z-[60]" : "relative z-50 shrink-0"
       }`}
     >
       <header
-        className={`glass-panel pointer-events-auto relative z-50 w-full max-w-[1100px] ${
+        className={`glass-panel pointer-events-auto relative z-50 min-w-0 flex-1 ${
           isMap ? "shadow-[0_12px_40px_-12px_rgba(11,31,68,0.45)]" : ""
         }`}
       >

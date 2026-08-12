@@ -499,6 +499,15 @@
 }
 
 /* Таланты: idle / hover / active (светлая тема) */
+.talent-key-icon {
+  filter: brightness(0) saturate(100%) invert(18%) sepia(18%) saturate(900%)
+    hue-rotate(185deg);
+}
+
+.dark .talent-key-icon {
+  filter: brightness(0) invert(1);
+}
+
 .talent-key--idle .talent-key-idle-ring {
   position: absolute;
   inset: 4px;
