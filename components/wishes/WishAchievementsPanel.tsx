@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, Minus, Shield } from "lucide-react";
 import type { CommunityLuck, WishAchievements } from "@/lib/wish-luck";
 
 type Props = {
@@ -27,12 +27,12 @@ export default function WishAchievementsPanel({
         data-tour="tour-luck"
         className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8"
       >
-        <div className="h-8 w-48 animate-pulse rounded-lg bg-black/[0.06]" />
+        <div className="h-8 w-56 animate-pulse rounded-lg bg-black/[0.06]" />
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="h-28 animate-pulse rounded-2xl bg-black/[0.04]"
+              className="h-32 animate-pulse rounded-2xl bg-white/80"
             />
           ))}
         </div>
@@ -43,12 +43,7 @@ export default function WishAchievementsPanel({
   if (!luck) return null;
 
   const streaks = achievements?.streaks;
-  const recent = streaks?.recent.slice(-5) ?? [];
-  const pads = Math.max(0, 5 - recent.length);
-  const dots: Array<"win" | "loss" | "guarantee" | "empty"> = [
-    ...Array.from({ length: pads }, () => "empty" as const),
-    ...recent,
-  ];
+  const recent = (streaks?.recent ?? []).slice(-8);
 
   return (
     <section
@@ -63,7 +58,7 @@ export default function WishAchievementsPanel({
         и объём молитв.
       </p>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <LuckMetric
           label="Шанс 5★"
           yours={`${fmtPct(luck.your.rate5, 2)}%`}
@@ -99,51 +94,86 @@ export default function WishAchievementsPanel({
       </div>
 
       {streaks ? (
-        <div className="mt-3 flex flex-wrap items-center gap-4 rounded-2xl border border-black/[0.05] bg-[#f7faf9] px-4 py-4 sm:px-5">
-          <div className="min-w-0 flex-1">
-            <p className="font-bold text-foreground">Серия побед 50:50</p>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              Текущая серия выигрышей подряд
-              {streaks.currentWins > 0
-                ? ` · сейчас ×${streaks.currentWins}`
-                : ""}
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              {dots.map((d, i) => (
-                <span
-                  key={`${d}-${i}`}
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold ${
-                    d === "win"
-                      ? "bg-[#189b8e] text-white"
-                      : d === "loss"
-                        ? "bg-red-100 text-red-600"
-                        : d === "guarantee"
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-black/[0.06] text-transparent"
-                  }`}
-                >
-                  {d === "win" ? (
-                    <Check className="h-4 w-4" strokeWidth={3} />
-                  ) : d === "loss" ? (
-                    "×"
-                  ) : d === "guarantee" ? (
-                    "G"
-                  ) : (
-                    "·"
-                  )}
-                </span>
-              ))}
+        <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_11rem]">
+          <div className="rounded-2xl border border-black/[0.05] bg-white px-5 py-4">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Серия побед 50:50
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Последние исходы на ивенте персонажей
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-genshin text-2xl leading-none text-[#189b8e]">
+                  ×{streaks.currentWins}
+                </p>
+                <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  сейчас
+                </p>
+              </div>
             </div>
+
+            {recent.length > 0 ? (
+              <>
+                <ol className="mt-4 flex gap-1.5 overflow-x-auto pb-0.5">
+                  {recent.map((d, i) => {
+                    const label =
+                      d === "win"
+                        ? "Победа"
+                        : d === "loss"
+                          ? "Проигрыш"
+                          : "Гарант";
+                    return (
+                      <li
+                        key={`${d}-${i}`}
+                        title={label}
+                        className={`flex h-11 min-w-[2.75rem] flex-1 flex-col items-center justify-center rounded-xl border text-[10px] font-bold uppercase tracking-wide ${
+                          d === "win"
+                            ? "border-[#189b8e]/25 bg-[#189b8e]/10 text-[#147f74]"
+                            : d === "loss"
+                              ? "border-red-200 bg-red-50 text-red-600"
+                              : "border-amber-200 bg-amber-50 text-amber-700"
+                        }`}
+                      >
+                        {d === "win" ? (
+                          <Check className="h-3.5 w-3.5" strokeWidth={2.75} />
+                        ) : d === "loss" ? (
+                          <Minus className="h-3.5 w-3.5" strokeWidth={2.75} />
+                        ) : (
+                          <Shield className="h-3.5 w-3.5" strokeWidth={2.75} />
+                        )}
+                        <span className="mt-0.5 hidden sm:inline">
+                          {d === "win" ? "W" : d === "loss" ? "L" : "G"}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ol>
+                <p className="mt-2.5 text-xs text-muted-foreground">
+                  <span className="text-[#147f74]">W</span> — победа 50:50 ·{" "}
+                  <span className="text-red-600">L</span> — проигрыш ·{" "}
+                  <span className="text-amber-700">G</span> — гарант
+                </p>
+              </>
+            ) : (
+              <p className="mt-4 text-sm text-muted-foreground">
+                Пока нет зафиксированных 50:50 — появятся после ивент-5★
+              </p>
+            )}
           </div>
-          <div className="flex shrink-0 items-center gap-3 border-t border-black/[0.06] pt-3 sm:border-l sm:border-t-0 sm:pl-5 sm:pt-0">
-            <div>
-              <p className="font-genshin text-3xl text-foreground">
-                {streaks.bestWins}
-              </p>
-              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Лучшая серия
-              </p>
-            </div>
+
+          <div className="rounded-2xl border border-black/[0.05] bg-white px-5 py-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Лучшая серия
+            </p>
+            <p className="mt-2 font-genshin text-4xl leading-none text-foreground">
+              ×{streaks.bestWins}
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              побед 50:50 подряд
+            </p>
           </div>
         </div>
       ) : null}
@@ -173,7 +203,7 @@ function LuckMetric({
   better: number | null;
 }) {
   return (
-    <div className="rounded-2xl border border-black/[0.05] bg-[#f7faf9] px-5 py-4">
+    <div className="rounded-2xl border border-black/[0.05] bg-white px-5 py-4">
       <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
         {label}
       </p>

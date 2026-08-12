@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* VTB-like light palette */
+    /* Light — Guideshin */
     --background: 220 25% 96%;
     --foreground: 221 72% 15%;
 
@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 221 72% 15%;
 
-    --primary: 224 100% 52%;
+    --primary: 174 73% 35%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 30% 94%;
@@ -23,17 +23,68 @@
     --muted: 220 24% 93%;
     --muted-foreground: 218 18% 42%;
 
-    --accent: 220 40% 94%;
-    --accent-foreground: 224 80% 35%;
+    --accent: 174 40% 94%;
+    --accent-foreground: 174 60% 28%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 220 20% 88%;
     --input: 220 20% 88%;
-    --ring: 224 100% 52%;
+    --ring: 174 73% 35%;
 
     --radius: 1rem;
+
+    --surface: 0 0% 100%;
+    --surface-muted: 170 20% 96%;
+    --surface-soft: 220 24% 97%;
+    --overlay: 0 0% 100%;
+    --hairline: 0 0% 0%;
+    --hairline-alpha: 0.06;
+    --shadow-soft: 0 2px 8px rgba(11, 31, 68, 0.06);
+    --shadow-panel: 0 8px 28px rgba(11, 31, 68, 0.08);
+  }
+
+  .dark {
+    color-scheme: dark;
+
+    /* Deep teal-ink dark — брендовый, не «фиолетовый AI» */
+    --background: 180 18% 7%;
+    --foreground: 170 20% 94%;
+
+    --card: 180 14% 11%;
+    --card-foreground: 170 20% 94%;
+
+    --popover: 180 14% 12%;
+    --popover-foreground: 170 20% 94%;
+
+    --primary: 174 58% 42%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 180 12% 16%;
+    --secondary-foreground: 170 15% 90%;
+
+    --muted: 180 12% 14%;
+    --muted-foreground: 170 10% 62%;
+
+    --accent: 174 22% 16%;
+    --accent-foreground: 174 55% 72%;
+
+    --destructive: 0 62% 48%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 180 10% 18%;
+    --input: 180 10% 18%;
+    --ring: 174 58% 42%;
+
+    --surface: 180 14% 11%;
+    --surface-muted: 180 12% 14%;
+    --surface-soft: 180 12% 13%;
+    --overlay: 180 14% 12%;
+    --hairline: 0 0% 100%;
+    --hairline-alpha: 0.08;
+    --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.35);
+    --shadow-panel: 0 12px 40px rgba(0, 0, 0, 0.45);
   }
 }
 
@@ -65,15 +116,29 @@
   }
 
   .glass-panel {
-    @apply rounded-[20px] border border-black/[0.05] bg-white/85 shadow-panel backdrop-blur-sm;
+    @apply rounded-[20px] border bg-white/85 shadow-panel backdrop-blur-sm;
+    border-color: hsl(var(--hairline) / var(--hairline-alpha));
+  }
+
+  .dark .glass-panel {
+    @apply bg-[hsl(var(--card)/0.88)] shadow-panel backdrop-blur-md;
+    border-color: hsl(var(--hairline) / 0.1);
   }
 
   .ui-btn-primary {
     @apply inline-flex items-center justify-center rounded-[16px] bg-[#189b8e] px-6 py-3.5 text-sm font-bold text-white transition duration-300 hover:bg-[#207970];
   }
 
+  .dark .ui-btn-primary {
+    @apply bg-[#1aad9f] hover:bg-[#189b8e];
+  }
+
   .ui-btn-secondary {
     @apply inline-flex items-center justify-center rounded-[16px] border border-black/[0.08] bg-white/80 px-6 py-3.5 text-sm font-bold text-[#189b8e] transition duration-300 hover:bg-[#189b8e]/10;
+  }
+
+  .dark .ui-btn-secondary {
+    @apply border-white/10 bg-[hsl(var(--card)/0.9)] text-[#5ec4b8] hover:bg-[#189b8e]/15;
   }
 
   .section-title {
@@ -151,6 +216,11 @@
     @apply rounded-[14px] border border-black/[0.05] bg-[#f8fafb] p-4;
   }
 
+  .dark .guide-html .guide-pros,
+  .dark .guide-html .guide-cons {
+    @apply border-white/[0.08] bg-[hsl(var(--muted))];
+  }
+
   .guide-html .guide-pros {
     @apply border-l-[3px] border-l-[#189b8e];
   }
@@ -183,6 +253,10 @@
     @apply rounded-[12px] border border-black/[0.045] bg-[#f8fafb] px-3.5 py-3;
   }
 
+  .dark .guide-html .guide-stat-chip {
+    @apply border-white/[0.08] bg-[hsl(var(--muted))];
+  }
+
   .guide-html .guide-stat-chip-label {
     @apply text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground;
   }
@@ -201,6 +275,10 @@
 
   .guide-html .guide-rank-card {
     @apply relative overflow-hidden rounded-[14px] border border-black/[0.045] bg-[#f8fafb] transition hover:border-black/[0.08] hover:bg-white;
+  }
+
+  .dark .guide-html .guide-rank-card {
+    @apply border-white/[0.08] bg-[hsl(var(--muted))] hover:border-white/15 hover:bg-[hsl(var(--card))];
   }
 
   .guide-html .guide-rank-badge {
@@ -231,6 +309,10 @@
     @apply overflow-x-auto rounded-[14px] border border-black/[0.05] bg-white;
   }
 
+  .dark .guide-html .guide-table-wrap {
+    @apply border-white/[0.08] bg-[hsl(var(--card))];
+  }
+
   .guide-html .guide-table {
     @apply w-full min-w-[480px] border-collapse text-sm;
   }
@@ -239,12 +321,24 @@
     @apply border-b border-black/[0.05] bg-[#f5f7f9] px-3 py-2.5 text-center text-[10px] font-semibold uppercase tracking-[0.05em] text-foreground/65;
   }
 
+  .dark .guide-html .guide-table th {
+    @apply border-white/[0.08] bg-[hsl(var(--muted))] text-foreground/70;
+  }
+
   .guide-html .guide-table td {
     @apply border-b border-black/[0.035] px-3 py-3 align-middle text-muted-foreground;
   }
 
+  .dark .guide-html .guide-table td {
+    @apply border-white/[0.06];
+  }
+
   .guide-html .guide-table tbody tr:nth-child(even) {
     @apply bg-[#fafbfc];
+  }
+
+  .dark .guide-html .guide-table tbody tr:nth-child(even) {
+    @apply bg-[hsl(var(--muted)/0.45)];
   }
 
   .guide-html .guide-table tbody tr:hover {
@@ -464,6 +558,13 @@
     0 8px 28px rgba(15, 35, 70, 0.06);
 }
 
+.dark .guide-panel {
+  background: hsl(var(--card));
+  box-shadow:
+    0 0 0 1px hsl(var(--hairline) / 0.08),
+    0 12px 36px rgba(0, 0, 0, 0.35);
+}
+
 @media (min-width: 640px) {
   .guide-panel {
     padding: 1.5rem 1.75rem;
@@ -620,6 +721,11 @@
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.03);
 }
 
+.dark .guide-gear-card {
+  background: hsl(var(--muted));
+  box-shadow: inset 0 0 0 1px hsl(var(--hairline) / 0.08);
+}
+
 .guide-gear-icon {
   position: relative;
   height: 56px;
@@ -694,3 +800,117 @@ body:has(.map-page-root) main {
   flex: 1;
   overflow: hidden;
 }
+
+/* —— Dark mode: remap common light utilities across the site —— */
+.dark .bg-white {
+  background-color: hsl(var(--card));
+}
+.dark .bg-white\/95 {
+  background-color: hsl(var(--card) / 0.95);
+}
+.dark .bg-white\/90 {
+  background-color: hsl(var(--card) / 0.92);
+}
+.dark .bg-white\/85 {
+  background-color: hsl(var(--card) / 0.88);
+}
+.dark .bg-white\/80 {
+  background-color: hsl(var(--card) / 0.85);
+}
+.dark .bg-white\/70 {
+  background-color: hsl(var(--card) / 0.75);
+}
+.dark .bg-white\/55 {
+  background-color: hsl(var(--card) / 0.6);
+}
+
+.dark .bg-\[\#f7faf9\],
+.dark .bg-\[\#f7f9fb\],
+.dark .bg-\[\#f8fafb\],
+.dark .bg-\[\#f5f7f9\],
+.dark .bg-\[\#fafbfc\],
+.dark .bg-\[\#fafafa\],
+.dark .bg-\[\#eef8f6\],
+.dark .bg-\[\#f7fbfa\] {
+  background-color: hsl(var(--muted));
+}
+
+.dark .from-\[\#eef8f6\] {
+  --tw-gradient-from: hsl(var(--muted)) var(--tw-gradient-from-position);
+  --tw-gradient-to: hsl(var(--muted) / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.dark .to-white {
+  --tw-gradient-to: hsl(var(--card)) var(--tw-gradient-to-position);
+}
+.dark .via-white {
+  --tw-gradient-to: hsl(var(--card) / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from),
+    hsl(var(--card)) var(--tw-gradient-via-position), var(--tw-gradient-to);
+}
+.dark .from-white {
+  --tw-gradient-from: hsl(var(--card)) var(--tw-gradient-from-position);
+  --tw-gradient-to: hsl(var(--card) / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.dark .border-black\/\[0\.03\],
+.dark .border-black\/\[0\.035\],
+.dark .border-black\/\[0\.04\],
+.dark .border-black\/\[0\.045\],
+.dark .border-black\/\[0\.05\],
+.dark .border-black\/\[0\.06\],
+.dark .border-black\/\[0\.08\] {
+  border-color: hsl(var(--hairline) / var(--hairline-alpha));
+}
+
+.dark .ring-black\/\[0\.05\],
+.dark .ring-black\/\[0\.06\],
+.dark .ring-black\/\[0\.08\] {
+  --tw-ring-color: hsl(var(--hairline) / 0.12);
+}
+
+.dark .divide-black\/\[0\.04\],
+.dark .divide-black\/\[0\.05\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: hsl(var(--hairline) / 0.08);
+}
+
+.dark .shadow-panel {
+  box-shadow: var(--shadow-panel);
+}
+.dark .shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+.dark .text-\[\#0f5c54\],
+.dark .text-\[\#147f74\],
+.dark .text-\[\#1a7a70\] {
+  color: #5ec4b8;
+}
+
+.dark .hover\:bg-black\/\[0\.02\]:hover,
+.dark .hover\:bg-black\/\[0\.03\]:hover,
+.dark .hover\:bg-black\/\[0\.04\]:hover,
+.dark .hover\:bg-black\/\[0\.05\]:hover,
+.dark .hover\:bg-black\/\[0\.08\]:hover {
+  background-color: hsl(var(--hairline) / 0.06);
+}
+
+.dark .bg-black\/\[0\.02\],
+.dark .bg-black\/\[0\.03\],
+.dark .bg-black\/\[0\.04\],
+.dark .bg-black\/\[0\.05\],
+.dark .bg-black\/\[0\.06\] {
+  background-color: hsl(var(--hairline) / 0.06);
+}
+
+.dark .placeholder\:text-foreground\/30::placeholder,
+.dark .placeholder\:text-foreground\/35::placeholder {
+  color: hsl(var(--muted-foreground) / 0.7);
+}
+
+.dark .logo-mark {
+  filter: brightness(0) invert(1);
+  opacity: 0.92;
+}
+

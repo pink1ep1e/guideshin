@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
 import AppChrome from "@/components/AppChrome";
-import { AuthSessionProvider } from "@/components/shared";
+import { AuthSessionProvider, ThemeProvider } from "@/components/shared";
 import {
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
@@ -95,21 +95,33 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const jsonLd = [organizationJsonLd(), webSiteJsonLd()];
 
   return (
-    <html lang="ru" className={genshinFont.variable}>
+    <html lang="ru" className={genshinFont.variable} suppressHydrationWarning>
       <head>
         <link rel="stylesheet" href="/fonts/fonts.css" />
         <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(t!=='light'&&d))document.documentElement.classList.add('dark')}catch(e){}})();`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
         />
       </head>
       <body className="flex min-h-screen flex-col">
-        <AuthSessionProvider>
-          <AnalyticsProvider />
-          <AppChrome>{children}</AppChrome>
-        </AuthSessionProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthSessionProvider>
+            <AnalyticsProvider />
+            <AppChrome>{children}</AppChrome>
+          </AuthSessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

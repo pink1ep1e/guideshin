@@ -711,27 +711,9 @@ export default function WishCabinet({
             </div>
 
             <WishExtrasPanel
-              accountId={data!.account.id}
-              accountLabel={data!.account.label}
               stats={DASHBOARD_BANNERS.map((key) => statsByKey.get(key)!).filter(
                 Boolean,
               )}
-              overview={data!.overview}
-              recentFiveStars={DASHBOARD_BANNERS.flatMap((key) => {
-                const s = statsByKey.get(key);
-                if (!s) return [];
-                return s.fiveStars.map((f) => ({
-                  name: f.name,
-                  image: f.image,
-                  time: f.time,
-                  itemType: f.itemType,
-                  banner: s.label,
-                }));
-              }).sort(
-                (a, b) =>
-                  new Date(b.time).getTime() - new Date(a.time).getTime(),
-              )}
-              accounts={data!.accounts}
             />
 
             <WishAchievementsPanel
@@ -756,7 +738,7 @@ export default function WishCabinet({
                       <p className="mb-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         {BANNER_LABELS[key]}
                       </p>
-                      <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 sm:gap-2.5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
+                      <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-6 sm:gap-2 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12">
                         {s.fiveStars.map((f, i) => (
                           <FiveStarCard
                             key={`${f.name}-${f.time}-${i}`}
@@ -1234,7 +1216,7 @@ function FiveStarCard({ item }: { item: FiveStar }) {
   const isWeapon = /weapon|оруж/i.test(item.itemType);
 
   const inner = (
-    <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-[12px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)]">
+    <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-lg bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_8px_18px_-12px_rgba(11,31,68,0.28)]">
       <div
         className="relative aspect-square w-full overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: `url(${rarityBg(stars)})` }}
@@ -1247,32 +1229,32 @@ function FiveStarCard({ item }: { item: FiveStar }) {
             className="relative z-0 h-full w-full object-cover object-top"
           />
         ) : (
-          <div className="flex h-full items-center justify-center font-genshin text-lg text-white/80">
+          <div className="flex h-full items-center justify-center font-genshin text-sm text-white/80">
             5★
           </div>
         )}
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-9 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-6 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`/images/stars/Quality_star_${stars}.svg`}
           alt=""
-          className="absolute bottom-1 left-1/2 z-20 h-2.5 w-auto -translate-x-1/2"
+          className="absolute bottom-0.5 left-1/2 z-20 h-2 w-auto -translate-x-1/2"
         />
 
         {!isWeapon && elementIcon && (
-          <span className="absolute left-1 top-1 z-20 flex h-5 w-5 items-center justify-center">
+          <span className="absolute left-0.5 top-0.5 z-20 flex h-4 w-4 items-center justify-center">
             <span
               aria-hidden
-              className="absolute inset-[-2px] rounded-full blur-[6px]"
+              className="absolute inset-[-1px] rounded-full blur-[4px]"
               style={{ backgroundColor: glow, opacity: 0.7 }}
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={elementIcon}
               alt=""
-              className="relative h-[16px] w-[16px]"
+              className="relative h-[12px] w-[12px]"
               style={{
                 filter:
                   "drop-shadow(0 0 1.5px rgba(0,0,0,0.45)) drop-shadow(0 1px 2px rgba(0,0,0,0.3))",
@@ -1281,15 +1263,15 @@ function FiveStarCard({ item }: { item: FiveStar }) {
           </span>
         )}
 
-        <span className="absolute right-1 top-1 z-20 rounded-md bg-black/70 px-1 py-0.5 text-[10px] font-bold text-white">
+        <span className="absolute right-0.5 top-0.5 z-20 rounded bg-black/70 px-0.5 py-px text-[8px] font-bold leading-none text-white">
           {/weapon|оруж/i.test(item.itemType)
             ? `R${item.constellation ?? 1}`
             : `C${item.constellation ?? 0}`}
         </span>
       </div>
 
-      <div className="flex min-h-[1.75rem] shrink-0 items-center justify-center px-1 py-0.5">
-        <p className="font-genshin line-clamp-2 w-full text-center text-[10px] leading-snug tracking-wide text-[#1e1e1e] [overflow-wrap:anywhere] sm:text-[11px]">
+      <div className="flex min-h-[1.35rem] shrink-0 items-center justify-center px-0.5 py-0.5">
+        <p className="font-genshin line-clamp-2 w-full text-center text-[8px] leading-tight tracking-wide text-[#1e1e1e] [overflow-wrap:anywhere] sm:text-[9px]">
           {item.name}
         </p>
       </div>

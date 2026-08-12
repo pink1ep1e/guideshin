@@ -4,14 +4,19 @@ import * as React from "react";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 
-export function ThemeToggle() {
+export function ThemeToggle({ className = "" }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => setMounted(true), []);
 
   if (!mounted) {
-    return <div className="h-9 w-9 rounded-full border border-border" />;
+    return (
+      <div
+        className={`h-[50px] w-[50px] shrink-0 rounded-[16px] border border-border bg-secondary/40 ${className}`}
+        aria-hidden
+      />
+    );
   }
 
   const isDark = resolvedTheme === "dark";
@@ -20,10 +25,11 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      aria-label="Переключить тему"
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-secondary/60 text-foreground transition hover:bg-secondary hover:text-primary"
+      aria-label={isDark ? "Включить светлую тему" : "Включить тёмную тему"}
+      title={isDark ? "Светлая тема" : "Тёмная тема"}
+      className={`inline-flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-[16px] border border-black/[0.08] bg-white/80 text-[#189b8e] transition duration-300 hover:bg-[#189b8e]/10 dark:border-white/10 dark:bg-[hsl(var(--card)/0.9)] dark:text-[#5ec4b8] dark:hover:bg-[#189b8e]/15 ${className}`}
     >
-      {isDark ? <Sun size={18} /> : <Moon size={18} />}
+      {isDark ? <Sun className="h-5 w-5" strokeWidth={2.2} /> : <Moon className="h-5 w-5" strokeWidth={2.2} />}
     </button>
   );
 }

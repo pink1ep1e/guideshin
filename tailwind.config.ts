@@ -113,8 +113,8 @@ export default {
           "radial-gradient(ellipse 70% 80% at 85% 40%, rgba(0,163,224,0.35), transparent 55%), radial-gradient(ellipse 50% 60% at 10% 90%, rgba(10,76,255,0.45), transparent 50%), linear-gradient(120deg, #071533 0%, #0b1f44 45%, #123a7a 100%)",
       },
       boxShadow: {
-        soft: "0 2px 8px rgba(11, 31, 68, 0.06)",
-        panel: "0 8px 28px rgba(11, 31, 68, 0.08)",
+        soft: "var(--shadow-soft)",
+        panel: "var(--shadow-panel)",
       },
     },
   },
