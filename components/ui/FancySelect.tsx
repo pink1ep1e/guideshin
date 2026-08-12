@@ -115,7 +115,7 @@ export default function FancySelect({
                 ? { bottom: window.innerHeight - pos.top, top: "auto" }
                 : { top: pos.top }),
             }}
-            className="overflow-auto rounded-[16px] border border-black/[0.06] bg-white p-1.5 shadow-panel"
+            className="overflow-auto gs-scrollbar rounded-[16px] border border-black/[0.06] bg-white p-1.5 shadow-panel"
           >
             {options.map((opt) => {
               const active = opt.value === value;

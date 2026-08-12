@@ -429,7 +429,7 @@ export default function WishImportWizard({
                 type="button"
                 disabled={!oneLiner || blocked}
                 onClick={() => void copyScript()}
-                className="flex w-full items-center justify-between gap-3 rounded-2xl border border-black/[0.08] bg-[#f7faf9] px-4 py-3.5 text-left transition hover:border-[#189b8e]/35 hover:bg-[#eef8f6] disabled:opacity-50"
+                className="flex w-full items-center justify-between gap-3 rounded-2xl border border-black/[0.08] bg-muted/70 px-4 py-3.5 text-left transition hover:border-[#189b8e]/35 hover:bg-muted disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.08]"
               >
                 <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-foreground/80">
                   {oneLiner || "Загрузка команды…"}
@@ -495,7 +495,7 @@ export default function WishImportWizard({
 
         {platform === "paimon" && (
           <div className="space-y-6 text-[15px] leading-relaxed text-foreground/75 sm:text-base">
-            <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-950">
+            <p className="rounded-2xl border border-amber-500/25 bg-amber-500/15 px-4 py-3 text-sm font-medium text-amber-950 dark:border-amber-400/30 dark:bg-amber-400/15 dark:text-amber-100">
               Импорт из paimon.moe заменит все текущие молитвы этого аккаунта.
             </p>
             <SimpleStep n={1}>
@@ -575,7 +575,7 @@ export default function WishImportWizard({
         )}
 
         {platform !== "paimon" && (
-          <div className="rounded-2xl border border-dashed border-black/[0.1] bg-[#f7faf9] p-4">
+          <div className="rounded-2xl border border-dashed border-black/[0.1] bg-muted/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
             <p className="text-sm font-bold text-foreground/70">
               Быстрый импорт по ссылке
             </p>
@@ -587,7 +587,7 @@ export default function WishImportWizard({
               onChange={(e) => setUrl(e.target.value)}
               rows={2}
               placeholder="https://…authkey=…"
-              className="mt-3 w-full rounded-2xl border border-black/[0.08] bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#189b8e]/25"
+              className="mt-3 w-full rounded-2xl border border-black/[0.08] bg-card px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-[#189b8e]/25 dark:border-white/10 dark:bg-white/[0.04]"
             />
             <div className="mt-3 flex flex-wrap gap-2">
               <button
@@ -611,13 +611,13 @@ export default function WishImportWizard({
         )}
 
         {feedbackError && (
-          <div className="rounded-2xl bg-red-50 px-4 py-3.5 text-sm leading-relaxed text-red-800">
+          <div className="rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-3.5 text-sm leading-relaxed text-red-800 dark:border-red-400/30 dark:bg-red-500/15 dark:text-red-200">
             <p className="font-bold">Не удалось импортировать</p>
             <p className="mt-1">{feedbackError}</p>
           </div>
         )}
         {message && !feedbackError && (
-          <div className="rounded-2xl bg-emerald-50 px-4 py-3.5 text-sm font-medium text-emerald-900">
+          <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3.5 text-sm font-medium text-emerald-900 dark:border-emerald-400/30 dark:bg-emerald-500/15 dark:text-emerald-100">
             {message}
           </div>
         )}

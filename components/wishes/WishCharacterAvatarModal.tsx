@@ -84,12 +84,12 @@ export default function WishCharacterAvatarModal({
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Имя персонажа…"
                   autoFocus
-                  className="w-full rounded-2xl border border-black/[0.08] bg-white py-3 pl-10 pr-3.5 text-sm outline-none ring-[#189b8e]/25 focus:ring-2"
+                  className="w-full rounded-2xl border border-black/[0.08] bg-card py-3 pl-10 pr-3.5 text-sm text-foreground outline-none ring-[#189b8e]/25 focus:ring-2 dark:border-white/10 dark:bg-white/[0.04]"
                 />
               </label>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+            <div className="gs-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
               {!loaded ? (
                 <p className="px-2 py-8 text-center text-sm text-muted-foreground">
                   Загружаем персонажей…

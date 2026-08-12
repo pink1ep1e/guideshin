@@ -15,15 +15,41 @@ const ELEMENTS = [
   "GEO",
 ] as const;
 
-const FILL_MS = 320;
-const GAP_MS = 40;
-const HOLD_MS = 280;
+/** Резко 10% → резко 35% → плавно быстро до 80% → резко 99% */
+const HOLD_10_MS = 100;
+const HOLD_35_MS = 110;
+const SMOOTH_TO_80_MS = 520;
+const HOLD_99_MS = 340;
 const FADE_MS = 420;
+
+function progressAt(elapsed: number): number | "done" {
+  if (elapsed < HOLD_10_MS) return 10;
+
+  const after35 = HOLD_10_MS + HOLD_35_MS;
+  if (elapsed < after35) return 35;
+
+  const smoothEnd = after35 + SMOOTH_TO_80_MS;
+  if (elapsed < smoothEnd) {
+    const t = (elapsed - after35) / SMOOTH_TO_80_MS;
+    const eased = 1 - (1 - t) ** 3;
+    return 35 + (80 - 35) * eased;
+  }
+
+  if (elapsed < smoothEnd + HOLD_99_MS) return 99;
+  return "done";
+}
+
+function iconsFromProgress(progress: number) {
+  const per = 100 / ELEMENTS.length;
+  const exact = progress / per;
+  const active = Math.min(ELEMENTS.length - 1, Math.floor(exact));
+  const fill = Math.min(100, Math.max(0, (exact - active) * 100));
+  return { active, fill };
+}
 
 export default function SiteLoader() {
   const [phase, setPhase] = useState<"boot" | "run" | "out" | "done">("boot");
-  const [active, setActive] = useState(0);
-  const [fill, setFill] = useState(0);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     try {
@@ -61,29 +87,16 @@ export default function SiteLoader() {
       if (cancelled) return;
       if (!start) start = now;
       const elapsed = now - start;
-      const cycle = FILL_MS + GAP_MS;
-      const idx = Math.min(
-        ELEMENTS.length - 1,
-        Math.floor(elapsed / cycle),
-      );
-      const local = elapsed - idx * cycle;
-      const pct =
-        idx < ELEMENTS.length - 1 || local < FILL_MS
-          ? Math.min(100, (Math.min(local, FILL_MS) / FILL_MS) * 100)
-          : 100;
+      const next = progressAt(elapsed);
 
-      setActive(idx);
-      setFill(pct);
-
-      const totalFill = ELEMENTS.length * cycle - GAP_MS;
-      if (elapsed < totalFill + HOLD_MS) {
-        raf = requestAnimationFrame(tick);
+      if (next === "done") {
+        setProgress(99);
+        setPhase("out");
         return;
       }
 
-      setActive(ELEMENTS.length - 1);
-      setFill(100);
-      setPhase("out");
+      setProgress(next);
+      raf = requestAnimationFrame(tick);
     };
 
     raf = requestAnimationFrame(tick);
@@ -122,10 +135,9 @@ export default function SiteLoader() {
     };
   }, [phase]);
 
-  if (phase === "done") return null;
+  if (phase === "done" || phase === "boot") return null;
 
-  // Keep mount during boot so hydrate is ready; hide until run/out
-  if (phase === "boot") return null;
+  const { active, fill } = iconsFromProgress(progress);
 
   return (
     <div
@@ -136,22 +148,19 @@ export default function SiteLoader() {
       aria-live="polite"
       role="status"
     >
-      <span className="sr-only">Загрузка Guideshin</span>
-      <div className="flex items-center gap-3 sm:gap-4">
+      <span className="sr-only">Загрузка Guideshin {Math.round(progress)}%</span>
+      <div className="flex items-center gap-5 sm:gap-7 md:gap-8">
         {ELEMENTS.map((key, i) => {
           const src = ELEMENT_SVG[key];
-          const state =
-            i < active ? "done" : i === active ? "active" : "pending";
           const width =
-            state === "done" ? 100 : state === "active" ? fill : 0;
+            i < active ? 100 : i === active ? fill : 0;
 
           return (
             <div
               key={key}
-              className="relative h-9 w-9 sm:h-11 sm:w-11"
+              className="relative h-14 w-14 sm:h-[4.5rem] sm:w-[4.5rem] md:h-20 md:w-20"
               aria-hidden
             >
-              {/* ghost */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={src}
@@ -159,12 +168,11 @@ export default function SiteLoader() {
                 className="site-loader-glyph site-loader-glyph--ghost absolute inset-0 h-full w-full object-contain"
                 draggable={false}
               />
-              {/* fill */}
               <div
                 className="absolute inset-y-0 left-0 overflow-hidden"
                 style={{ width: `${width}%` }}
               >
-                <div className="h-full w-9 sm:w-11">
+                <div className="h-full w-14 sm:w-[4.5rem] md:w-20">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={src}

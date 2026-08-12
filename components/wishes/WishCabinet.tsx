@@ -943,7 +943,7 @@ export default function WishCabinet({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16 }}
               transition={{ duration: 0.25 }}
-              className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-black/[0.06] shadow-[0_20px_50px_-24px_rgba(15,70,60,0.45)]"
+              className="gs-scrollbar relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-black/[0.06] shadow-[0_20px_50px_-24px_rgba(15,70,60,0.45)]"
               onClick={(e) => e.stopPropagation()}
             >
               <button
