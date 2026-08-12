@@ -10,7 +10,9 @@ import {
 import { resolveWishUser } from "@/lib/wish-auth";
 import {
   buildCommunityLuck,
+  buildWishAchievements,
   computeFiftyFifty,
+  computeFiftyFiftyStreaks,
   snapshotFromPulls,
   type AccountLuckSnapshot,
 } from "@/lib/wish-luck";
@@ -66,7 +68,7 @@ async function loadPeerSnapshots(
   return peers.filter((p) => p.accountId !== excludeAccountId);
 }
 
-/** Ленивая «удачливость» — не блокирует первый ответ кабинета. */
+/** Достижения + удача сообщества — лениво после основного кабинета. */
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   const user = await resolveWishUser(session);
@@ -79,7 +81,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Укажите accountId" }, { status: 400 });
   }
 
-  const luck = await withPrisma(async (prisma) => {
+  const payload = await withPrisma(async (prisma) => {
     const account = await prisma.wishAccount.findFirst({
       where: { id: accountId, userId: user.id },
       select: { id: true },
@@ -101,9 +103,9 @@ export async function GET(req: Request) {
     );
     const overview = computeWishOverview(cleaned);
     const fifty = computeFiftyFifty(cleaned);
+    const streaks = computeFiftyFiftyStreaks(cleaned);
     const peers = await loadPeerSnapshots(prisma, account.id);
-
-    return buildCommunityLuck(
+    const luck = buildCommunityLuck(
       {
         total: overview.total,
         rate5: overview.rate5,
@@ -113,11 +115,16 @@ export async function GET(req: Request) {
       },
       peers,
     );
+
+    return {
+      luck,
+      achievements: buildWishAchievements(luck, streaks),
+    };
   });
 
-  if (!luck) {
+  if (!payload) {
     return NextResponse.json({ error: "Аккаунт не найден" }, { status: 404 });
   }
 
-  return NextResponse.json({ luck });
+  return NextResponse.json(payload);
 }

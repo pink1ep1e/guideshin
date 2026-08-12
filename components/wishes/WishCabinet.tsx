@@ -42,7 +42,12 @@ import {
   type ElementKey,
 } from "@/lib/genshin";
 import FancySelect from "@/components/ui/FancySelect";
-import type { CommunityLuck, FiftyFiftyStats } from "@/lib/wish-luck";
+import type {
+  CommunityLuck,
+  FiftyFiftyStats,
+  WishAchievements,
+} from "@/lib/wish-luck";
+import WishAchievementsPanel from "@/components/wishes/WishAchievementsPanel";
 import { SERVER_LABEL, WISH_SERVER_OPTIONS } from "@/lib/wish-servers";
 import type { MonthlyPullPoint } from "@/lib/wishes";
 
@@ -87,6 +92,7 @@ type WishDashboard = {
   monthlyChart: MonthlyPullPoint[];
   stats: Stat[];
   luck: CommunityLuck | null;
+  achievements: WishAchievements | null;
   recent: {
     id: string;
     itemName: string;
@@ -149,6 +155,10 @@ export default function WishCabinet({
   const [undoId, setUndoId] = useState<string | null>(null);
   const [tourOpen, setTourOpen] = useState(false);
   const [editAccount, setEditAccount] = useState<GameAccount | null>(null);
+  const [achievements, setAchievements] = useState<WishAchievements | null>(
+    null,
+  );
+  const [achievementsLoading, setAchievementsLoading] = useState(false);
 
   const loadImports = useCallback(async (id: string) => {
     try {
@@ -171,25 +181,35 @@ export default function WishCabinet({
         const res = await fetch(`/api/wishes${q}`);
         if (!res.ok) throw new Error("fail");
         const json = (await res.json()) as WishDashboard;
-        setData({ ...json, luck: json.luck ?? null });
+        setData({ ...json, luck: json.luck ?? null, achievements: null });
         setAccountId(json.account.id);
+        setAchievements(null);
+        setAchievementsLoading(true);
         void loadImports(json.account.id);
 
-        // Удачливость грузим отдельно — не тормозит первый экран
+        // Достижения грузим отдельно — не тормозит первый экран
         void fetch(
           `/api/wishes/luck?accountId=${encodeURIComponent(json.account.id)}`,
         )
           .then(async (r) => {
             if (!r.ok) return;
-            const body = (await r.json()) as { luck?: CommunityLuck };
-            if (!body.luck) return;
-            setData((prev) =>
-              prev && prev.account.id === json.account.id
-                ? { ...prev, luck: body.luck! }
-                : prev,
-            );
+            const body = (await r.json()) as {
+              luck?: CommunityLuck;
+              achievements?: WishAchievements;
+            };
+            if (body.luck) {
+              setData((prev) =>
+                prev && prev.account.id === json.account.id
+                  ? { ...prev, luck: body.luck! }
+                  : prev,
+              );
+            }
+            if (body.achievements) {
+              setAchievements(body.achievements);
+            }
           })
-          .catch(() => undefined);
+          .catch(() => undefined)
+          .finally(() => setAchievementsLoading(false));
       } catch {
         setError("Не удалось загрузить данные. Попробуйте обновить страницу.");
       } finally {
@@ -714,67 +734,11 @@ export default function WishCabinet({
               accounts={data!.accounts}
             />
 
-            {/* Luck vs community */}
-            {data?.luck && (
-              <section
-                data-tour="tour-luck"
-                className="rounded-3xl border border-black/[0.06] bg-gradient-to-br from-[#eef8f6] to-white p-6 sm:p-8"
-              >
-                <h2 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
-                  Удачливость среди игроков
-                </h2>
-                <p className="mt-1 text-sm text-foreground/70">
-                  Сравнение с другими аккаунтами Guideshin: шансы 5★/4★,
-                  выигранные 50:50 и объём молитв.
-                </p>
-
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <LuckMetric
-                    label="Шанс 5★"
-                    yours={`${fmtPct(data.luck.your.rate5)}%`}
-                    community={`${fmtPct(data.luck.community.avgRate5)}%`}
-                    better={data.luck.betterThan.rate5}
-                  />
-                  <LuckMetric
-                    label="Шанс 4★"
-                    yours={`${fmtPct(data.luck.your.rate4)}%`}
-                    community={`${fmtPct(data.luck.community.avgRate4)}%`}
-                    better={data.luck.betterThan.rate4}
-                  />
-                  <LuckMetric
-                    label="50:50 выиграно"
-                    yours={
-                      data.luck.your.fifty.total
-                        ? `${data.luck.your.fifty.wins}/${data.luck.your.fifty.total} (${fmtPct(data.luck.your.fifty.winRate, 0)}%)`
-                        : "—"
-                    }
-                    community={
-                      data.luck.community.avgFiftyWinRate == null
-                        ? "—"
-                        : `${fmtPct(data.luck.community.avgFiftyWinRate, 0)}%`
-                    }
-                    better={data.luck.betterThan.fifty}
-                  />
-                  <LuckMetric
-                    label="Молитв"
-                    yours={data.luck.your.total.toLocaleString("ru-RU")}
-                    community={data.luck.community.avgTotal.toLocaleString(
-                      "ru-RU",
-                    )}
-                    better={data.luck.betterThan.total}
-                  />
-                </div>
-                <p className="mt-4 text-sm font-medium text-foreground/80">
-                  {data.luck.verdict}
-                  {data.luck.sampleSize >= 2 ? (
-                    <span className="text-muted-foreground">
-                      {" "}
-                      · выборка {data.luck.sampleSize} акк.
-                    </span>
-                  ) : null}
-                </p>
-              </section>
-            )}
+            <WishAchievementsPanel
+              achievements={achievements}
+              loading={achievementsLoading}
+              characterBanner={statsByKey.get("character") ?? null}
+            />
 
             <section
               data-tour="tour-fivestars"
@@ -1340,37 +1304,6 @@ function FiveStarCard({ item }: { item: FiveStar }) {
     );
   }
   return <div>{inner}</div>;
-}
-
-function LuckMetric({
-  label,
-  yours,
-  community,
-  better,
-}: {
-  label: string;
-  yours: string;
-  community: string;
-  better: number | null;
-}) {
-  return (
-    <div className="rounded-2xl border border-black/[0.05] bg-white px-5 py-4">
-      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-        {label}
-      </p>
-      <p className="mt-1.5 font-genshin text-2xl text-foreground">{yours}</p>
-      <p className="mt-1 text-sm text-muted-foreground">
-        сообщество: {community}
-      </p>
-      {better != null ? (
-        <p className="mt-1.5 text-sm font-bold text-[#189b8e]">
-          удачливее {better}% игроков
-        </p>
-      ) : (
-        <p className="mt-1.5 text-sm text-muted-foreground">мало данных</p>
-      )}
-    </div>
-  );
 }
 
 function OverviewTile({

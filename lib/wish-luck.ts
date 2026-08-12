@@ -253,3 +253,128 @@ export function snapshotFromPulls(
     fiftyWinRate: fifty.total >= 2 ? fifty.winRate : null,
   };
 }
+
+export type FiftyOutcome = "win" | "loss" | "guarantee";
+
+export type FiftyFiftyStreaks = {
+  currentWins: number;
+  bestWins: number;
+  /** Последние исходы 50:50 (новые справа). Гарант не рвёт серию побед. */
+  recent: FiftyOutcome[];
+};
+
+/** Серии побед 50:50 по ивенту персонажей. */
+export function computeFiftyFiftyStreaks(
+  pulls: WishPullLike[],
+): FiftyFiftyStreaks {
+  const types = gachaTypesForBanner("character");
+  const chron = dedupeWishPulls(pulls)
+    .filter(
+      (p) =>
+        types.includes(p.gachaType) && String(p.rankType) === "5",
+    )
+    .slice()
+    .sort(
+      (a, b) =>
+        new Date(a.wishTime).getTime() - new Date(b.wishTime).getTime(),
+    );
+
+  const outcomes: FiftyOutcome[] = [];
+  let guaranteed = false;
+
+  for (const pull of chron) {
+    const paimonRate = pull.raw?.paimon_rate;
+    if (typeof paimonRate === "number") {
+      if (paimonRate === 0) outcomes.push("loss");
+      else if (paimonRate === 1) outcomes.push("win");
+      else if (paimonRate === 2) outcomes.push("guarantee");
+      continue;
+    }
+
+    if (guaranteed) {
+      outcomes.push("guarantee");
+      guaranteed = false;
+      continue;
+    }
+    if (isStandardFiveStar(pull.itemName)) {
+      outcomes.push("loss");
+      guaranteed = true;
+    } else {
+      outcomes.push("win");
+    }
+  }
+
+  let bestWins = 0;
+  let run = 0;
+  for (const o of outcomes) {
+    if (o === "win") {
+      run += 1;
+      bestWins = Math.max(bestWins, run);
+    } else if (o === "loss") {
+      run = 0;
+    }
+    // guarantee — не рвёт и не увеличивает серию
+  }
+
+  let currentWins = 0;
+  for (let i = outcomes.length - 1; i >= 0; i -= 1) {
+    if (outcomes[i] === "win") currentWins += 1;
+    else if (outcomes[i] === "loss") break;
+  }
+
+  return {
+    currentWins,
+    bestWins,
+    recent: outcomes.slice(-8),
+  };
+}
+
+export type WishAchievements = {
+  fiftyWinRate: number;
+  fiftyTotal: number;
+  fiftyWins: number;
+  luckBadge: boolean;
+  rank: number | null;
+  sampleSize: number;
+  topPercent: number | null;
+  totalPulls: number;
+  activePlayer: boolean;
+  streaks: FiftyFiftyStreaks;
+  verdict: string;
+};
+
+export function buildWishAchievements(
+  luck: CommunityLuck,
+  streaks: FiftyFiftyStreaks,
+): WishAchievements {
+  const scores = [
+    luck.betterThan.rate5,
+    luck.betterThan.fifty,
+    luck.betterThan.total,
+  ].filter((v): v is number => v != null);
+  const mean =
+    scores.length > 0
+      ? scores.reduce((a, b) => a + b, 0) / scores.length
+      : null;
+  const topPercent =
+    mean == null ? null : Math.max(1, Math.min(99, Math.round(100 - mean)));
+  const sampleSize = Math.max(luck.sampleSize, 1);
+  const rank =
+    mean == null
+      ? null
+      : Math.max(1, Math.round(sampleSize * (1 - mean / 100)));
+
+  return {
+    fiftyWinRate: luck.your.fifty.winRate,
+    fiftyTotal: luck.your.fifty.total,
+    fiftyWins: luck.your.fifty.wins,
+    luckBadge: luck.your.fifty.total >= 3 && luck.your.fifty.winRate >= 55,
+    rank,
+    sampleSize: luck.sampleSize,
+    topPercent,
+    totalPulls: luck.your.total,
+    activePlayer: luck.your.total >= 400,
+    streaks,
+    verdict: luck.verdict,
+  };
+}
