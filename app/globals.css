@@ -875,13 +875,6 @@ body:has(.map-page-root) main {
   border-color: hsl(var(--hairline) / 0.08);
 }
 
-.dark .shadow-panel {
-  box-shadow: var(--shadow-panel);
-}
-.dark .shadow-soft {
-  box-shadow: var(--shadow-soft);
-}
-
 .dark .text-\[\#0f5c54\],
 .dark .text-\[\#147f74\],
 .dark .text-\[\#1a7a70\] {
