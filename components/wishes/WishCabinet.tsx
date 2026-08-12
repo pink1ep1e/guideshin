@@ -735,9 +735,9 @@ export default function WishCabinet({
             />
 
             <WishAchievementsPanel
+              luck={data?.luck ?? null}
               achievements={achievements}
               loading={achievementsLoading}
-              characterBanner={statsByKey.get("character") ?? null}
             />
 
             <section

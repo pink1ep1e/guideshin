@@ -13,11 +13,7 @@ export const metadata: Metadata = {
 export default function LoginPage() {
   return (
     <AuthShell>
-      <Suspense
-        fallback={
-          <p className="text-sm text-muted-foreground">Загрузка…</p>
-        }
-      >
+      <Suspense fallback={<p className="text-sm text-muted-foreground">Загрузка…</p>}>
         <LoginForm googleEnabled={isGoogleAuthEnabled} />
       </Suspense>
     </AuthShell>

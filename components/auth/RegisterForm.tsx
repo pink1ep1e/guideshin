@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SITE_NAME } from "@/lib/site";
 
 export default function RegisterForm({
   googleEnabled,
@@ -61,231 +60,99 @@ export default function RegisterForm({
 
   return (
     <div>
-      <div className="mb-5 flex items-center gap-3 sm:hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logo.svg"
-          alt=""
-          width={40}
-          height={42}
-          className="h-10 w-auto object-contain"
-          decoding="async"
-        />
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#189b8e]">
-            {SITE_NAME}
-          </p>
-          <p className="text-sm font-bold text-foreground/70">Новый аккаунт</p>
-        </div>
-      </div>
-
-      <div className="mb-1 hidden items-center gap-2 sm:flex">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logo.svg"
-          alt=""
-          width={28}
-          height={29}
-          className="h-7 w-auto object-contain"
-          decoding="async"
-        />
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#189b8e]">
-          {SITE_NAME}
-        </p>
-      </div>
-
-      <h1 className="font-genshin text-[2.35rem] tracking-wide text-foreground sm:text-[2.75rem]">
+      <h1 className="font-genshin text-3xl tracking-wide text-foreground sm:text-4xl">
         Регистрация
       </h1>
-      <p className="mt-2.5 text-base leading-relaxed text-foreground/60 sm:text-[17px]">
-        Создайте аккаунт за минуту — история молитв будет в облаке, а кабинет
-        откроется сразу после входа.
+      <p className="mt-2 text-sm text-muted-foreground">
+        Создайте аккаунт и сохраните историю молитв
       </p>
 
-      <ul className="mt-5 flex flex-wrap gap-2">
-        {[
-          { label: "Бесплатно", icon: "✦" },
-          { label: "Без привязки UID", icon: "◎" },
-          { label: "Сразу в кабинет", icon: "→" },
-        ].map((chip) => (
-          <li
-            key={chip.label}
-            className="inline-flex items-center gap-1.5 rounded-full border border-[#189b8e]/15 bg-[#189b8e]/[0.07] px-3 py-1.5 text-[12px] font-bold text-[#0f5c54]"
+      {googleEnabled && (
+        <>
+          <button
+            type="button"
+            className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border border-black/[0.08] bg-white px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-black/[0.02]"
+            onClick={() => signIn("google", { callbackUrl })}
           >
-            <span className="text-[#189b8e]" aria-hidden>
-              {chip.icon}
-            </span>
-            {chip.label}
-          </li>
-        ))}
-      </ul>
-
-      {googleEnabled && (
-        <button
-          type="button"
-          className="mt-7 flex w-full items-center justify-center gap-2.5 rounded-2xl border border-black/[0.08] bg-white px-4 py-3.5 text-sm font-bold text-foreground shadow-sm transition hover:border-[#189b8e]/25 hover:bg-[#189b8e]/[0.06]"
-          onClick={() => signIn("google", { callbackUrl })}
-        >
-          <GoogleIcon />
-          Продолжить с Google
-        </button>
+            <GoogleIcon />
+            Google
+          </button>
+          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="h-px flex-1 bg-black/[0.08]" />
+            или
+            <span className="h-px flex-1 bg-black/[0.08]" />
+          </div>
+        </>
       )}
 
-      {googleEnabled && (
-        <div className="my-5 flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          <span className="h-px flex-1 bg-black/[0.08]" />
-          или email
-          <span className="h-px flex-1 bg-black/[0.08]" />
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className={googleEnabled ? "" : "mt-7"}>
+      <form onSubmit={handleSubmit} className={googleEnabled ? "" : "mt-8"}>
         <div className="flex flex-col gap-4">
-          <Field
-            label="Никнейм"
-            icon={<UserIcon />}
-          >
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
+              Никнейм
+            </span>
             <input
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               autoComplete="nickname"
-              placeholder="Как вас показывать в кабинете"
-              className="w-full bg-transparent text-base outline-none placeholder:text-foreground/35"
+              placeholder="Как вас показывать"
+              className="w-full rounded-xl border border-black/[0.08] bg-white px-3.5 py-3 text-sm outline-none transition placeholder:text-foreground/30 focus:border-[#189b8e]/50 focus:ring-2 focus:ring-[#189b8e]/15"
             />
-          </Field>
-          <Field label="Email" icon={<MailIcon />}>
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
+              Email
+            </span>
             <input
               type="email"
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@email.com"
-              className="w-full bg-transparent text-base outline-none placeholder:text-foreground/35"
+              className="w-full rounded-xl border border-black/[0.08] bg-white px-3.5 py-3 text-sm outline-none transition placeholder:text-foreground/30 focus:border-[#189b8e]/50 focus:ring-2 focus:ring-[#189b8e]/15"
               required
             />
-          </Field>
-          <Field label="Пароль (от 8 символов)" icon={<LockIcon />}>
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
+              Пароль (от 8 символов)
+            </span>
             <input
               type="password"
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               minLength={8}
-              placeholder="Придумайте надёжный пароль"
-              className="w-full bg-transparent text-base outline-none placeholder:text-foreground/35"
+              placeholder="••••••••"
+              className="w-full rounded-xl border border-black/[0.08] bg-white px-3.5 py-3 text-sm outline-none transition placeholder:text-foreground/30 focus:border-[#189b8e]/50 focus:ring-2 focus:ring-[#189b8e]/15"
               required
             />
-          </Field>
+          </label>
         </div>
 
         {error && (
-          <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-600">
-            {error}
-          </p>
+          <p className="mt-4 text-sm text-red-600">{error}</p>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="ui-btn-primary mt-6 flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 shadow-[0_10px_24px_-12px_rgba(24,155,142,0.7)]"
+          className="mt-6 w-full rounded-xl bg-[#189b8e] py-3 text-sm font-semibold text-white transition hover:bg-[#147f74] disabled:opacity-60"
         >
           {loading ? "Создаём…" : "Создать аккаунт"}
-          {!loading ? (
-            <span aria-hidden className="text-lg leading-none">
-              →
-            </span>
-          ) : null}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-muted-foreground">
+      <p className="mt-8 text-center text-sm text-muted-foreground">
         Уже есть аккаунт?{" "}
         <Link
           href={`/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
-          className="font-bold text-[#189b8e] hover:underline"
+          className="font-semibold text-[#189b8e] hover:underline"
         >
           Войти
         </Link>
       </p>
     </div>
-  );
-}
-
-function Field({
-  label,
-  icon,
-  children,
-}: {
-  label: string;
-  icon: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <div>
-      <label className="mb-1.5 block text-xs font-bold text-muted-foreground">
-        {label}
-      </label>
-      <div className="flex items-center gap-3 rounded-2xl border border-black/[0.08] bg-[#f7fbfa] px-3.5 py-3 transition focus-within:border-[#189b8e]/35 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#189b8e]/25">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#189b8e]/10 text-[#189b8e]">
-          {icon}
-        </span>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 20a8 8 0 0 1 16 0"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function MailIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path
-        d="m5 8 7 5 7-5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <rect
-        x="5"
-        y="10"
-        width="14"
-        height="10"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M8 10V8a4 4 0 0 1 8 0v2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }
 
