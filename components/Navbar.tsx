@@ -231,134 +231,136 @@ export default function Navbar() {
 
   return (
     <div
-      className={`mx-auto flex w-full max-w-page items-center gap-2.5 px-4 pt-5 sm:gap-3 sm:px-6 lg:px-8 ${
+      className={`flex justify-center px-3 pt-5 sm:px-4 ${
         isMap ? "pointer-events-none fixed inset-x-0 top-0 z-[60]" : "relative z-50 shrink-0"
       }`}
     >
-      <header
-        className={`glass-panel pointer-events-auto relative z-50 min-w-0 flex-1 ${
-          isMap ? "shadow-[0_12px_40px_-12px_rgba(11,31,68,0.45)]" : ""
-        }`}
-      >
-        <div className="flex min-h-[64px] items-center justify-between gap-3 px-3 py-2.5 sm:gap-4 sm:px-5 sm:py-3">
-          <Link
-            href="/"
-            className="relative z-10 flex shrink-0 items-center"
-            aria-label="Guideshin — на главную"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo.svg"
-              alt="Guideshin"
-              width={56}
-              height={58}
-              className="logo-mark h-11 w-auto object-contain sm:h-12"
-              decoding="async"
-            />
-          </Link>
-
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-full border border-border px-3 py-2 text-sm font-semibold text-foreground lg:hidden"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-            aria-label="Меню"
-          >
-            {open ? "Закрыть" : "Меню"}
-          </button>
-
-          <nav
-            className={`${
-              open ? "flex" : "hidden"
-            } absolute left-0 right-0 top-full z-50 mt-2 flex-col gap-3 rounded-[20px] border border-black/[0.06] bg-white p-3 shadow-panel dark:border-white/10 dark:bg-card lg:static lg:mt-0 lg:flex lg:flex-1 lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}
-          >
-            <div
-              ref={navRef}
-              className="relative flex flex-col gap-0.5 rounded-[16px] bg-[#189b8e]/[0.08] p-1 dark:bg-[#189b8e]/[0.14] lg:flex-row lg:items-center lg:gap-1"
-              onMouseLeave={() => setHoverVisible(false)}
+      <div className="pointer-events-auto flex w-full max-w-page items-center gap-2.5 sm:w-auto sm:max-w-[calc(100%-1.5rem)] sm:gap-3">
+        <header
+          className={`glass-panel relative z-50 min-w-0 flex-1 sm:flex-none ${
+            isMap ? "shadow-[0_12px_40px_-12px_rgba(11,31,68,0.45)]" : ""
+          }`}
+        >
+          <div className="flex min-h-[64px] items-center gap-2.5 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3 lg:gap-4 lg:px-5">
+            <Link
+              href="/"
+              className="relative z-10 flex shrink-0 items-center"
+              aria-label="Guideshin — на главную"
             >
-              <SlidingPill
-                pill={hoverPill}
-                visible={hoverVisible}
-                className="z-0 hidden bg-[#189b8e25] lg:block"
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo.svg"
+                alt="Guideshin"
+                width={56}
+                height={58}
+                className="logo-mark h-11 w-auto object-contain sm:h-12"
+                decoding="async"
               />
-              <SlidingPill
-                pill={activePill}
-                visible={activeVisible}
-                className="z-[1] bg-[#189b8e]"
-              />
+            </Link>
 
-              {navLinks.map((link, index) => {
-                const active = isLinkActive(pathname, link.href);
-                return (
-                  <Link
-                    key={link.label}
-                    ref={(el) => setItemRef(index, el)}
-                    href={link.href}
-                    onMouseEnter={() => moveHoverTo(index)}
-                    className={`relative z-10 rounded-[14px] px-3 py-3 text-[15.5px] font-semibold transition-colors duration-200 ${
-                      active
-                        ? "text-white"
-                        : "text-foreground hover:text-[#189b8e]"
-                    }`}
-                    onClick={closeMenu}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
+            <button
+              type="button"
+              className="ml-auto inline-flex items-center justify-center rounded-full border border-border px-3 py-2 text-sm font-semibold text-foreground lg:hidden"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              aria-label="Меню"
+            >
+              {open ? "Закрыть" : "Меню"}
+            </button>
 
-              <div className="lg:hidden">
-                <MobileAccordion
+            <nav
+              className={`${
+                open ? "flex" : "hidden"
+              } absolute left-0 right-0 top-full z-50 mt-2 flex-col gap-3 rounded-[20px] border border-black/[0.06] bg-white p-3 shadow-panel dark:border-white/10 dark:bg-card lg:static lg:mt-0 lg:flex lg:flex-row lg:items-center lg:gap-3 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}
+            >
+              <div
+                ref={navRef}
+                className="relative flex flex-col gap-0.5 rounded-[16px] bg-[#189b8e]/[0.08] p-1 dark:bg-[#189b8e]/[0.14] lg:flex-row lg:items-center lg:gap-1"
+                onMouseLeave={() => setHoverVisible(false)}
+              >
+                <SlidingPill
+                  pill={hoverPill}
+                  visible={hoverVisible}
+                  className="z-0 hidden bg-[#189b8e25] lg:block"
+                />
+                <SlidingPill
+                  pill={activePill}
+                  visible={activeVisible}
+                  className="z-[1] bg-[#189b8e]"
+                />
+
+                {navLinks.map((link, index) => {
+                  const active = isLinkActive(pathname, link.href);
+                  return (
+                    <Link
+                      key={link.label}
+                      ref={(el) => setItemRef(index, el)}
+                      href={link.href}
+                      onMouseEnter={() => moveHoverTo(index)}
+                      className={`relative z-10 rounded-[14px] px-3 py-3 text-[15.5px] font-semibold transition-colors duration-200 ${
+                        active
+                          ? "text-white"
+                          : "text-foreground hover:text-[#189b8e]"
+                      }`}
+                      onClick={closeMenu}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+
+                <div className="lg:hidden">
+                  <MobileAccordion
+                    label="Тир листы"
+                    items={tierItems}
+                    onNavigate={closeMenu}
+                  />
+                  <MobileAccordion
+                    label="Wiki"
+                    items={wikiItems}
+                    onNavigate={closeMenu}
+                  />
+                </div>
+
+                <NavDropdown
                   label="Тир листы"
                   items={tierItems}
+                  buttonRef={(el) => setItemRef(dropdownStart, el)}
+                  onHover={() => moveHoverTo(dropdownStart)}
                   onNavigate={closeMenu}
                 />
-                <MobileAccordion
+                <NavDropdown
                   label="Wiki"
                   items={wikiItems}
+                  buttonRef={(el) => setItemRef(dropdownStart + 1, el)}
+                  onHover={() => moveHoverTo(dropdownStart + 1)}
                   onNavigate={closeMenu}
                 />
               </div>
 
-              <NavDropdown
-                label="Тир листы"
-                items={tierItems}
-                buttonRef={(el) => setItemRef(dropdownStart, el)}
-                onHover={() => moveHoverTo(dropdownStart)}
-                onNavigate={closeMenu}
-              />
-              <NavDropdown
-                label="Wiki"
-                items={wikiItems}
-                buttonRef={(el) => setItemRef(dropdownStart + 1, el)}
-                onHover={() => moveHoverTo(dropdownStart + 1)}
-                onNavigate={closeMenu}
-              />
-            </div>
-
-            <div className="flex items-center gap-2 lg:shrink-0">
-              <button
-                type="button"
-                className="ui-btn-primary h-auto flex-1 px-5 py-3.5 text-[15px] lg:flex-none"
-                onClick={() => {
-                  closeMenu();
-                  if (status === "authenticated" && isWishUser) {
-                    router.push("/wishes");
-                  } else {
-                    router.push("/auth/login?callbackUrl=/wishes");
-                  }
-                }}
-              >
-                {status === "authenticated" && isWishUser
-                  ? "Мои молитвы"
-                  : "Счётчик молитв"}
-              </button>
-            </div>
-          </nav>
-        </div>
-      </header>
-      <ThemeToggle className="pointer-events-auto !h-[52px] !w-[52px] !rounded-[18px]" />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="ui-btn-primary h-auto w-full px-5 py-3.5 text-[15px] lg:w-auto"
+                  onClick={() => {
+                    closeMenu();
+                    if (status === "authenticated" && isWishUser) {
+                      router.push("/wishes");
+                    } else {
+                      router.push("/auth/login?callbackUrl=/wishes");
+                    }
+                  }}
+                >
+                  {status === "authenticated" && isWishUser
+                    ? "Мои молитвы"
+                    : "Счётчик молитв"}
+                </button>
+              </div>
+            </nav>
+          </div>
+        </header>
+        <ThemeToggle className="pointer-events-auto !h-[52px] !w-[52px] shrink-0 !rounded-[18px]" />
+      </div>
     </div>
   );
 }
