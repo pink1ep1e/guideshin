@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
 import AppChrome from "@/components/AppChrome";
+import SiteLoader from "@/components/SiteLoader";
 import { AuthSessionProvider, ThemeProvider } from "@/components/shared";
 import {
   SITE_DESCRIPTION,
@@ -102,7 +103,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(t!=='light'&&d))document.documentElement.classList.add('dark')}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(t!=='light'&&d))document.documentElement.classList.add('dark');if(sessionStorage.getItem('guideshin-boot-loader')!=='1'&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('gs-loading')}catch(e){}})();`,
           }}
         />
         <script
@@ -119,6 +120,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           <AuthSessionProvider>
             <AnalyticsProvider />
+            <SiteLoader />
             <AppChrome>{children}</AppChrome>
           </AuthSessionProvider>
         </ThemeProvider>

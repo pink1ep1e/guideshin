@@ -978,3 +978,47 @@ body:has(.map-page-root) main {
   opacity: 0.92;
 }
 
+/* —— Site boot loader (elemental fill) —— */
+html.gs-loading body {
+  overflow: hidden;
+}
+
+html.gs-loading body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 199;
+  background: hsl(var(--background));
+}
+
+.site-loader {
+  transition: opacity 0.42s ease, visibility 0.42s ease;
+}
+
+.site-loader--out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.site-loader-glyph--ghost {
+  filter: brightness(0);
+  opacity: 0.14;
+}
+
+.dark .site-loader-glyph--ghost {
+  filter: brightness(0) invert(1);
+  opacity: 0.22;
+}
+
+.site-loader-glyph--solid {
+  filter: brightness(0);
+  opacity: 0.88;
+}
+
+.dark .site-loader-glyph--solid {
+  filter: brightness(0) invert(1);
+  opacity: 0.95;
+}
+
+
