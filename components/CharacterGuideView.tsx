@@ -164,15 +164,14 @@ function SlotIcon({ slot }: { slot: string }) {
   const src = SLOT_ICONS[slot] || SLOT_ICONS["Пески"];
   return (
     <div
-      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eef1f4]"
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eef1f4] dark:bg-white/[0.08]"
       title={slot}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt=""
-        className="h-6 w-6 object-contain opacity-80"
-        style={{ filter: "brightness(0) saturate(100%)" }}
+        className="h-6 w-6 object-contain opacity-80 brightness-0 dark:opacity-90 dark:invert"
       />
     </div>
   );
@@ -180,9 +179,21 @@ function SlotIcon({ slot }: { slot: string }) {
 
 const TIER_STYLE: Record<string, { bg: string; fg: string; band: string }> = {
   S: { bg: "#189b8e", fg: "#fff", band: "bg-[#189b8e]/[0.12]" },
-  A: { bg: "#3d7ea6", fg: "#fff", band: "bg-[#f7f9fb]" },
-  B: { bg: "#6b7280", fg: "#fff", band: "bg-[#f7f8fa]" },
-  C: { bg: "#9ca3af", fg: "#fff", band: "bg-[#fafafa]" },
+  A: {
+    bg: "#3d7ea6",
+    fg: "#fff",
+    band: "bg-[#f7f9fb] dark:bg-white/[0.04]",
+  },
+  B: {
+    bg: "#6b7280",
+    fg: "#fff",
+    band: "bg-[#f7f8fa] dark:bg-white/[0.035]",
+  },
+  C: {
+    bg: "#9ca3af",
+    fg: "#fff",
+    band: "bg-[#fafafa] dark:bg-white/[0.03]",
+  },
 };
 
 function RankedGear({
@@ -304,7 +315,7 @@ function MaterialRowList({
       {items.map((item) => (
         <li
           key={item.id}
-          className="flex items-center gap-3 rounded-[14px] bg-[#f7f9fb] px-2.5 py-2"
+          className="flex items-center gap-3 rounded-[14px] bg-[#f7f9fb] dark:bg-white/[0.04] px-2.5 py-2"
         >
           <ItemIconCard
             name={item.name}
@@ -358,7 +369,7 @@ function OverviewFacts({ facts }: { facts: string[] }) {
       {facts.map((f, i) => (
         <li
           key={i}
-          className="rounded-[14px] bg-[#f7f9fb] px-3.5 py-2.5 text-[14px] leading-snug text-foreground/90"
+          className="rounded-[14px] bg-[#f7f9fb] dark:bg-white/[0.04] px-3.5 py-2.5 text-[14px] leading-snug text-foreground/90"
           dangerouslySetInnerHTML={{ __html: renderInlineMarkdown(f) }}
         />
       ))}
@@ -383,7 +394,7 @@ function MemberPortrait({ m, role }: { m: GuideTeamMember; role?: string }) {
           </span>
         )}
         {m.elementIcon ? (
-          <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/[0.06]">
+          <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/[0.06] dark:bg-[hsl(var(--card))] dark:ring-white/10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={m.elementIcon} alt="" className="h-4 w-4" />
           </span>
@@ -413,7 +424,7 @@ function MemberPortrait({ m, role }: { m: GuideTeamMember; role?: string }) {
 function TeamVariantCard({ v }: { v: GuideTeamVariant }) {
   const roles = ["Мейн-дд", "Саппорт", "Саб-дд", "Флекс"];
   return (
-    <article className="overflow-hidden rounded-[16px] bg-[#f7f9fb] ring-1 ring-black/[0.04]">
+    <article className="overflow-hidden rounded-[16px] bg-[#f7f9fb] dark:bg-white/[0.04] ring-1 ring-black/[0.04]">
       {v.badge ? (
         <div className="border-b border-black/[0.04] px-4 py-2.5">
           <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#189b8e]">
@@ -474,7 +485,7 @@ function BlockView({
     return (
       <SectionChrome eyebrow={block.eyebrow} title={block.title}>
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-[14px] border-l-[3px] border-l-[#189b8e] bg-[#f7f9fb] p-4">
+          <div className="rounded-[14px] border-l-[3px] border-l-[#189b8e] bg-[#f7f9fb] dark:bg-white/[0.04] p-4">
             <h3 className="mb-2.5 text-[14px] font-semibold text-[#189b8e]">
               {block.prosTitle || "Преимущества"}
             </h3>
@@ -486,7 +497,7 @@ function BlockView({
               ))}
             </ul>
           </div>
-          <div className="rounded-[14px] border-l-[3px] border-l-[#c45c5c] bg-[#f7f9fb] p-4">
+          <div className="rounded-[14px] border-l-[3px] border-l-[#c45c5c] bg-[#f7f9fb] dark:bg-white/[0.04] p-4">
             <h3 className="mb-2.5 text-[14px] font-semibold text-[#c45c5c]">
               {block.consTitle || "Недостатки"}
             </h3>
@@ -508,7 +519,7 @@ function BlockView({
       <SectionChrome eyebrow={block.eyebrow} title={block.title} intro={block.intro}>
         <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
           {block.targets.map((t) => (
-            <div key={t.id} className="rounded-[14px] bg-[#f7f9fb] px-4 py-3.5">
+            <div key={t.id} className="rounded-[14px] bg-[#f7f9fb] dark:bg-white/[0.04] px-4 py-3.5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 {t.label}
               </p>
@@ -532,7 +543,7 @@ function BlockView({
               {block.slots.map((s) => (
                 <div
                   key={s.id}
-                  className="flex items-center gap-3 rounded-[14px] bg-[#f7f9fb] px-3 py-2.5"
+                  className="flex items-center gap-3 rounded-[14px] bg-[#f7f9fb] dark:bg-white/[0.04] px-3 py-2.5"
                 >
                   <SlotIcon slot={s.slot} />
                   <div className="min-w-0">
@@ -594,7 +605,7 @@ function BlockView({
                   return (
                     <div
                       key={r.id}
-                      className="flex items-center justify-between gap-3 rounded-[14px] bg-[#f7f9fb] px-3 py-2.5"
+                      className="flex items-center justify-between gap-3 rounded-[14px] bg-[#f7f9fb] dark:bg-white/[0.04] px-3 py-2.5"
                     >
                       {r.href ? (
                         <Link href={r.href} className="min-w-0 hover:opacity-90">
@@ -665,13 +676,13 @@ function BlockView({
         </div>
         <div className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-4 sm:p-4">
           {block.members.map((m, i) => (
-            <div key={m.id} className="rounded-[14px] bg-[#f7f9fb] px-2 py-3">
+            <div key={m.id} className="rounded-[14px] bg-[#f7f9fb] dark:bg-white/[0.04] px-2 py-3">
               <MemberPortrait m={m} role={(m.role && m.role.trim()) || roles[i]} />
             </div>
           ))}
         </div>
         {block.note ? (
-          <p className="border-t border-black/[0.04] bg-[#f7f9fb] px-4 py-3 text-[14px] leading-relaxed text-muted-foreground">
+          <p className="border-t border-black/[0.04] bg-[#f7f9fb] dark:bg-white/[0.04] px-4 py-3 text-[14px] leading-relaxed text-muted-foreground">
             <InlineMd text={block.note} />
           </p>
         ) : null}
@@ -720,7 +731,7 @@ function BlockView({
                 <Link
                   key={r.id}
                   href={r.href}
-                  className="flex gap-3.5 rounded-[14px] bg-[#f7f9fb] p-3 transition hover:bg-[#eef3f6]"
+                  className="flex gap-3.5 rounded-[14px] bg-[#f7f9fb] p-3 transition hover:bg-[#eef3f6] dark:bg-white/[0.04] dark:hover:bg-white/[0.08]"
                 >
                   {body}
                 </Link>
@@ -728,7 +739,7 @@ function BlockView({
             }
 
             return (
-              <div key={r.id} className="flex gap-3.5 rounded-[14px] bg-[#f7f9fb] p-3">
+              <div key={r.id} className="flex gap-3.5 rounded-[14px] bg-[#f7f9fb] dark:bg-white/[0.04] p-3">
                 {body}
               </div>
             );
@@ -745,7 +756,7 @@ function BlockView({
           {block.rows.map((r) => (
             <div
               key={r.id}
-              className="flex items-center gap-3 rounded-[14px] bg-[#f7f9fb] px-3 py-2.5"
+              className="flex items-center gap-3 rounded-[14px] bg-[#f7f9fb] dark:bg-white/[0.04] px-3 py-2.5"
             >
               {r.image ? (
                 <ItemHoverPreview

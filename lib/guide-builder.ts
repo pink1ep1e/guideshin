@@ -544,7 +544,7 @@ function itemCardHtml(item: GuideItem) {
   <span class="min-w-0 flex-1 truncate text-[12.5px] leading-snug text-foreground" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
   ${qtyHtml}`;
   if (item.href) {
-    return `<a href="${escapeHtml(item.href)}" title="${escapeHtml(item.name)}" class="guide-item-link flex min-w-0 items-center gap-2 rounded-[12px] border border-black/[0.04] bg-[#f7f9fb] px-2 py-1.5 transition hover:border-black/[0.08] hover:bg-white">${body}</a>`;
+    return `<a href="${escapeHtml(item.href)}" title="${escapeHtml(item.name)}" class="guide-item-link flex min-w-0 items-center gap-2 rounded-[12px] border border-black/[0.04] bg-[#f7f9fb] px-2 py-1.5 transition hover:border-black/[0.08] hover:bg-white dark:bg-white/[0.04] dark:hover:bg-white/[0.08]">${body}</a>`;
   }
   return `<div class="flex min-w-0 items-center gap-2 rounded-[12px] border border-black/[0.04] bg-[#f7f9fb] px-2 py-1.5" title="${escapeHtml(item.name)}">${body}</div>`;
 }

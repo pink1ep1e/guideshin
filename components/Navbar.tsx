@@ -270,11 +270,11 @@ export default function Navbar() {
           <nav
             className={`${
               open ? "flex" : "hidden"
-            } absolute left-0 right-0 top-full z-50 mt-2 flex-col gap-3 rounded-[20px] border border-black/[0.06] bg-white p-3 shadow-panel dark:border-white/10 dark:bg-card lg:static lg:mt-0 lg:grid lg:flex-1 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-1 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}
+            } absolute left-0 right-0 top-full z-50 mt-2 flex-col gap-3 rounded-[20px] border border-black/[0.06] bg-white p-3 shadow-panel dark:border-white/10 dark:bg-card lg:static lg:mt-0 lg:flex lg:flex-1 lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}
           >
             <div
               ref={navRef}
-              className="relative flex flex-col gap-0.5 rounded-[16px] bg-[#189b8e]/[0.08] p-1 dark:bg-[#189b8e]/[0.14] lg:justify-self-center lg:flex-row lg:items-center lg:gap-1"
+              className="relative flex flex-col gap-0.5 rounded-[16px] bg-[#189b8e]/[0.08] p-1 dark:bg-[#189b8e]/[0.14] lg:flex-row lg:items-center lg:gap-1"
               onMouseLeave={() => setHoverVisible(false)}
             >
               <SlidingPill
@@ -337,7 +337,7 @@ export default function Navbar() {
               />
             </div>
 
-            <div className="flex items-center gap-2 lg:justify-self-end">
+            <div className="flex items-center gap-2 lg:shrink-0">
               <button
                 type="button"
                 className="ui-btn-primary h-auto flex-1 px-5 py-3.5 text-[15px] lg:flex-none"

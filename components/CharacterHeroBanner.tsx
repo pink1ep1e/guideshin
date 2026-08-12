@@ -72,7 +72,8 @@ export default function CharacterHeroBanner({
           className="h-full w-full scale-105 object-cover"
         />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-white/50 dark:from-[hsl(var(--card))] dark:via-[hsl(var(--card)/0.96)] dark:to-[hsl(var(--card)/0.7)]" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-white/50 dark:hidden" />
+      <div className="absolute inset-0 hidden bg-[hsl(var(--card))] dark:block" />
       <div
         className="absolute inset-0 opacity-80"
         style={{
@@ -164,7 +165,7 @@ export default function CharacterHeroBanner({
           </div>
         </div>
 
-        <div className="pointer-events-none relative z-10 order-1 h-[320px] w-full overflow-hidden sm:h-[400px] lg:order-2 lg:h-[460px] lg:overflow-visible">
+        <div className="pointer-events-none relative z-10 order-1 h-[320px] w-full sm:h-[400px] lg:order-2 lg:h-[460px]">
           {elementImg && (
             // eslint-disable-next-line @next/next/no-img-element
             <img

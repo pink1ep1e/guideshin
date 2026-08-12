@@ -177,7 +177,8 @@ export default function BannerSlider({ slides }: Props) {
           className="h-full w-full scale-105 object-cover"
         />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-white/50 dark:from-[hsl(var(--card))] dark:via-[hsl(var(--card)/0.96)] dark:to-[hsl(var(--card)/0.7)]" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-white/50 dark:hidden" />
+      <div className="absolute inset-0 hidden bg-[hsl(var(--card))] dark:block" />
       <div
         className="absolute inset-0 opacity-80 transition-opacity duration-700"
         style={{
@@ -332,7 +333,7 @@ export default function BannerSlider({ slides }: Props) {
         </div>
 
         {/* Art column */}
-        <div className="pointer-events-none relative z-10 order-1 h-[380px] w-full overflow-hidden sm:h-[460px] lg:order-2 lg:h-[560px] lg:overflow-visible">
+        <div className="pointer-events-none relative z-10 order-1 h-[380px] w-full sm:h-[460px] lg:order-2 lg:h-[560px]">
           {/* Watermark element */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -360,9 +361,6 @@ export default function BannerSlider({ slides }: Props) {
             fetchPriority="high"
             className="absolute inset-y-0 -left-10 z-10 m-auto h-[90%] w-auto max-w-none translate-x-0 scale-100 object-contain object-left opacity-100 drop-shadow-2xl transition-all duration-500 sm:-left-16 lg:-left-28"
           />
-
-          {/* Soft vignette over art edge */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white/40 to-transparent dark:from-[hsl(var(--card)/0.55)] lg:w-24" />
         </div>
       </div>
     </section>

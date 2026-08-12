@@ -156,7 +156,7 @@ export default function GuideCalculators({ characterName }: { characterName: str
   return (
     <section
       id="guide-calc"
-      className="rounded-[18px] border border-black/[0.045] bg-white p-4 shadow-soft sm:p-5"
+      className="rounded-[18px] border border-black/[0.045] bg-card p-4 shadow-soft sm:p-5"
     >
       <div className="mb-4">
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#189b8e]">
@@ -180,7 +180,7 @@ export default function GuideCalculators({ characterName }: { characterName: str
             options={levelOpts}
           />
 
-          <div className="mb-3 overflow-hidden rounded-[14px] border border-black/[0.05] bg-white/80 p-3">
+          <div className="mb-3 overflow-hidden rounded-[14px] border border-black/[0.05] bg-card p-3">
             <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
               Книги опыта
             </p>
@@ -257,7 +257,7 @@ export default function GuideCalculators({ characterName }: { characterName: str
 
 function CalcCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-[16px] border border-black/[0.05] bg-[#f7f9fb]/80 p-4">
+    <div className="rounded-[16px] border border-black/[0.05] bg-muted/70 p-4 dark:bg-white/[0.04]">
       <div className="mb-3.5 flex items-center gap-2.5">
         <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-[#189b8e]/10 text-[#189b8e]">
           <Calculator className="h-3.5 w-3.5" />
@@ -297,7 +297,7 @@ function LevelRange({
 
 function ResultList({ children }: { children: ReactNode }) {
   return (
-    <ul className="overflow-hidden rounded-[14px] border border-black/[0.05] bg-white/80">
+    <ul className="overflow-hidden rounded-[14px] border border-black/[0.05] bg-card">
       {children}
     </ul>
   );
@@ -320,7 +320,7 @@ function ResultRow({
         emphasize ? "bg-[#189b8e]/[0.08]" : ""
       }`}
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f7f8fa] ring-1 ring-black/[0.04]">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted ring-1 ring-black/[0.04] dark:bg-white/[0.06] dark:ring-white/10">
         {icon ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={icon} alt="" className="h-6 w-6 object-contain" />

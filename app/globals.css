@@ -278,7 +278,7 @@
   }
 
   .dark .guide-html .guide-rank-card {
-    @apply border-white/[0.08] bg-[hsl(var(--muted))] hover:border-white/15 hover:bg-[hsl(var(--card))];
+    @apply border-white/[0.08] bg-[hsl(var(--muted))] hover:border-white/15 hover:bg-[hsl(var(--hairline)/0.08)];
   }
 
   .guide-html .guide-rank-badge {
@@ -831,8 +831,20 @@ body:has(.map-page-root) main {
 .dark .bg-\[\#fafbfc\],
 .dark .bg-\[\#fafafa\],
 .dark .bg-\[\#eef8f6\],
-.dark .bg-\[\#f7fbfa\] {
+.dark .bg-\[\#f7fbfa\],
+.dark .bg-\[\#f7f8fa\],
+.dark .bg-\[\#eef1f4\],
+.dark .bg-\[\#f0f3f6\],
+.dark .bg-\[\#eef3f6\] {
   background-color: hsl(var(--muted));
+}
+
+.dark .hover\:bg-white:hover {
+  background-color: hsl(var(--card));
+}
+.dark .hover\:bg-\[\#eef3f6\]:hover,
+.dark .hover\:bg-\[\#f7f8fa\]:hover {
+  background-color: hsl(var(--hairline) / 0.08);
 }
 
 .dark .from-\[\#eef8f6\] {

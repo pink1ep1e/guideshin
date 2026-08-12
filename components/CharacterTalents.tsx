@@ -69,7 +69,7 @@ export default function CharacterTalents({ talents, element }: Props) {
                   aria-hidden
                 />
               ) : null}
-              <span className="relative z-[1] flex h-[58px] w-[58px] items-center justify-center overflow-hidden rounded-full bg-[#f0f3f6] ring-1 ring-black/[0.06] sm:h-[66px] sm:w-[66px]">
+              <span className="relative z-[1] flex h-[58px] w-[58px] items-center justify-center overflow-hidden rounded-full bg-[#f0f3f6] ring-1 ring-black/[0.06] dark:bg-white/[0.08] dark:ring-white/10 sm:h-[66px] sm:w-[66px]">
                 {item.icon ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img

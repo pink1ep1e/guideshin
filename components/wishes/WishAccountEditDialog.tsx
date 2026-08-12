@@ -183,7 +183,7 @@ export default function WishAccountEditDialog({
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder="Например, Основной"
                 maxLength={40}
-                className="mt-1.5 w-full rounded-xl border border-black/[0.08] px-3.5 py-3 text-sm outline-none ring-[#189b8e]/30 focus:ring-2"
+                className="mt-1.5 w-full rounded-xl border border-black/[0.08] bg-card px-3.5 py-3 text-sm text-foreground outline-none ring-[#189b8e]/30 placeholder:text-muted-foreground focus:ring-2 dark:border-white/10 dark:bg-white/[0.04]"
               />
 
               <div className="mt-4">

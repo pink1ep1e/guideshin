@@ -166,7 +166,7 @@ export default function FancySelect({
         aria-expanded={open}
         aria-controls={listId}
         onClick={() => setOpen((v) => !v)}
-        className={`flex w-full items-center gap-2 rounded-[14px] border border-black/[0.08] bg-card ${pad} font-semibold text-foreground shadow-sm outline-none transition hover:border-[#189b8e]/40 focus:ring-2 focus:ring-[#189b8e]/25 dark:border-white/10 ${
+        className={`flex w-full items-center gap-2 rounded-[14px] border border-black/[0.08] bg-card ${pad} font-semibold text-foreground shadow-sm outline-none transition hover:border-[#189b8e]/40 focus:ring-2 focus:ring-[#189b8e]/25 dark:border-white/10 dark:bg-white/[0.04] ${
           open ? "border-[#189b8e]/50 ring-2 ring-[#189b8e]/20" : ""
         }`}
       >
