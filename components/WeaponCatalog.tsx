@@ -60,7 +60,6 @@ export default function WeaponCatalog({ weapons }: { weapons: WeaponCatalogItem[
   return (
     <div className="space-y-6">
       <div className="glass-panel relative overflow-hidden p-5 sm:p-6">
-        <span className="pointer-events-none absolute -left-10 -bottom-10 h-36 w-36 rounded-full bg-[#189b8e]/10 blur-2xl" />
         <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#189b8e] to-[#67d5cc]" />
 
         <div className="relative space-y-4">

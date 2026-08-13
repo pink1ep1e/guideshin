@@ -483,7 +483,7 @@ export default function WishCabinet({
               type="button"
               data-tour="tour-import"
               onClick={() => setImportOpen(true)}
-              className="inline-flex items-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3 text-base font-bold text-white transition hover:bg-[#147f74]"
+              className="inline-flex items-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3 text-base font-bold text-white transition hover:bg-[#147f74] dark:text-[#1b1b22] dark:hover:bg-[#f5efe4]"
             >
               <CloudDownload className="h-5 w-5" />
               Авто-импорт
@@ -518,8 +518,8 @@ export default function WishCabinet({
                   key={a.id}
                   className={`group relative flex min-h-14 items-center gap-2 rounded-2xl px-2.5 transition ${
                     active
-                      ? "bg-[#189b8e] text-white shadow-soft"
-                      : "bg-white text-foreground/80 ring-1 ring-black/[0.06] hover:bg-black/[0.03]"
+                      ? "bg-[#189b8e] text-white shadow-soft dark:text-[#1b1b22]"
+                      : "bg-white text-foreground/80 hover:bg-black/[0.03] dark:bg-[hsl(var(--card))] dark:hover:bg-white/[0.04]"
                   }`}
                 >
                   <button
@@ -530,7 +530,7 @@ export default function WishCabinet({
                       setEditAccount(a);
                     }}
                     className={`group/avatar relative h-10 w-10 shrink-0 overflow-hidden rounded-xl ${
-                      active ? "bg-white/20" : "bg-[#eef8f6]"
+                      active ? "bg-white/20 dark:bg-black/10" : "bg-[#eef8f6] dark:bg-white/[0.06]"
                     }`}
                   >
                     {avatarSrc ? (
@@ -544,7 +544,9 @@ export default function WishCabinet({
                     ) : (
                       <span
                         className={`flex h-full items-center justify-center text-sm font-bold ${
-                          active ? "text-white/80" : "text-[#189b8e]/70"
+                          active
+                            ? "text-white/80 dark:text-[#1b1b22]/70"
+                            : "text-[#189b8e]/70 dark:text-[#ece5d8]/70"
                         }`}
                       >
                         {a.label.slice(0, 1).toUpperCase()}
@@ -552,7 +554,7 @@ export default function WishCabinet({
                     )}
                     <span
                       className={`absolute inset-0 flex items-center justify-center opacity-0 transition group-hover/avatar:opacity-100 ${
-                        active ? "bg-black/35" : "bg-[#0a2a26]/45"
+                        active ? "bg-black/35" : "bg-[#0a2a26]/45 dark:bg-black/45"
                       }`}
                     >
                       <Pencil className="h-4 w-4 text-white drop-shadow" />
@@ -568,7 +570,9 @@ export default function WishCabinet({
                     </span>
                     <span
                       className={`mt-0.5 block text-sm ${
-                        active ? "text-white/80" : "text-muted-foreground"
+                        active
+                          ? "text-white/80 dark:text-[#1b1b22]/65"
+                          : "text-muted-foreground"
                       }`}
                     >
                       {SERVER_LABEL[a.server] || a.server}
@@ -584,7 +588,7 @@ export default function WishCabinet({
             <button
               type="button"
               onClick={() => setAddOpen(true)}
-              className="inline-flex min-h-14 items-center gap-2 rounded-2xl border border-dashed border-[#189b8e]/45 bg-white px-5 py-3 text-base font-bold text-[#189b8e] transition hover:bg-[#189b8e]/5"
+              className="inline-flex min-h-14 items-center gap-2 rounded-2xl border border-dashed border-transparent bg-white px-5 py-3 text-base font-bold text-[#189b8e] transition hover:bg-[#189b8e]/5 dark:bg-[hsl(var(--card))] dark:text-[#ece5d8] dark:hover:bg-[rgb(236_229_216/0.08)]"
             >
               <Plus className="h-5 w-5" />
               Аккаунт
@@ -595,7 +599,7 @@ export default function WishCabinet({
         {loading ? (
           <WishCabinetSkeleton />
         ) : !hasPulls ? (
-          <div className="mx-auto max-w-2xl rounded-3xl border border-black/[0.06] shadow-[0_16px_40px_-24px_rgba(15,70,60,0.35)]">
+          <div className="mx-auto max-w-2xl rounded-3xl border border-black/[0.06] dark:border-white/10 dark:shadow-none">
             {wizard}
           </div>
         ) : (
@@ -667,8 +671,8 @@ export default function WishCabinet({
                         onClick={() => setChartFilter(key)}
                         className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
                           chartFilter === key
-                            ? "bg-[#189b8e] text-white"
-                            : "bg-black/[0.05] text-foreground/70"
+                            ? "bg-[#189b8e] text-white dark:text-[#1b1b22]"
+                            : "bg-black/[0.05] text-foreground/70 dark:bg-white/[0.06]"
                         }`}
                       >
                         {key === "all" ? "Все" : BANNER_LABELS[key]}
@@ -877,7 +881,7 @@ export default function WishCabinet({
                   )}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3 text-base font-bold text-white transition hover:bg-[#147f74]"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3 text-base font-bold text-white transition hover:bg-[#147f74] dark:text-[#1b1b22] dark:hover:bg-[#f5efe4]"
                 >
                   <MessageCircleWarning className="h-5 w-5" />
                   Сообщить о проблеме
@@ -1011,7 +1015,7 @@ export default function WishCabinet({
                 <button
                   type="button"
                   onClick={() => void createAccount()}
-                  className="flex-1 rounded-xl bg-[#189b8e] py-3 text-sm font-bold text-white"
+                  className="flex-1 rounded-xl bg-[#189b8e] py-3 text-sm font-bold text-white dark:text-[#1b1b22]"
                 >
                   Добавить
                 </button>

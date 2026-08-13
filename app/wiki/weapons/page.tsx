@@ -55,7 +55,6 @@ export default async function WeaponsCatalogPage() {
             <img src={HOME_ASSETS.featureWide} alt="" className="h-full w-full object-cover" />
           </div>
           <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-white/70 dark:from-[hsl(var(--card))] dark:via-[hsl(var(--card)/0.96)] dark:to-[hsl(var(--card)/0.85)]" />
-          <span className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-[#189b8e]/12 blur-2xl" />
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#189b8e] to-[#67d5cc]" />
 
           <div className="relative max-w-2xl">

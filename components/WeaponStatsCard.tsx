@@ -37,10 +37,10 @@ export default function WeaponStatsCard({
       : data.subStatMin || data.subStatMax || "";
 
   return (
-    <section className="w-full rounded-[16px] border border-black/[0.06] bg-white/90 p-4 shadow-soft sm:p-5">
+    <section className="w-full rounded-[16px] bg-white/90 p-4 shadow-soft sm:p-5 dark:bg-[hsl(var(--card))] dark:shadow-none">
       <div className="flex items-start gap-3.5 sm:gap-4">
         <div
-          className="relative flex h-[108px] w-[108px] shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-cover bg-center shadow-sm ring-1 ring-black/[0.06] sm:h-[120px] sm:w-[120px]"
+          className="relative flex h-[108px] w-[108px] shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-cover bg-center shadow-sm sm:h-[120px] sm:w-[120px]"
           style={{ backgroundImage: `url(${rarityBg(stars)})` }}
         >
           {image ? (

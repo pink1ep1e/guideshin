@@ -151,7 +151,7 @@ export default async function MaterialDetailPage({ params }: Props) {
       </div>
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="space-y-5">
-          <div className="rounded-[20px] border border-black/[0.06] bg-white/90 px-5 py-4 shadow-soft sm:px-6">
+          <div className="rounded-[20px] bg-white/90 px-5 py-4 shadow-soft sm:px-6 dark:bg-[hsl(var(--card))] dark:shadow-none">
             <p className="text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">
               {MATERIAL_CATEGORY_LABEL[item.category as keyof typeof MATERIAL_CATEGORY_LABEL] ??
                 item.category}{" "}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import GuideCalculators from "@/components/GuideCalculators";
 import MaterialCards from "@/components/MaterialCards";
 import CharacterTalents from "@/components/CharacterTalents";
@@ -20,7 +20,13 @@ import {
   type GuideTeamMember,
   type GuideTeamVariant,
 } from "@/lib/guide-builder";
-import { ELEMENT_SVG, ELEMENT_THEME, rarityBg, type ElementKey } from "@/lib/genshin";
+import {
+  ELEMENT_SVG,
+  ELEMENT_THEME,
+  getElementTheme,
+  rarityBg,
+  type ElementKey,
+} from "@/lib/genshin";
 import type { CharacterMaterial } from "@/lib/character-materials";
 import type { CharacterTalent } from "@/lib/character-talents";
 import type { CharacterConstellation } from "@/lib/character-constellations";
@@ -179,9 +185,9 @@ function SlotIcon({ slot }: { slot: string }) {
 
 const TIER_STYLE: Record<string, { bg: string; fg: string; band: string }> = {
   S: {
-    bg: "hsl(var(--primary))",
-    fg: "hsl(var(--primary-foreground))",
-    band: "bg-primary/12",
+    bg: "var(--el-solid)",
+    fg: "var(--el-on-solid)",
+    band: "bg-[color-mix(in_srgb,var(--el-solid)_12%,transparent)]",
   },
   A: {
     bg: "#3d7ea6",
@@ -262,14 +268,14 @@ function RankedGear({
                       </ItemHoverPreview>
                       <div className="min-w-0 flex-1 self-center">
                         {item.subtitle ? (
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#189b8e]">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--el-solid)]">
                             {item.subtitle}
                           </p>
                         ) : null}
                         {item.href ? (
                           <Link
                             href={item.href}
-                            className="mt-0.5 block text-[15px] font-medium text-foreground hover:text-[#189b8e]"
+                            className="mt-0.5 block text-[15px] font-medium text-foreground hover:text-[var(--el-solid)]"
                           >
                             {item.name}
                           </Link>
@@ -336,7 +342,7 @@ function MaterialRowList({
               {item.name}
             </p>
             {item.qty ? (
-              <p className="mt-0.5 text-[13px] font-semibold tabular-nums text-[#189b8e]">
+              <p className="mt-0.5 text-[13px] font-semibold tabular-nums text-[var(--el-solid)]">
                 ×{item.qty}
               </p>
             ) : item.note ? (
@@ -386,7 +392,7 @@ function MemberPortrait({ m, role }: { m: GuideTeamMember; role?: string }) {
   const body = (
     <div className="flex w-full flex-col items-center gap-2 text-center">
       <div
-        className="relative h-[80px] w-[80px] overflow-hidden rounded-[16px] bg-cover bg-center ring-1 ring-black/[0.06] sm:h-[88px] sm:w-[88px]"
+        className="relative h-[80px] w-[80px] overflow-hidden rounded-[16px] bg-cover bg-center sm:h-[88px] sm:w-[88px]"
         style={{ backgroundImage: `url(${bg})` }}
       >
         {m.image ? (
@@ -398,7 +404,7 @@ function MemberPortrait({ m, role }: { m: GuideTeamMember; role?: string }) {
           </span>
         )}
         {m.elementIcon ? (
-          <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/[0.06] dark:bg-[hsl(var(--card))] dark:ring-white/10">
+          <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm dark:bg-[hsl(var(--card))]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={m.elementIcon} alt="" className="h-4 w-4" />
           </span>
@@ -406,7 +412,7 @@ function MemberPortrait({ m, role }: { m: GuideTeamMember; role?: string }) {
       </div>
       <div className="min-w-0 w-full">
         {role ? (
-          <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#189b8e]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--el-solid)]">
             {role}
           </p>
         ) : null}
@@ -428,10 +434,10 @@ function MemberPortrait({ m, role }: { m: GuideTeamMember; role?: string }) {
 function TeamVariantCard({ v }: { v: GuideTeamVariant }) {
   const roles = ["Мейн-дд", "Саппорт", "Саб-дд", "Флекс"];
   return (
-    <article className="overflow-hidden rounded-[16px] bg-[#f7f9fb] dark:bg-white/[0.04] ring-1 ring-black/[0.04]">
+    <article className="overflow-hidden rounded-[16px] bg-[#f7f9fb] dark:bg-white/[0.04]">
       {v.badge ? (
         <div className="border-b border-black/[0.04] px-4 py-2.5">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#189b8e]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--el-solid)]">
             {v.badge}
           </span>
         </div>
@@ -489,8 +495,8 @@ function BlockView({
     return (
       <SectionChrome eyebrow={block.eyebrow} title={block.title}>
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-[14px] border-l-[3px] border-l-[#189b8e] bg-[#f7f9fb] dark:bg-white/[0.04] p-4">
-            <h3 className="mb-2.5 text-[14px] font-semibold text-[#189b8e]">
+          <div className="rounded-[14px] border-l-[3px] border-l-[var(--el-solid)] bg-[#f7f9fb] dark:bg-white/[0.04] p-4">
+            <h3 className="mb-2.5 text-[14px] font-semibold text-[var(--el-solid)]">
               {block.prosTitle || "Преимущества"}
             </h3>
             <ul className="list-disc space-y-2 pl-4 text-[14.5px] leading-relaxed text-muted-foreground">
@@ -552,7 +558,7 @@ function BlockView({
                   <SlotIcon slot={s.slot} />
                   <div className="min-w-0">
                     <p className="text-[13px] text-muted-foreground">{s.slot}</p>
-                    <p className="text-[15px] font-semibold text-[#189b8e]">{s.main}</p>
+                    <p className="text-[15px] font-semibold text-[var(--el-solid)]">{s.main}</p>
                     <p className="truncate text-[13px] text-muted-foreground" title={s.subs}>
                       {s.subs}
                     </p>
@@ -589,7 +595,7 @@ function BlockView({
                   const left = (
                     <div className="flex min-w-0 items-center gap-3">
                       <div
-                        className="h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-cover bg-center ring-1 ring-black/[0.05]"
+                        className="h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-cover bg-center"
                         style={{ backgroundImage: "url(/images/legend-bg.jpg)" }}
                       >
                         {r.image ? (
@@ -634,7 +640,7 @@ function BlockView({
                             <img
                               src={r.setImage}
                               alt=""
-                              className="h-11 w-11 rounded-[10px] object-contain ring-1 ring-black/[0.05]"
+                              className="h-11 w-11 rounded-[10px] object-contain"
                             />
                           </ItemHoverPreview>
                         ) : null}
@@ -669,11 +675,11 @@ function BlockView({
   if (block.type === "team") {
     const roles = ["Мейн-дд", "Саппорт", "Саб-дд", "Флекс"];
     return (
-      <article className="overflow-hidden rounded-[18px] bg-white ring-1 ring-black/[0.05]">
+      <article className="overflow-hidden rounded-[18px] bg-white dark:bg-[hsl(var(--card))]">
         <div className="flex items-center gap-2 border-b border-black/[0.04] px-4 py-2.5">
           <h3 className="text-[15px] font-semibold">{block.title}</h3>
           {block.badge ? (
-            <span className="rounded-md bg-[#189b8e]/12 px-2.5 py-1 text-[11px] font-semibold uppercase text-[#189b8e]">
+            <span className="rounded-md bg-[color-mix(in_srgb,var(--el-solid)_14%,transparent)] px-2.5 py-1 text-[11px] font-semibold uppercase text-[var(--el-solid)]">
               {block.badge}
             </span>
           ) : null}
@@ -704,7 +710,7 @@ function BlockView({
             const body = (
               <>
                 <div
-                  className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[14px] bg-cover bg-center ring-1 ring-black/[0.05]"
+                  className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[14px] bg-cover bg-center"
                   style={{ backgroundImage: `url(${avatarBg})` }}
                 >
                   {r.image ? (
@@ -776,7 +782,7 @@ function BlockView({
               ) : null}
               <div className="min-w-0 flex-1">
                 {r.href ? (
-                  <Link href={r.href} className="text-[15px] font-medium text-[#189b8e] hover:underline">
+                  <Link href={r.href} className="text-[15px] font-medium text-[var(--el-solid)] hover:underline">
                     {r.name}
                   </Link>
                 ) : (
@@ -785,7 +791,7 @@ function BlockView({
                 <p className="text-[13px] text-muted-foreground">{r.where}</p>
               </div>
               {r.qty ? (
-                <span className="rounded-md bg-[#189b8e]/12 px-2.5 py-1 text-[13px] font-semibold tabular-nums text-[#189b8e]">
+                <span className="rounded-md bg-[color-mix(in_srgb,var(--el-solid)_14%,transparent)] px-2.5 py-1 text-[13px] font-semibold tabular-nums text-[var(--el-solid)]">
                   ×{r.qty}
                 </span>
               ) : null}
@@ -799,7 +805,7 @@ function BlockView({
   if (block.type === "statsTable") {
     return (
       <SectionChrome title={block.title} intro={block.intro}>
-        <div className="overflow-x-auto rounded-[14px] ring-1 ring-black/[0.05]">
+        <div className="overflow-x-auto rounded-[14px]">
           <table className="w-full min-w-[520px] text-[14px]">
             <thead>
               <tr className="bg-[#f5f7f9] text-center text-[11px] font-semibold uppercase tracking-[0.05em] text-foreground/65">
@@ -818,7 +824,7 @@ function BlockView({
                   <td className="px-2 py-2.5 text-muted-foreground">{r.atk}</td>
                   <td className="px-2 py-2.5 text-muted-foreground">{r.def}</td>
                   <td className="px-2 py-2.5 text-muted-foreground">{r.baseStat}</td>
-                  <td className="px-2 py-2.5 font-medium text-[#189b8e]">{r.ascStat}</td>
+                  <td className="px-2 py-2.5 font-medium text-[var(--el-solid)]">{r.ascStat}</td>
                 </tr>
               ))}
             </tbody>
@@ -916,11 +922,20 @@ export default function CharacterGuideView({
 
   const [tab, setTab] = useState<GuideTabId>(availableTabs[0] || "overview");
   const active = availableTabs.includes(tab) ? tab : availableTabs[0] || "overview";
+  const theme = getElementTheme(element);
+  const themeVars = {
+    "--el-solid": theme.solid,
+    "--el-hover": theme.hover,
+    "--el-soft": theme.soft,
+    "--el-accent": theme.accent,
+    "--el-on-solid": theme.onSolid,
+    "--el-glow": theme.glow,
+  } as CSSProperties;
 
   return (
-    <div className="space-y-8 sm:space-y-10">
+    <div className="space-y-8 sm:space-y-10" style={themeVars}>
       <nav
-        className="rounded-[16px] bg-white p-1.5 shadow-panel ring-1 ring-black/[0.05]"
+        className="rounded-[16px] bg-white p-1.5 shadow-panel dark:shadow-none"
         aria-label="Разделы гайда"
       >
         <div className="flex flex-wrap gap-1">
@@ -933,8 +948,8 @@ export default function CharacterGuideView({
                 onClick={() => setTab(id)}
                 className={`rounded-[12px] px-3.5 py-2.5 text-[14px] transition sm:flex-1 ${
                   on
-                    ? "guide-nav-tab--on bg-[#189b8e] font-semibold text-white dark:text-[#1b1b22]"
-                    : "font-medium text-muted-foreground hover:bg-black/[0.03] hover:text-foreground"
+                    ? "guide-nav-tab--on bg-[var(--el-solid)] font-semibold text-[var(--el-on-solid)]"
+                    : "font-medium text-muted-foreground hover:bg-black/[0.03] hover:text-foreground dark:hover:bg-white/[0.06]"
                 }`}
               >
                 <span>{GUIDE_TAB_LABELS[id]}</span>

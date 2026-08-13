@@ -18,7 +18,7 @@ export default async function Sidebar() {
         <PromoCodesList promos={promos} />
       </aside>
 
-      <aside className="relative overflow-hidden rounded-3xl bg-navy p-5 pr-28 text-white shadow-soft">
+      <aside className="relative overflow-hidden rounded-3xl bg-navy p-5 pr-28 text-white">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={HOME_ASSETS.mascotAlt}

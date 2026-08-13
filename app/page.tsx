@@ -63,7 +63,7 @@ export default async function Home() {
       <section className="container-page mt-10">
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
-            <p className="mb-1 text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">
+            <p className="mb-1 text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e] dark:text-[#ece5d8]">
               Разделы
             </p>
             <h2 className="section-title">Всё для прохождения</h2>
@@ -93,8 +93,7 @@ export default async function Home() {
                   className="h-full w-full object-contain object-bottom drop-shadow-xl"
                 />
               </div>
-              <span className="pointer-events-none absolute -bottom-10 -left-8 h-36 w-36 rounded-full bg-[#189b8e]/12 blur-xl" />
-              <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#189b8e] to-[#67d5cc]" />
+              <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#189b8e] to-[#67d5cc] dark:from-[#ece5d8] dark:to-[#d3bc8e]" />
               <div className="relative z-10 flex h-full flex-col justify-between">
                 <div>
                   <h3 className="font-genshin mb-2 text-[22px] tracking-wide text-foreground">
@@ -104,7 +103,7 @@ export default async function Home() {
                     {item.text}
                   </p>
                 </div>
-                <span className="mt-6 inline-flex w-fit rounded-full bg-[#189b8e]/12 px-3 py-1.5 text-xs font-bold text-[#189b8e]">
+                <span className="mt-6 inline-flex w-fit rounded-full bg-[#189b8e]/12 px-3 py-1.5 text-xs font-bold text-[#189b8e] dark:bg-transparent dark:text-[#ece5d8]">
                   Открыть →
                 </span>
               </div>
@@ -129,7 +128,7 @@ export default async function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-white via-white/92 to-white/55 dark:from-[hsl(var(--card))] dark:via-[hsl(var(--card)/0.94)] dark:to-[hsl(var(--card)/0.65)]" />
           <div className="relative grid gap-6 p-8 sm:p-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:p-12">
             <div>
-              <p className="mb-2 text-sm font-bold uppercase tracking-[0.1em] text-[#189b8e]">
+              <p className="mb-2 text-sm font-bold uppercase tracking-[0.1em] text-[#189b8e] dark:text-[#ece5d8]">
                 Сезон гайдов
               </p>
               <h2 className="font-genshin text-3xl tracking-wide text-foreground sm:text-4xl">
@@ -159,8 +158,6 @@ export default async function Home() {
       {/* Bottom CTA */}
       <section className="container-page mt-12 mb-6">
         <div className="glass-panel relative overflow-hidden p-8 text-foreground sm:p-12">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-56 w-56 rounded-full bg-[#189b8e]/15" />
-          <div className="pointer-events-none absolute -bottom-16 left-1/3 h-48 w-48 rounded-full bg-[#189b8e]/12" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={HOME_ASSETS.chars.dahlia}
@@ -170,7 +167,7 @@ export default async function Home() {
             className="pointer-events-none absolute -bottom-6 right-4 hidden h-[92%] max-w-[38%] object-contain opacity-85 drop-shadow-2xl lg:block"
           />
           <div className="relative max-w-xl lg:max-w-2xl">
-            <p className="mb-2 text-sm font-bold uppercase tracking-[0.1em] text-[#189b8e]">
+            <p className="mb-2 text-sm font-bold uppercase tracking-[0.1em] text-[#189b8e] dark:text-[#ece5d8]">
               Guideshin
             </p>
             <h2 className="font-genshin text-3xl tracking-wide text-foreground sm:text-4xl">

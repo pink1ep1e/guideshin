@@ -31,7 +31,7 @@ export default function CharacterCard({ character }: { character: CharacterCardD
   return (
     <Link
       href={`/wiki/characters/${character.slug}`}
-      className="group relative flex h-full w-full flex-col overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)]"
+      className="group relative flex h-full w-full flex-col overflow-hidden rounded-[16px] bg-card shadow-panel transition duration-300 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)] dark:shadow-none dark:hover:shadow-none"
     >
       <div
         className="relative aspect-square w-full overflow-hidden bg-cover bg-center"
@@ -44,7 +44,7 @@ export default function CharacterCard({ character }: { character: CharacterCardD
           className="relative z-0 h-full w-full object-cover object-top"
         />
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-black/35 via-black/10 to-transparent dark:from-black/20 dark:via-black/5" />
 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -83,7 +83,7 @@ export default function CharacterCard({ character }: { character: CharacterCardD
         )}
       </div>
 
-      <div className="flex min-h-[2.1rem] shrink-0 items-center justify-center px-1.5 py-1">
+      <div className="card-name-strip">
         <p className="font-genshin line-clamp-2 w-full text-center text-[12px] leading-snug tracking-wide text-foreground [overflow-wrap:anywhere]">
           {character.name}
         </p>

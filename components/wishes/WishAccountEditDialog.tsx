@@ -252,8 +252,8 @@ export function AccountEditHintButton({
       }}
       className={`rounded-lg p-1.5 transition ${
         active
-          ? "bg-white/20 text-white hover:bg-white/30"
-          : "bg-black/[0.04] text-foreground/60 hover:bg-black/[0.08] hover:text-foreground"
+          ? "bg-white/20 text-white hover:bg-white/30 dark:bg-black/10 dark:text-[#1b1b22] dark:hover:bg-black/15"
+          : "bg-black/[0.04] text-foreground/60 hover:bg-black/[0.08] hover:text-foreground dark:bg-white/[0.06] dark:hover:bg-white/[0.1]"
       }`}
       aria-label="Изменить аккаунт"
       title="Изменить имя и аватар"

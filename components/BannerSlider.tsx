@@ -5,98 +5,8 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { HOME_ASSETS } from "@/lib/home-content";
 import { DEFAULT_BANNERS, type HomeBannerItem } from "@/lib/home-data";
+import { getElementTheme } from "@/lib/genshin";
 import { CharacterPortraitCard } from "@/components/GuideSections";
-
-type ElementKey =
-  | "pyro"
-  | "hydro"
-  | "anemo"
-  | "electro"
-  | "dendro"
-  | "cryo"
-  | "geo";
-
-const ELEMENT_THEME: Record<
-  ElementKey,
-  {
-    solid: string;
-    hover: string;
-    soft: string;
-    softHover: string;
-    accent: string;
-    onSolid: string;
-    glow: string;
-  }
-> = {
-  pyro: {
-    solid: "#ef7333",
-    hover: "#d96228",
-    soft: "rgba(239,115,51,0.14)",
-    softHover: "rgba(239,115,51,0.24)",
-    accent: "#c45a1f",
-    onSolid: "#ffffff",
-    glow: "rgba(239,115,51,0.45)",
-  },
-  hydro: {
-    solid: "#4cc2f1",
-    hover: "#2aabd9",
-    soft: "rgba(76,194,241,0.16)",
-    softHover: "rgba(76,194,241,0.28)",
-    accent: "#1a7aa8",
-    onSolid: "#ffffff",
-    glow: "rgba(76,194,241,0.45)",
-  },
-  anemo: {
-    solid: "#63c6a5",
-    hover: "#4aaf8e",
-    soft: "rgba(99,198,165,0.16)",
-    softHover: "rgba(99,198,165,0.28)",
-    accent: "#2a8f74",
-    onSolid: "#ffffff",
-    glow: "rgba(99,198,165,0.45)",
-  },
-  electro: {
-    solid: "#bf7fdb",
-    hover: "#a666c4",
-    soft: "rgba(191,127,219,0.16)",
-    softHover: "rgba(191,127,219,0.28)",
-    accent: "#8a4aa8",
-    onSolid: "#ffffff",
-    glow: "rgba(191,127,219,0.45)",
-  },
-  dendro: {
-    solid: "#a5c83b",
-    hover: "#8aab28",
-    soft: "rgba(165,200,59,0.18)",
-    softHover: "rgba(165,200,59,0.3)",
-    accent: "#5f7a1a",
-    onSolid: "#ffffff",
-    glow: "rgba(165,200,59,0.45)",
-  },
-  cryo: {
-    solid: "#a5e3f0",
-    hover: "#7fd4e6",
-    soft: "rgba(165,227,240,0.26)",
-    softHover: "rgba(165,227,240,0.4)",
-    accent: "#3a8fa0",
-    onSolid: "#0b1f44",
-    glow: "rgba(165,227,240,0.55)",
-  },
-  geo: {
-    solid: "#f7b93e",
-    hover: "#dfa028",
-    soft: "rgba(247,185,62,0.18)",
-    softHover: "rgba(247,185,62,0.3)",
-    accent: "#b07a18",
-    onSolid: "#0b1f44",
-    glow: "rgba(247,185,62,0.45)",
-  },
-};
-
-function asElement(el: string): ElementKey {
-  const key = el.toLowerCase() as ElementKey;
-  return key in ELEMENT_THEME ? key : "pyro";
-}
 
 type Props = {
   slides?: { first: HomeBannerItem[]; second: HomeBannerItem[] };
@@ -119,7 +29,7 @@ export default function BannerSlider({ slides }: Props) {
   const items = banners[half].length ? banners[half] : banners.first;
   const safeIndex = items.length ? Math.min(index, items.length - 1) : 0;
   const item = items[safeIndex];
-  const theme = ELEMENT_THEME[asElement(item?.element || "pyro")];
+  const theme = getElementTheme(item?.element || "pyro");
   const activeKey = `${half}-${safeIndex}`;
 
   const themeVars = {
@@ -165,7 +75,7 @@ export default function BannerSlider({ slides }: Props) {
 
   return (
     <section
-      className="relative animate-reveal-up overflow-hidden rounded-[20px] bg-white/90 text-foreground shadow-panel ring-1 ring-black/[0.04]"
+      className="relative animate-reveal-up overflow-hidden rounded-[20px] bg-white/90 text-foreground shadow-panel dark:shadow-none"
       style={themeVars}
     >
       {/* Atmosphere */}
@@ -180,21 +90,22 @@ export default function BannerSlider({ slides }: Props) {
       <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-white/50 dark:hidden" />
       <div className="absolute inset-0 hidden bg-[hsl(var(--card))] dark:block" />
       <div
-        className="absolute inset-0 opacity-80 transition-opacity duration-700"
+        className="el-glow-wash absolute inset-0 transition-opacity duration-700"
         style={{
           background: `
             radial-gradient(ellipse 55% 70% at 88% 45%, var(--el-glow), transparent 70%),
-            radial-gradient(ellipse 40% 50% at 12% 80%, var(--el-soft), transparent 65%),
-            linear-gradient(115deg, transparent 40%, var(--el-soft) 100%)
+            radial-gradient(ellipse 40% 50% at 12% 80%, color-mix(in srgb, var(--el-solid) 18%, transparent), transparent 65%),
+            linear-gradient(115deg, transparent 45%, color-mix(in srgb, var(--el-solid) 12%, transparent) 100%)
           `,
         }}
       />
-      {/* Element accent edge */}      <div className="absolute inset-y-0 left-0 w-1.5 bg-[var(--el-solid)] transition-colors duration-500" />
+      {/* Element accent edge */}
+      <div className="absolute inset-y-0 left-0 w-1.5 bg-[var(--el-solid)] transition-colors duration-500" />
 
       <div className="relative grid min-h-[560px] items-center gap-6 p-6 sm:p-10 lg:min-h-[640px] lg:grid-cols-[1.05fr_0.95fr] lg:gap-6 lg:p-12 lg:pl-14">
         {/* Copy column */}
         <div className="relative z-20 order-2 lg:order-1">
-          <div className="mb-7 inline-flex flex-wrap gap-1 overflow-hidden rounded-[16px] bg-white/70 p-1.5 shadow-soft ring-1 ring-black/[0.05] backdrop-blur-sm">
+          <div className="mb-7 inline-flex flex-wrap gap-1 overflow-hidden rounded-[16px] bg-white/70 p-1.5 shadow-soft backdrop-blur-sm dark:bg-white/[0.06] dark:shadow-none">
             {(
               [
                 ["first", "Текущие молитвы"],
@@ -210,7 +121,7 @@ export default function BannerSlider({ slides }: Props) {
                 className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${
                   half === key
                     ? "bg-[var(--el-solid)] text-[var(--el-on-solid)] shadow-sm"
-                    : "text-foreground/70 hover:bg-[var(--el-soft)] hover:text-[var(--el-accent)]"
+                    : "el-label text-foreground/70 hover:bg-[var(--el-soft)] dark:hover:bg-[color-mix(in_srgb,var(--el-solid)_16%,transparent)]"
                 }`}
               >
                 {label}
@@ -220,7 +131,7 @@ export default function BannerSlider({ slides }: Props) {
 
           <div key={contentKey} className="animate-reveal-up">
             <div className="mb-4 flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-2 rounded-full bg-[var(--el-soft)] px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--el-accent)]">
+              <span className="el-soft-bg el-label inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={item.elementImg} alt="" className="h-4 w-4" />
                 {item.role}
@@ -254,7 +165,7 @@ export default function BannerSlider({ slides }: Props) {
               />
 
               <div className="flex min-w-[220px] flex-1 flex-col justify-center">
-                <p className="max-w-md text-base font-medium leading-relaxed text-muted-foreground sm:text-lg">
+                <p className="max-w-md text-base font-medium leading-relaxed text-foreground/80 sm:text-lg dark:text-[#ece5d8]/85">
                   {item.text}
                 </p>
                 <div className="mt-4 h-px w-16 bg-[var(--el-solid)]/70" />
@@ -265,14 +176,14 @@ export default function BannerSlider({ slides }: Props) {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href={`/wiki/characters/${item.slug}`}
-              className="group inline-flex items-center gap-2 rounded-[16px] bg-[var(--el-solid)] px-7 py-3.5 text-[15px] font-bold text-[var(--el-on-solid)] shadow-sm transition duration-300 hover:bg-[var(--el-hover)] hover:shadow-md"
+              className="group inline-flex items-center gap-2 rounded-[16px] bg-[var(--el-solid)] px-7 py-3.5 text-[15px] font-bold text-[var(--el-on-solid)] shadow-sm transition duration-300 hover:bg-[var(--el-hover)] hover:shadow-[0_8px_28px_-8px_var(--el-glow)]"
             >
               Открыть гайд
               <ArrowUpRight className="h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
             <Link
               href="/wiki/characters"
-              className="inline-flex items-center justify-center rounded-[16px] bg-white/80 px-6 py-3.5 text-[15px] font-bold text-[var(--el-accent)] ring-1 ring-black/[0.06] transition duration-300 hover:bg-[var(--el-soft)]"
+              className="el-label inline-flex items-center justify-center rounded-[16px] bg-white/80 px-6 py-3.5 text-[15px] font-bold transition duration-300 hover:bg-[var(--el-soft)] dark:bg-white/[0.06] dark:hover:bg-[color-mix(in_srgb,var(--el-solid)_16%,transparent)]"
             >
               Все персонажи
             </Link>
@@ -291,7 +202,7 @@ export default function BannerSlider({ slides }: Props) {
                     className={`h-2 rounded-full transition-all duration-300 ${
                       i === index
                         ? "w-7 bg-[var(--el-solid)]"
-                        : "w-2 bg-navy/15 hover:bg-navy/30"
+                        : "w-2 bg-navy/15 hover:bg-navy/30 dark:bg-white/15 dark:hover:bg-white/25"
                     }`}
                   />
                 ))}
@@ -300,7 +211,7 @@ export default function BannerSlider({ slides }: Props) {
                 <button
                   type="button"
                   onClick={() => go(-1)}
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-[14px] bg-white/80 text-[var(--el-accent)] ring-1 ring-black/[0.06] transition hover:bg-[var(--el-soft)]"
+                  className="el-label inline-flex h-11 w-11 items-center justify-center rounded-[14px] bg-white/80 transition hover:bg-[var(--el-soft)] dark:bg-white/[0.06] dark:hover:bg-[color-mix(in_srgb,var(--el-solid)_16%,transparent)]"
                   aria-label="Предыдущий"
                 >
                   <ChevronLeft className="h-5 w-5" />
@@ -308,7 +219,7 @@ export default function BannerSlider({ slides }: Props) {
                 <button
                   type="button"
                   onClick={() => go(1)}
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-[14px] bg-white/80 text-[var(--el-accent)] ring-1 ring-black/[0.06] transition hover:bg-[var(--el-soft)]"
+                  className="el-label inline-flex h-11 w-11 items-center justify-center rounded-[14px] bg-white/80 transition hover:bg-[var(--el-soft)] dark:bg-white/[0.06] dark:hover:bg-[color-mix(in_srgb,var(--el-solid)_16%,transparent)]"
                   aria-label="Следующий"
                 >
                   <ChevronRight className="h-5 w-5" />
@@ -326,15 +237,15 @@ export default function BannerSlider({ slides }: Props) {
             src={item.elementImg}
             alt=""
             aria-hidden
-            className="pointer-events-none absolute right-2 top-6 h-44 w-44 opacity-[0.12] transition-opacity duration-700 sm:h-56 sm:w-56 lg:right-0 lg:top-10 lg:h-72 lg:w-72"
+            className="pointer-events-none absolute right-2 top-6 h-44 w-44 opacity-[0.12] transition-opacity duration-700 sm:h-56 sm:w-56 lg:right-0 lg:top-10 lg:h-72 lg:w-72 dark:opacity-[0.08]"
           />
 
           <div
-            className="absolute bottom-4 left-[22%] h-32 w-64 -translate-x-1/2 rounded-[100%] blur-3xl transition-colors duration-700 sm:h-40 sm:w-80"
+            className="absolute bottom-4 left-[22%] h-32 w-64 -translate-x-1/2 rounded-[100%] blur-3xl transition-colors duration-700 sm:h-40 sm:w-80 dark:opacity-70"
             style={{ backgroundColor: "var(--el-glow)" }}
           />
           <div
-            className="absolute bottom-16 left-[35%] h-20 w-40 -translate-x-1/2 rounded-[100%] blur-2xl opacity-60 transition-colors duration-700"
+            className="absolute bottom-16 left-[35%] h-20 w-40 -translate-x-1/2 rounded-[100%] blur-2xl opacity-50 transition-colors duration-700 dark:opacity-35"
             style={{ backgroundColor: "var(--el-solid)" }}
           />
 

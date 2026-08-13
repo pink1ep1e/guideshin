@@ -61,7 +61,7 @@ export default function CharacterHeroBanner({
 
   return (
     <section
-      className="relative animate-reveal-up overflow-hidden rounded-[20px] bg-white/90 text-foreground shadow-panel ring-1 ring-black/[0.04]"
+      className="relative animate-reveal-up overflow-hidden rounded-[20px] bg-white/90 text-foreground shadow-panel dark:shadow-none"
       style={themeVars}
     >
       <div className="absolute inset-0 opacity-[0.22] dark:hidden">
@@ -75,12 +75,12 @@ export default function CharacterHeroBanner({
       <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-white/50 dark:hidden" />
       <div className="absolute inset-0 hidden bg-[hsl(var(--card))] dark:block" />
       <div
-        className="absolute inset-0 opacity-80"
+        className="el-glow-wash absolute inset-0"
         style={{
           background: `
             radial-gradient(ellipse 55% 70% at 88% 45%, var(--el-glow), transparent 70%),
-            radial-gradient(ellipse 40% 50% at 12% 80%, var(--el-soft), transparent 65%),
-            linear-gradient(115deg, transparent 40%, var(--el-soft) 100%)
+            radial-gradient(ellipse 40% 50% at 12% 80%, color-mix(in srgb, var(--el-solid) 18%, transparent), transparent 65%),
+            linear-gradient(115deg, transparent 45%, color-mix(in srgb, var(--el-solid) 12%, transparent) 100%)
           `,
         }}
       />
@@ -89,7 +89,7 @@ export default function CharacterHeroBanner({
       <div className="relative grid min-h-[420px] items-center gap-6 p-6 sm:min-h-[480px] sm:p-10 lg:min-h-[520px] lg:grid-cols-[1.05fr_0.95fr] lg:gap-6 lg:p-12 lg:pl-14">
         <div className="relative z-20 order-2 lg:order-1">
           <div className="mb-4 flex flex-wrap items-center gap-2.5">
-            <span className="inline-flex items-center gap-2 rounded-full bg-[var(--el-soft)] px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--el-accent)]">
+            <span className="el-soft-bg el-label inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em]">
               {elementImg && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={elementImg} alt="" className="h-4 w-4" />
@@ -128,23 +128,23 @@ export default function CharacterHeroBanner({
 
             <div className="flex min-w-[220px] flex-1 flex-col justify-center">
               {shortDesc ? (
-                <p className="max-w-md text-base font-medium leading-relaxed text-muted-foreground sm:text-lg">
+                <p className="max-w-md text-base font-medium leading-relaxed text-foreground/80 sm:text-lg dark:text-[#ece5d8]/85">
                   {shortDesc}
                 </p>
               ) : (
-                <p className="max-w-md text-base font-medium leading-relaxed text-muted-foreground sm:text-lg">
+                <p className="max-w-md text-base font-medium leading-relaxed text-foreground/80 sm:text-lg dark:text-[#ece5d8]/85">
                   Гайд, билды и материалы для прокачки {name}.
                 </p>
               )}
               <div className="mt-4 h-px w-16 bg-[var(--el-solid)]/70" />
               <div className="mt-4 flex flex-wrap gap-2">
                 {weaponType && (
-                  <span className="rounded-full bg-[var(--el-soft)] px-3 py-1.5 text-xs font-bold text-[var(--el-accent)]">
+                  <span className="el-soft-bg el-label rounded-full px-3 py-1.5 text-xs font-bold">
                     {weaponType}
                   </span>
                 )}
                 {regionLabel && (
-                  <span className="rounded-full bg-[var(--el-soft)] px-3 py-1.5 text-xs font-bold text-[var(--el-accent)]">
+                  <span className="el-soft-bg el-label rounded-full px-3 py-1.5 text-xs font-bold">
                     {regionLabel}
                   </span>
                 )}
@@ -160,15 +160,15 @@ export default function CharacterHeroBanner({
               src={elementImg}
               alt=""
               aria-hidden
-              className="pointer-events-none absolute right-2 top-6 h-44 w-44 opacity-[0.12] sm:h-56 sm:w-56 lg:right-0 lg:top-10 lg:h-72 lg:w-72"
+              className="pointer-events-none absolute right-2 top-6 h-44 w-44 opacity-[0.12] sm:h-56 sm:w-56 lg:right-0 lg:top-10 lg:h-72 lg:w-72 dark:opacity-[0.08]"
             />
           )}
           <div
-            className="absolute bottom-4 left-[22%] h-32 w-64 -translate-x-1/2 rounded-[100%] blur-3xl sm:h-40 sm:w-80"
+            className="absolute bottom-4 left-[22%] h-32 w-64 -translate-x-1/2 rounded-[100%] blur-3xl sm:h-40 sm:w-80 dark:opacity-70"
             style={{ backgroundColor: "var(--el-glow)" }}
           />
           <div
-            className="absolute bottom-16 left-[35%] h-20 w-40 -translate-x-1/2 rounded-[100%] blur-2xl opacity-60"
+            className="absolute bottom-16 left-[35%] h-20 w-40 -translate-x-1/2 rounded-[100%] blur-2xl opacity-50 dark:opacity-35"
             style={{ backgroundColor: "var(--el-solid)" }}
           />
           <CharacterSplashArt

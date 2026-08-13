@@ -169,7 +169,7 @@ export default async function CharacterPage({ params }: Props) {
             />
           ) : (
             <div className="space-y-5">
-              <article className="rounded-[18px] border border-black/[0.045] bg-white p-4 shadow-soft sm:p-6">
+              <article className="rounded-[18px] bg-white p-4 shadow-soft sm:p-6 dark:bg-[hsl(var(--card))] dark:shadow-none">
                 <div
                   className="guide-html"
                   dangerouslySetInnerHTML={{ __html: guideHtml }}

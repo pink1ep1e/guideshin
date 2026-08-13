@@ -55,7 +55,6 @@ export default async function ArtifactsPage() {
             />
           </div>
           <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-white/70 dark:from-[hsl(var(--card))] dark:via-[hsl(var(--card)/0.96)] dark:to-[hsl(var(--card)/0.85)]" />
-          <span className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-[#189b8e]/12 blur-2xl" />
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#189b8e] to-[#67d5cc]" />
 
           <div className="relative max-w-2xl">
@@ -86,7 +85,6 @@ export default async function ArtifactsPage() {
             <ArtifactCatalog artifacts={artifacts} />
 
             <div className="glass-panel relative overflow-hidden p-6 sm:p-8">
-              <span className="pointer-events-none absolute -bottom-12 left-1/3 h-40 w-40 rounded-full bg-[#189b8e]/10 blur-2xl" />
               <div className="relative space-y-6">
                 <div>
                   <p className="mb-1 text-sm font-bold uppercase tracking-[0.08em] text-[#189b8e]">

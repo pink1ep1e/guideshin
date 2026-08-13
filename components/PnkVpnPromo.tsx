@@ -7,7 +7,7 @@ import { PNK_VPN_BOT, PNK_VPN_LOGO, SITE_TELEGRAM } from "@/lib/site";
 
 export function PnkVpnPromo() {
   return (
-    <aside className="overflow-hidden rounded-3xl bg-white shadow-soft ring-1 ring-black/[0.04]">
+    <aside className="overflow-hidden rounded-3xl bg-white dark:bg-card dark:shadow-none">
       <div className="p-5">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">

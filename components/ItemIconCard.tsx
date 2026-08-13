@@ -104,7 +104,7 @@ export default function ItemIconCard({
   if (compact) {
     const box = (
       <div
-        className={`relative overflow-hidden rounded-[10px] bg-cover bg-center shadow-sm ring-1 ring-black/[0.06] ${COMPACT_SIZES[size]} ${className} ${
+        className={`relative overflow-hidden rounded-[10px] bg-cover bg-center shadow-sm ${COMPACT_SIZES[size]} ${className} ${
           isNeutral ? "bg-[#f3f0ea]" : ""
         }`}
         style={isNeutral ? undefined : { backgroundImage: `url(${rarityBg(stars)})` }}
@@ -153,7 +153,7 @@ export default function ItemIconCard({
   const widthClass = fluid ? "w-full" : CARD_WIDTHS[size];
   const card = (
     <div
-      className={`group relative flex h-full flex-col overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)] ${widthClass} ${className}`}
+      className={`group relative flex h-full flex-col overflow-hidden rounded-[16px] bg-card shadow-panel transition duration-300 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)] dark:shadow-none dark:hover:shadow-none ${widthClass} ${className}`}
     >
       <div
         className={`relative aspect-square w-full overflow-hidden bg-cover bg-center ${
@@ -177,7 +177,7 @@ export default function ItemIconCard({
             Нет иконки
           </span>
         )}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-black/35 via-black/10 to-transparent dark:from-black/20 dark:via-black/5" />
         {!isNeutral ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -191,7 +191,7 @@ export default function ItemIconCard({
         ) : null}
       </div>
 
-      <div className="relative z-10 flex min-h-[2.75rem] shrink-0 items-center justify-center px-1.5 pb-2 pt-1.5">
+      <div className="card-name-strip relative z-10 min-h-[2.75rem] pb-2 pt-1.5">
         <p className="font-genshin line-clamp-2 w-full text-center text-[12px] leading-snug tracking-wide text-foreground [overflow-wrap:anywhere]">
           {name}
         </p>

@@ -97,10 +97,10 @@ export default function MaterialGuideView({
 
   return (
     <div className="space-y-5">
-      <section className="rounded-[20px] border border-black/[0.06] bg-white/90 p-5 shadow-soft sm:p-6">
+      <section className="rounded-[20px] bg-white/90 p-5 shadow-soft sm:p-6 dark:bg-[hsl(var(--card))] dark:shadow-none">
         <div className="flex flex-wrap gap-5">
           <div
-            className="relative flex h-[100px] w-[100px] shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-cover bg-center shadow-sm ring-1 ring-black/[0.06]"
+            className="relative flex h-[100px] w-[100px] shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-cover bg-center shadow-sm"
             style={{ backgroundImage: `url(${rarityBg(rarityStars)})` }}
           >
             {image ? (
@@ -348,7 +348,7 @@ export default function MaterialGuideView({
           }
         >
           {data.mapUrl && isAllowedMapEmbedUrl(data.mapUrl) ? (
-            <div className="overflow-hidden rounded-[14px] border border-black/[0.08] bg-[#0b1f44]/[0.03] shadow-sm">
+            <div className="overflow-hidden rounded-[14px] bg-[#0b1f44]/[0.03] shadow-sm dark:bg-white/[0.04]">
               <iframe
                 src={data.mapUrl.trim()}
                 title={data.mapTitle || `Карта: ${materialName}`}

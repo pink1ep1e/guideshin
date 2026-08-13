@@ -56,7 +56,7 @@ export function CharacterPortraitCard({ item }: { item: RelatedCharacter }) {
           </span>
         )}
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-black/35 via-black/10 to-transparent dark:from-black/20 dark:via-black/5" />
 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -86,7 +86,7 @@ export function CharacterPortraitCard({ item }: { item: RelatedCharacter }) {
         )}
       </div>
 
-      <div className="flex min-h-[2.1rem] shrink-0 items-center justify-center px-1.5 py-1">
+      <div className="card-name-strip">
         <p className="font-genshin line-clamp-2 w-full text-center text-[12px] leading-snug tracking-wide text-foreground [overflow-wrap:anywhere]">
           {item.name}
         </p>
@@ -95,7 +95,7 @@ export function CharacterPortraitCard({ item }: { item: RelatedCharacter }) {
   );
 
   const shell =
-    "group relative flex h-full w-[108px] shrink-0 flex-col overflow-hidden rounded-[16px] bg-card shadow-panel ring-1 ring-black/[0.06] transition duration-300 hover:ring-[#189b8e]/35 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)]";
+    "group relative flex h-full w-[108px] shrink-0 flex-col overflow-hidden rounded-[16px] bg-card shadow-panel transition duration-300 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)] dark:shadow-none dark:hover:shadow-none";
 
   if (item.href) {
     return (
@@ -137,7 +137,7 @@ export function GuideSection({
   large?: boolean;
 }) {
   return (
-    <section className="rounded-[20px] border border-black/[0.06] bg-white/90 p-5 shadow-soft sm:p-6">
+    <section className="rounded-[20px] bg-white/90 p-5 shadow-soft sm:p-6 dark:bg-[hsl(var(--card))] dark:shadow-none">
       <h2
         className={`font-genshin tracking-wide text-foreground ${
           large ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl"

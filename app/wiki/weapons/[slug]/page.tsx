@@ -144,7 +144,7 @@ export default async function WeaponPage({ params }: Props) {
           />
 
           {item.shortDesc && !guide.passive && (
-            <section className="rounded-[20px] border border-black/[0.06] bg-white/90 p-5 shadow-soft sm:p-6">
+            <section className="rounded-[20px] bg-white/90 p-5 shadow-soft sm:p-6 dark:bg-[hsl(var(--card))] dark:shadow-none">
               <p className="text-base font-medium leading-relaxed text-muted-foreground">
                 {item.shortDesc}
               </p>

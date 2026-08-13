@@ -66,14 +66,14 @@ function NavDropdown({
         type="button"
         ref={buttonRef}
         onMouseEnter={onHover}
-        className="relative z-10 inline-flex items-center gap-1 rounded-[14px] px-3 py-3 text-[15.5px] font-semibold text-foreground transition-colors duration-200 hover:text-[#189b8e]"
+        className="relative z-10 inline-flex items-center gap-1 rounded-[14px] px-3 py-3 text-[15.5px] font-semibold text-foreground transition-colors duration-200 hover:text-[#189b8e] dark:hover:text-[#ece5d8]"
       >
         {label}
-        <ChevronDown className="h-4 w-4 text-[#189b8e]/80 transition duration-200 group-hover:rotate-180" />
+        <ChevronDown className="h-4 w-4 text-[#189b8e]/80 transition duration-200 group-hover:rotate-180 dark:text-[#ece5d8]/80" />
       </button>
       <div className="invisible absolute left-0 top-full z-30 min-w-[240px] pt-2 opacity-0 transition-[opacity,visibility] duration-150 group-hover:visible group-hover:opacity-100">
-        <div className="origin-top rounded-[18px] border border-black/[0.06] bg-white/95 p-2 shadow-panel backdrop-blur-md dark:border-white/10 dark:bg-[hsl(var(--popover)/0.96)]">
-          <div className="mb-1 px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[#189b8e]/80">
+        <div className="origin-top rounded-[18px] bg-white/95 p-2 shadow-panel backdrop-blur-md dark:bg-[hsl(var(--popover)/0.96)] dark:shadow-none">
+          <div className="mb-1 px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[#189b8e]/80 dark:text-[#ece5d8]/80">
             {label}
           </div>
           {items.map((item) => (
@@ -81,9 +81,9 @@ function NavDropdown({
               key={item.label}
               href={item.href}
               onClick={onNavigate}
-              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-foreground transition hover:bg-[#189b8e]/12 hover:text-[#189b8e]"
+              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-foreground transition hover:bg-[#189b8e]/12 hover:text-[#189b8e] dark:hover:bg-[rgb(236_229_216/0.1)] dark:hover:text-[#ece5d8]"
             >
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#189b8e]/50" />
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#189b8e]/50 dark:bg-[#ece5d8]/50" />
               {item.label}
             </Link>
           ))}
@@ -114,7 +114,7 @@ function MobileAccordion({
       >
         {label}
         <ChevronDown
-          className={`h-4 w-4 text-[#189b8e] transition duration-200 ${
+          className={`h-4 w-4 text-[#189b8e] transition duration-200 dark:text-[#ece5d8] ${
             expanded ? "rotate-180" : ""
           }`}
         />
@@ -126,9 +126,9 @@ function MobileAccordion({
               key={item.label}
               href={item.href}
               onClick={onNavigate}
-              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-foreground/80 transition hover:bg-[#189b8e]/12 hover:text-[#189b8e]"
+              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-foreground/80 transition hover:bg-[#189b8e]/12 hover:text-[#189b8e] dark:hover:bg-[rgb(236_229_216/0.1)] dark:hover:text-[#ece5d8]"
             >
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#189b8e]/50" />
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#189b8e]/50 dark:bg-[#ece5d8]/50" />
               {item.label}
             </Link>
           ))}
@@ -238,7 +238,7 @@ export default function Navbar() {
       <div className="pointer-events-auto flex w-full max-w-page items-center gap-2.5 sm:w-auto sm:max-w-[calc(100%-1.5rem)] sm:gap-3">
         <header
           className={`glass-panel relative z-50 min-w-0 flex-1 sm:flex-none ${
-            isMap ? "shadow-[0_12px_40px_-12px_rgba(11,31,68,0.45)]" : ""
+            isMap ? "shadow-[0_12px_40px_-12px_rgba(11,31,68,0.45)] dark:shadow-none" : ""
           }`}
         >
           <div className="flex min-h-[64px] items-center gap-2.5 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3 lg:gap-4 lg:px-5">
@@ -271,22 +271,22 @@ export default function Navbar() {
             <nav
               className={`${
                 open ? "flex" : "hidden"
-              } absolute left-0 right-0 top-full z-50 mt-2 flex-col gap-3 rounded-[20px] border border-black/[0.06] bg-white p-3 shadow-panel dark:border-white/10 dark:bg-card lg:static lg:mt-0 lg:flex lg:flex-row lg:items-center lg:gap-3 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}
+              } absolute left-0 right-0 top-full z-50 mt-2 flex-col gap-3 rounded-[20px] bg-white p-3 shadow-panel dark:bg-card dark:shadow-none lg:static lg:mt-0 lg:flex lg:flex-row lg:items-center lg:gap-3 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}
             >
               <div
                 ref={navRef}
-                className="relative flex flex-col gap-0.5 rounded-[16px] bg-[#189b8e]/[0.08] p-1 dark:bg-[#189b8e]/[0.14] lg:flex-row lg:items-center lg:gap-1"
+                className="relative flex flex-col gap-0.5 rounded-[16px] bg-[#189b8e]/[0.08] p-1 dark:bg-[rgb(236_229_216/0.08)] lg:flex-row lg:items-center lg:gap-1"
                 onMouseLeave={() => setHoverVisible(false)}
               >
                 <SlidingPill
                   pill={hoverPill}
                   visible={hoverVisible}
-                  className="z-0 hidden bg-[#189b8e25] lg:block"
+                  className="z-0 hidden bg-[#189b8e25] dark:bg-[rgb(236_229_216/0.14)] lg:block"
                 />
                 <SlidingPill
                   pill={activePill}
                   visible={activeVisible}
-                  className="z-[1] bg-[#189b8e]"
+                  className="z-[1] bg-[#189b8e] dark:bg-[#ece5d8]"
                 />
 
                 {navLinks.map((link, index) => {
@@ -300,7 +300,7 @@ export default function Navbar() {
                       className={`relative z-10 rounded-[14px] px-3 py-3 text-[15.5px] font-semibold transition-colors duration-200 ${
                         active
                           ? "text-white dark:text-[#1b1b22]"
-                          : "text-foreground hover:text-[#189b8e]"
+                          : "text-foreground hover:text-[#189b8e] dark:hover:text-[#ece5d8]"
                       }`}
                       onClick={closeMenu}
                     >
