@@ -299,7 +299,7 @@ export default function Navbar() {
                       onMouseEnter={() => moveHoverTo(index)}
                       className={`relative z-10 rounded-[14px] px-3 py-3 text-[15.5px] font-semibold transition-colors duration-200 ${
                         active
-                          ? "text-white"
+                          ? "text-white dark:text-[#1b1b22]"
                           : "text-foreground hover:text-[#189b8e]"
                       }`}
                       onClick={closeMenu}

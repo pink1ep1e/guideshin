@@ -84,18 +84,6 @@ export default function CharacterHeroBanner({
           `,
         }}
       />
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.35]"
-        style={{
-          backgroundImage:
-            "linear-gradient(var(--el-soft) 1px, transparent 1px), linear-gradient(90deg, var(--el-soft) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
-          maskImage:
-            "radial-gradient(ellipse 70% 80% at 70% 50%, black 10%, transparent 75%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 70% 80% at 70% 50%, black 10%, transparent 75%)",
-        }}
-      />
       <div className="absolute inset-y-0 left-0 w-1.5 bg-[var(--el-solid)]" />
 
       <div className="relative grid min-h-[420px] items-center gap-6 p-6 sm:min-h-[480px] sm:p-10 lg:min-h-[520px] lg:grid-cols-[1.05fr_0.95fr] lg:gap-6 lg:p-12 lg:pl-14">

@@ -32,10 +32,11 @@ function useChartInk() {
   const dark = resolvedTheme === "dark";
   return {
     dark,
-    tick: dark ? "#9ca8a6" : "#4b5563",
-    tickStrong: dark ? "#e8f0ee" : "#111111",
-    grid: dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
-    legend: dark ? "#c5d0ce" : "#334155",
+    brand: dark ? "#ece5d8" : TEAL,
+    tick: dark ? "#b8ae9c" : "#4b5563",
+    tickStrong: dark ? "#ece5d8" : "#111111",
+    grid: dark ? "rgba(236,229,216,0.08)" : "rgba(0,0,0,0.05)",
+    legend: dark ? "#cfc0a5" : "#334155",
   };
 }
 
@@ -116,7 +117,7 @@ export function WishMonthlyPullChart({
         ? VIOLET
         : banner === "chronicled"
           ? CHRONICLE
-          : TEAL;
+          : ink.brand;
 
   return (
     <div>

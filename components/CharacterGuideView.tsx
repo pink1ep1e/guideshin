@@ -178,7 +178,11 @@ function SlotIcon({ slot }: { slot: string }) {
 }
 
 const TIER_STYLE: Record<string, { bg: string; fg: string; band: string }> = {
-  S: { bg: "#189b8e", fg: "#fff", band: "bg-[#189b8e]/[0.12]" },
+  S: {
+    bg: "hsl(var(--primary))",
+    fg: "hsl(var(--primary-foreground))",
+    band: "bg-primary/12",
+  },
   A: {
     bg: "#3d7ea6",
     fg: "#fff",
@@ -929,7 +933,7 @@ export default function CharacterGuideView({
                 onClick={() => setTab(id)}
                 className={`rounded-[12px] px-3.5 py-2.5 text-[14px] transition sm:flex-1 ${
                   on
-                    ? "guide-nav-tab--on bg-[#189b8e] font-semibold text-white"
+                    ? "guide-nav-tab--on bg-[#189b8e] font-semibold text-white dark:text-[#1b1b22]"
                     : "font-medium text-muted-foreground hover:bg-black/[0.03] hover:text-foreground"
                 }`}
               >

@@ -48,43 +48,48 @@
   .dark {
     color-scheme: dark;
 
-    /* Deep teal-ink dark — брендовый, не «фиолетовый AI» */
-    --background: 180 18% 7%;
-    --foreground: 170 20% 94%;
+    /* Genshin loading screen — charcoal + champagne */
+    --gs-ink: #1b1b22;
+    --gs-cream: #ece5d8;
+    --gs-gold: #d3bc8e;
+    --gs-cream-dim: #b8ae9c;
 
-    --card: 180 14% 11%;
-    --card-foreground: 170 20% 94%;
+    --background: 240 12% 12%; /* #1b1b22 */
+    --foreground: 37 34% 89%; /* #ece5d8 */
 
-    --popover: 180 14% 12%;
-    --popover-foreground: 170 20% 94%;
+    --card: 240 10% 16%; /* ~#24242e */
+    --card-foreground: 37 34% 89%;
 
-    --primary: 174 58% 42%;
-    --primary-foreground: 0 0% 100%;
+    --popover: 240 10% 17%;
+    --popover-foreground: 37 34% 89%;
 
-    --secondary: 180 12% 16%;
-    --secondary-foreground: 170 15% 90%;
+    --primary: 37 34% 89%; /* cream buttons */
+    --primary-foreground: 240 12% 12%;
 
-    --muted: 180 12% 14%;
-    --muted-foreground: 170 10% 62%;
+    --secondary: 240 8% 20%;
+    --secondary-foreground: 37 28% 86%;
 
-    --accent: 174 22% 16%;
-    --accent-foreground: 174 55% 72%;
+    --muted: 240 8% 18%;
+    --muted-foreground: 37 14% 64%;
+
+    --accent: 40 18% 20%;
+    --accent-foreground: 40 44% 72%; /* #d3bc8e */
 
     --destructive: 0 62% 48%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 180 10% 18%;
-    --input: 180 10% 18%;
-    --ring: 174 58% 42%;
+    --border: 240 8% 24%;
+    --input: 240 8% 24%;
+    --ring: 37 34% 82%;
 
-    --surface: 180 14% 11%;
-    --surface-muted: 180 12% 14%;
-    --surface-soft: 180 12% 13%;
-    --overlay: 180 14% 12%;
-    --hairline: 0 0% 100%;
-    --hairline-alpha: 0.08;
-    --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.35);
-    --shadow-panel: 0 12px 40px rgba(0, 0, 0, 0.45);
+    --surface: 240 10% 16%;
+    --surface-muted: 240 8% 18%;
+    --surface-soft: 240 8% 17%;
+    --overlay: 240 10% 17%;
+    --hairline: 37 30% 88%;
+    --hairline-alpha: 0.12;
+    --shadow-soft: 0 2px 14px rgba(0, 0, 0, 0.4);
+    --shadow-panel: 0 14px 44px rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -126,14 +131,14 @@
     background-clip: padding-box;
   }
   .dark body {
-    scrollbar-color: rgb(94 196 184 / 0.38) transparent;
+    scrollbar-color: rgb(236 229 216 / 0.35) transparent;
   }
   .dark body::-webkit-scrollbar-thumb {
-    background-color: rgb(94 196 184 / 0.3);
+    background-color: rgb(236 229 216 / 0.28);
     background-clip: padding-box;
   }
   .dark body::-webkit-scrollbar-thumb:hover {
-    background-color: rgb(94 196 184 / 0.5);
+    background-color: rgb(211 188 142 / 0.55);
     background-clip: padding-box;
   }
 }
@@ -166,7 +171,12 @@
   }
 
   .dark .ui-btn-primary {
-    @apply bg-[#1aad9f] hover:bg-[#189b8e];
+    background-color: var(--gs-cream);
+    color: var(--gs-ink);
+  }
+  .dark .ui-btn-primary:hover {
+    background-color: var(--gs-gold);
+    color: var(--gs-ink);
   }
 
   .ui-btn-secondary {
@@ -174,7 +184,13 @@
   }
 
   .dark .ui-btn-secondary {
-    @apply border-white/10 bg-[hsl(var(--card)/0.9)] text-[#5ec4b8] hover:bg-[#189b8e]/15;
+    border-color: rgb(236 229 216 / 0.22);
+    background-color: hsl(var(--card) / 0.9);
+    color: var(--gs-cream);
+  }
+  .dark .ui-btn-secondary:hover {
+    background-color: rgb(236 229 216 / 0.12);
+    color: var(--gs-gold);
   }
 
   .section-title {
@@ -204,6 +220,10 @@
 
   .guide-html a {
     @apply text-[#189b8e] underline-offset-2 hover:underline;
+  }
+
+  .dark .guide-html a {
+    color: var(--gs-cream);
   }
 
   .guide-html img {
@@ -261,6 +281,10 @@
     @apply border-l-[3px] border-l-[#189b8e];
   }
 
+  .dark .guide-html .guide-pros {
+    border-left-color: var(--gs-cream);
+  }
+
   .guide-html .guide-cons {
     @apply border-l-[3px] border-l-[#c45c5c];
   }
@@ -271,6 +295,10 @@
 
   .guide-html .guide-proscons-title--pro {
     @apply text-[#189b8e];
+  }
+
+  .dark .guide-html .guide-proscons-title--pro {
+    color: var(--gs-cream);
   }
 
   .guide-html .guide-proscons-title--con {
@@ -341,6 +369,11 @@
     @apply mt-1 border-l-2 border-[#189b8e]/35 pl-2 text-[12.5px] leading-snug text-[#1a7a70];
   }
 
+  .dark .guide-html .guide-rank-verdict {
+    border-left-color: rgb(236 229 216 / 0.4);
+    color: var(--gs-cream-dim);
+  }
+
   .guide-html .guide-table-wrap {
     @apply overflow-x-auto rounded-[14px] border border-black/[0.05] bg-white;
   }
@@ -381,6 +414,10 @@
     @apply bg-[#189b8e]/[0.03];
   }
 
+  .dark .guide-html .guide-table tbody tr:hover {
+    background-color: rgb(236 229 216 / 0.06);
+  }
+
   .guide-html .guide-table tbody tr:last-child td {
     @apply border-b-0;
   }
@@ -405,6 +442,10 @@
 
   .guide-html .guide-char-name {
     @apply text-[13px] font-medium text-[#189b8e];
+  }
+
+  .dark .guide-html .guide-char-name {
+    color: var(--gs-cream);
   }
 
   .guide-html .guide-el-icon {
@@ -489,14 +530,14 @@
     background: transparent;
   }
   .dark .gs-scrollbar {
-    scrollbar-color: rgb(94 196 184 / 0.4) transparent;
+    scrollbar-color: rgb(236 229 216 / 0.38) transparent;
   }
   .dark .gs-scrollbar::-webkit-scrollbar-thumb {
-    background-color: rgb(94 196 184 / 0.32);
+    background-color: rgb(236 229 216 / 0.3);
     background-clip: padding-box;
   }
   .dark .gs-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: rgb(94 196 184 / 0.55);
+    background-color: rgb(211 188 142 / 0.55);
     background-clip: padding-box;
   }
 }
@@ -1028,8 +1069,116 @@ body:has(.map-page-root) main {
 
 .dark .text-\[\#0f5c54\],
 .dark .text-\[\#147f74\],
-.dark .text-\[\#1a7a70\] {
-  color: #5ec4b8;
+.dark .text-\[\#1a7a70\],
+.dark .text-\[\#189b8e\],
+.dark .text-\[\#1aad9f\],
+.dark .text-\[\#5ec4b8\],
+.dark .text-\[\#67d5cc\] {
+  color: var(--gs-cream);
+}
+
+.dark .hover\:text-\[\#189b8e\]:hover,
+.dark .hover\:text-\[\#5ec4b8\]:hover {
+  color: var(--gs-gold);
+}
+
+.dark .bg-\[\#189b8e\],
+.dark .bg-\[\#1aad9f\],
+.dark .bg-\[\#207970\] {
+  background-color: var(--gs-cream);
+  color: var(--gs-ink);
+}
+
+.dark .bg-\[\#189b8e\].text-white,
+.dark .bg-\[\#1aad9f\].text-white,
+.dark .text-white.bg-\[\#189b8e\],
+.dark .guide-nav-tab--on.text-white,
+.dark .guide-nav-tab--on.bg-\[\#189b8e\] {
+  color: var(--gs-ink);
+}
+
+.dark .hover\:bg-\[\#189b8e\]:hover,
+.dark .hover\:bg-\[\#207970\]:hover,
+.dark .hover\:bg-\[\#1aad9f\]:hover,
+.dark .hover\:bg-\[\#147f74\]:hover,
+.dark .hover\:bg-\[\#157f74\]:hover {
+  background-color: var(--gs-gold);
+  color: var(--gs-ink);
+}
+
+.dark .hover\:bg-\[\#189b8e\]:hover.hover\:text-white:hover,
+.dark .hover\:text-white:hover:where(.hover\:bg-\[\#189b8e\]:hover) {
+  color: var(--gs-ink);
+}
+
+.dark .bg-\[\#189b8e\]\/\[0\.03\],
+.dark .bg-\[\#189b8e\]\/\[0\.06\],
+.dark .bg-\[\#189b8e\]\/\[0\.08\],
+.dark .bg-\[\#189b8e\]\/\[0\.1\],
+.dark .bg-\[\#189b8e\]\/\[0\.12\],
+.dark .bg-\[\#189b8e\]\/\[0\.14\],
+.dark .bg-\[\#189b8e\]\/\[0\.15\],
+.dark .bg-\[\#189b8e\]\/\[0\.18\],
+.dark .bg-\[\#189b8e\]\/10,
+.dark .bg-\[\#189b8e\]\/12,
+.dark .bg-\[\#189b8e\]\/15,
+.dark .bg-\[\#189b8e\]\/18,
+.dark .bg-\[\#189b8e25\] {
+  background-color: rgb(236 229 216 / 0.12);
+}
+
+.dark .text-\[\#189b8e\]\/70 {
+  color: rgb(236 229 216 / 0.7);
+}
+
+.dark .hover\:bg-\[\#189b8e\]\/10:hover,
+.dark .hover\:bg-\[\#189b8e\]\/12:hover,
+.dark .hover\:bg-\[\#189b8e\]\/15:hover,
+.dark .hover\:bg-\[\#189b8e\]\/18:hover,
+.dark .hover\:bg-\[\#189b8e\]\/\[0\.1\]:hover,
+.dark .hover\:bg-\[\#189b8e\]\/\[0\.12\]:hover,
+.dark .hover\:bg-\[\#189b8e\]\/\[0\.15\]:hover,
+.dark .hover\:bg-\[\#189b8e\]\/\[0\.18\]:hover {
+  background-color: rgb(236 229 216 / 0.18);
+}
+
+.dark .from-\[\#189b8e\] {
+  --tw-gradient-from: var(--gs-cream) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(236 229 216 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.dark .to-\[\#67d5cc\],
+.dark .to-\[\#189b8e\] {
+  --tw-gradient-to: var(--gs-gold) var(--tw-gradient-to-position);
+}
+
+.dark .ring-\[\#189b8e\]\/25,
+.dark .ring-\[\#189b8e\]\/30,
+.dark .ring-\[\#189b8e\]\/35,
+.dark .ring-\[\#189b8e\]\/40,
+.dark .focus\:ring-\[\#189b8e\]\/25:focus,
+.dark .focus\:ring-\[\#189b8e\]\/30:focus {
+  --tw-ring-color: rgb(236 229 216 / 0.35);
+}
+
+.dark .hover\:ring-\[\#189b8e\]\/35:hover,
+.dark .hover\:ring-\[\#189b8e\]\/40:hover {
+  --tw-ring-color: rgb(211 188 142 / 0.45);
+}
+
+.dark .border-\[\#189b8e\],
+.dark .border-l-\[\#189b8e\],
+.dark .border-\[\#189b8e\]\/35 {
+  border-color: rgb(236 229 216 / 0.45);
+}
+
+.dark .border-l-\[\#189b8e\] {
+  border-left-color: var(--gs-cream);
+}
+
+.dark .accent-\[\#189b8e\] {
+  accent-color: var(--gs-cream);
 }
 
 .dark .hover\:bg-black\/\[0\.02\]:hover,
@@ -1054,8 +1203,38 @@ body:has(.map-page-root) main {
 }
 
 .dark .logo-mark {
-  filter: brightness(0) invert(1);
-  opacity: 0.92;
+  filter: brightness(0) invert(92%) sepia(12%) saturate(320%) hue-rotate(358deg)
+    brightness(98%);
+  opacity: 0.95;
+}
+
+/* Guide / talent accents → cream in dark */
+.dark .talent-hl,
+.dark .guide-hl,
+.dark .guide-bullet,
+.dark .guide-eyebrow {
+  color: var(--gs-cream);
+}
+
+.dark .guide-eyebrow-mark {
+  background-color: var(--gs-cream);
+}
+
+.dark .guide-title::before {
+  filter: brightness(0) saturate(100%) invert(92%) sepia(12%) saturate(350%)
+    hue-rotate(358deg) brightness(98%) contrast(92%);
+  opacity: 0.55;
+}
+
+.dark .guide-module-line {
+  filter: brightness(0) saturate(100%) invert(92%) sepia(12%) saturate(350%)
+    hue-rotate(358deg) brightness(98%) contrast(92%);
+  opacity: 0.55;
+}
+
+.dark .guide-panel-ornament {
+  filter: brightness(0) invert(92%) sepia(12%) saturate(320%) hue-rotate(358deg);
+  opacity: 0.2;
 }
 
 /* —— Site boot loader (elemental fill) —— */
@@ -1087,7 +1266,7 @@ html.gs-loading body::before {
 }
 
 .dark .site-loader-glyph--ghost {
-  filter: brightness(0) invert(1);
+  filter: brightness(0) invert(92%) sepia(8%) saturate(250%) hue-rotate(358deg);
   opacity: 0.22;
 }
 
@@ -1097,8 +1276,8 @@ html.gs-loading body::before {
 }
 
 .dark .site-loader-glyph--solid {
-  filter: brightness(0) invert(1);
+  filter: brightness(0) invert(92%) sepia(12%) saturate(350%) hue-rotate(358deg)
+    brightness(98%);
   opacity: 0.95;
 }
-
 
