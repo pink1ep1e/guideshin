@@ -599,7 +599,7 @@ export default function WishCabinet({
         {loading ? (
           <WishCabinetSkeleton />
         ) : !hasPulls ? (
-          <div className="mx-auto max-w-2xl rounded-3xl border border-black/[0.06] dark:border-white/10 dark:shadow-none">
+          <div className="mx-auto max-w-2xl rounded-3xl dark:shadow-none">
             {wizard}
           </div>
         ) : (
@@ -648,7 +648,7 @@ export default function WishCabinet({
               data-tour="tour-charts"
               className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]"
             >
-              <section className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
+              <section className="rounded-3xl bg-white p-6 sm:p-8 dark:bg-[hsl(var(--card))]">
                 <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                   <div>
                     <h2 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
@@ -686,7 +686,7 @@ export default function WishCabinet({
                 />
               </section>
 
-              <section className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
+              <section className="rounded-3xl bg-white p-6 sm:p-8 dark:bg-[hsl(var(--card))]">
                 <h2 className="mb-1 font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                   Ваши шансы
                 </h2>
@@ -717,7 +717,7 @@ export default function WishCabinet({
 
             <section
               data-tour="tour-fivestars"
-              className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8"
+              className="rounded-3xl bg-white p-6 sm:p-8 dark:bg-[hsl(var(--card))]"
             >
               <h2 className="mb-4 font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                 История 5★
@@ -747,7 +747,7 @@ export default function WishCabinet({
 
             <section
               data-tour="tour-recent"
-              className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8"
+              className="rounded-3xl bg-white p-6 sm:p-8 dark:bg-[hsl(var(--card))]"
             >
               <div className="mb-4 flex items-end justify-between">
                 <h2 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
@@ -812,7 +812,7 @@ export default function WishCabinet({
             {imports.length > 0 && (
               <section
                 data-tour="tour-imports"
-                className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8"
+                className="rounded-3xl bg-white p-6 sm:p-8 dark:bg-[hsl(var(--card))]"
               >
                 <h2 className="mb-1 font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                   История импортов
@@ -857,7 +857,7 @@ export default function WishCabinet({
 
             <section
               data-tour="tour-help"
-              className="rounded-3xl border border-black/[0.06] bg-gradient-to-br from-[#eef8f6] to-white p-6 sm:p-8"
+              className="rounded-3xl bg-gradient-to-br from-[#eef8f6] to-white p-6 sm:p-8 dark:from-[hsl(var(--card))] dark:to-[hsl(var(--card))]"
             >
               <h2 className="font-genshin text-[1.65rem] text-foreground sm:text-3xl">
                 Помощь и идеи
@@ -870,7 +870,7 @@ export default function WishCabinet({
                 <button
                   type="button"
                   onClick={() => setTourOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-[#189b8e]/35 bg-white px-5 py-3 text-base font-bold text-[#189b8e] transition hover:bg-[#189b8e]/5"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-base font-bold text-[#189b8e] transition hover:bg-[#189b8e]/5 dark:bg-white/[0.06] dark:text-[#ece5d8] dark:hover:bg-[rgb(236_229_216/0.1)]"
                 >
                   <BookOpen className="h-5 w-5" />
                   Пройти обучение
@@ -892,7 +892,7 @@ export default function WishCabinet({
                   )}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-2xl border border-[#189b8e]/35 bg-white px-5 py-3 text-base font-bold text-[#189b8e] transition hover:bg-[#189b8e]/5"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-base font-bold text-[#189b8e] transition hover:bg-[#189b8e]/5 dark:bg-white/[0.06] dark:text-[#ece5d8] dark:hover:bg-[rgb(236_229_216/0.1)]"
                 >
                   <Lightbulb className="h-5 w-5" />
                   Предложить обновление
@@ -1097,7 +1097,7 @@ function WishCabinetSkeleton() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-3xl border border-black/[0.06] bg-white px-5 py-4 sm:px-6 sm:py-5"
+            className="rounded-3xl bg-white px-5 py-4 sm:px-6 sm:py-5 dark:bg-[hsl(var(--card))]"
           >
             <SkeletonBone className="h-3 w-24" />
             <SkeletonBone className="mt-3 h-10 w-32" />
@@ -1111,7 +1111,7 @@ function WishCabinetSkeleton() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-3xl border border-black/[0.06] bg-white p-5 sm:p-6"
+            className="rounded-3xl bg-white p-5 sm:p-6 dark:bg-[hsl(var(--card))]"
           >
             <SkeletonBone className="h-5 w-28" />
             <SkeletonBone className="mt-4 h-3.5 w-full" />
@@ -1126,7 +1126,7 @@ function WishCabinetSkeleton() {
 
       {/* Charts row */}
       <div className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
-        <div className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
+        <div className="rounded-3xl bg-white p-6 sm:p-8 dark:bg-[hsl(var(--card))]">
           <SkeletonBone className="h-7 w-56" />
           <SkeletonBone className="mt-2 h-4 w-72 max-w-full" />
           <div className="mt-4 flex gap-2">
@@ -1137,7 +1137,7 @@ function WishCabinetSkeleton() {
           </div>
           <SkeletonBone className="mt-5 h-[280px] w-full rounded-2xl" />
         </div>
-        <div className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
+        <div className="rounded-3xl bg-white p-6 sm:p-8 dark:bg-[hsl(var(--card))]">
           <SkeletonBone className="h-7 w-40" />
           <SkeletonBone className="mt-2 h-4 w-52 max-w-full" />
           <SkeletonBone className="mt-5 h-[220px] w-full rounded-2xl" />
@@ -1145,14 +1145,14 @@ function WishCabinetSkeleton() {
       </div>
 
       {/* Luck section */}
-      <div className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
+      <div className="rounded-3xl bg-white p-6 sm:p-8 dark:bg-[hsl(var(--card))]">
         <SkeletonBone className="h-7 w-64" />
         <SkeletonBone className="mt-2 h-4 w-full max-w-xl" />
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="rounded-xl border border-black/[0.05] bg-black/[0.02] p-4"
+              className="rounded-xl bg-black/[0.02] p-4 dark:bg-white/[0.04]"
             >
               <SkeletonBone className="h-3 w-20" />
               <SkeletonBone className="mt-3 h-6 w-24" />
@@ -1163,7 +1163,7 @@ function WishCabinetSkeleton() {
       </div>
 
       {/* 5★ history cards */}
-      <div className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
+      <div className="rounded-3xl bg-white p-6 sm:p-8 dark:bg-[hsl(var(--card))]">
         <SkeletonBone className="h-7 w-40" />
         <SkeletonBone className="mt-4 h-3 w-24" />
         <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
@@ -1177,7 +1177,7 @@ function WishCabinetSkeleton() {
       </div>
 
       {/* Recent pulls */}
-      <div className="rounded-3xl border border-black/[0.06] bg-white p-6 sm:p-8">
+      <div className="rounded-3xl bg-white p-6 sm:p-8 dark:bg-[hsl(var(--card))]">
         <div className="mb-4 flex items-end justify-between">
           <SkeletonBone className="h-7 w-48" />
           <SkeletonBone className="h-4 w-20" />
@@ -1209,7 +1209,7 @@ function FiveStarCard({ item }: { item: FiveStar }) {
   const isWeapon = /weapon|оруж/i.test(item.itemType);
 
   const inner = (
-    <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-[16px] bg-card ring-1 ring-black/[0.06]">
+    <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-[16px] bg-white shadow-soft dark:bg-[hsl(240_8%_22%)] dark:shadow-none">
       <div
         className="relative aspect-square w-full overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: `url(${rarityBg(stars)})` }}
@@ -1227,7 +1227,7 @@ function FiveStarCard({ item }: { item: FiveStar }) {
           </div>
         )}
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-black/35 via-black/10 to-transparent dark:from-black/20 dark:via-black/5" />
 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -1263,7 +1263,7 @@ function FiveStarCard({ item }: { item: FiveStar }) {
         </span>
       </div>
 
-      <div className="flex min-h-[2.1rem] shrink-0 items-center justify-center px-1.5 py-1">
+      <div className="card-name-strip">
         <p className="font-genshin line-clamp-2 w-full text-center text-[12px] leading-snug tracking-wide text-foreground [overflow-wrap:anywhere]">
           {item.name}
         </p>
@@ -1300,7 +1300,7 @@ function OverviewTile({
 
   return (
     <div
-      className={`relative rounded-3xl border border-black/[0.06] bg-white px-5 py-4 sm:px-6 sm:py-5 ${
+      className={`relative rounded-3xl bg-white px-5 py-4 sm:px-6 sm:py-5 dark:bg-[hsl(var(--card))] ${
         tip ? "cursor-help" : ""
       }`}
       onMouseMove={
@@ -1352,7 +1352,7 @@ function BannerCard({ stat, delay }: { stat: Stat; delay: number }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4 }}
-      className="rounded-3xl border border-black/[0.06] bg-white p-5 sm:p-6"
+      className="rounded-3xl bg-white p-5 sm:p-6 dark:bg-[hsl(var(--card))]"
     >
       <div className="mb-4 flex items-start justify-between gap-2">
         <div>

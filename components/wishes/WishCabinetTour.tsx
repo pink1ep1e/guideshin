@@ -301,7 +301,7 @@ export function WishCabinetTour({ hasPulls, active, onActiveChange }: Props) {
 
         {spot ? (
           <div
-            className="pointer-events-none absolute rounded-[18px] border-2 border-[#189b8e] shadow-[0_0_0_4px_rgba(24,155,142,0.35)]"
+            className="pointer-events-none absolute rounded-[18px] border-2 border-[#d3bc8e] shadow-[0_0_0_4px_rgba(211,188,142,0.28)]"
             style={{
               top: spot.top,
               left: spot.left,
@@ -317,7 +317,7 @@ export function WishCabinetTour({ hasPulls, active, onActiveChange }: Props) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 6 }}
           transition={{ duration: 0.2 }}
-          className="pointer-events-auto absolute z-[101] w-[min(420px,calc(100vw-24px))] rounded-3xl border border-black/[0.06] bg-white p-5 shadow-[0_24px_60px_-28px_rgba(15,70,60,0.55)] sm:p-6"
+          className="pointer-events-auto absolute z-[101] w-[min(420px,calc(100vw-24px))] rounded-3xl bg-white p-5 shadow-[0_24px_60px_-28px_rgba(15,70,60,0.55)] dark:bg-[hsl(var(--card))] dark:shadow-none sm:p-6"
           style={
             spot
               ? {
@@ -340,7 +340,7 @@ export function WishCabinetTour({ hasPulls, active, onActiveChange }: Props) {
         >
           <div className="mb-3 flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#189b8e]">
+              <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#189b8e] dark:text-[#ece5d8]">
                 Обучение · {stepIndex + 1}/{available.length}
               </p>
               <h3 className="mt-1 font-genshin text-2xl text-foreground">
@@ -381,7 +381,7 @@ export function WishCabinetTour({ hasPulls, active, onActiveChange }: Props) {
               <button
                 type="button"
                 onClick={() => go(1)}
-                className="inline-flex items-center gap-1 rounded-2xl bg-[#189b8e] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#147f74]"
+                className="inline-flex items-center gap-1 rounded-2xl bg-[#189b8e] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#147f74] dark:bg-[#ece5d8] dark:text-[#1b1b22] dark:hover:bg-[#f5efe4]"
               >
                 {isLast ? "Понятно" : "Далее"}
                 {!isLast ? <ChevronRight className="h-4 w-4" /> : null}
@@ -401,9 +401,9 @@ export function WishTourTrigger({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-2 rounded-2xl border border-black/[0.08] bg-white px-5 py-3 text-base font-bold text-foreground/80 transition hover:bg-black/[0.03]"
+      className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-base font-bold text-foreground/80 transition hover:bg-black/[0.03] dark:bg-[hsl(var(--card))] dark:hover:bg-white/[0.06]"
     >
-      <BookOpen className="h-5 w-5 text-[#189b8e]" />
+      <BookOpen className="h-5 w-5 text-[#189b8e] dark:text-[#ece5d8]" />
       Обучение
     </button>
   );

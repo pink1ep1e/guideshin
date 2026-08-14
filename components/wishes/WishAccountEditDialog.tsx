@@ -128,7 +128,7 @@ export default function WishAccountEditDialog({
                 <button
                   type="button"
                   onClick={() => setAvatarPickerOpen(true)}
-                  className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#eef8f6] ring-1 ring-black/[0.06]"
+                  className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#eef8f6] dark:bg-white/[0.06]"
                   title="Выбрать аватар"
                 >
                   {previewSrc ? (
@@ -140,12 +140,12 @@ export default function WishAccountEditDialog({
                       sizes="80px"
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-sm font-bold text-[#189b8e]/70">
+                    <div className="flex h-full items-center justify-center text-sm font-bold text-[#189b8e]/70 dark:text-[#ece5d8]/70">
                       ?
                     </div>
                   )}
-                  <span className="absolute inset-0 flex items-center justify-center bg-[#0a2a26]/50 opacity-0 transition group-hover:opacity-100">
-                    <Pencil className="h-6 w-6 text-white" />
+                  <span className="absolute inset-0 flex items-center justify-center bg-[#189b8e]/75 opacity-0 transition group-hover:opacity-100 dark:bg-[rgb(236_229_216/0.78)]">
+                    <Pencil className="h-6 w-6 text-white dark:text-[#1b1b22]" />
                   </span>
                 </button>
                 <div className="min-w-0 flex-1">

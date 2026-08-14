@@ -124,11 +124,11 @@ export default function ItemHoverPreview({
                 "opacity 160ms ease, transform 200ms cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           >
-            <div className="flex overflow-hidden rounded-[16px] border border-black/[0.08] bg-white shadow-[0_14px_36px_-16px_rgba(11,31,68,0.45)] ring-1 ring-[#189b8e]/15">
+            <div className="flex overflow-hidden rounded-[16px] bg-white shadow-[0_14px_36px_-16px_rgba(11,31,68,0.45)] dark:bg-[hsl(var(--card))] dark:shadow-none">
               {/* Слева: предмет + звёзды */}
-              <div className="relative flex w-[96px] shrink-0 flex-col items-center bg-[#f7f9fb] p-2.5">
+              <div className="relative flex w-[96px] shrink-0 flex-col items-center bg-[#f7f9fb] p-2.5 dark:bg-white/[0.04]">
                 <div
-                  className="relative flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-[12px] bg-cover bg-center shadow-sm ring-1 ring-black/[0.06]"
+                  className="relative flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-[12px] bg-cover bg-center shadow-sm"
                   style={{ backgroundImage: `url(${rarityBg(stars)})` }}
                 >
                   {image ? (
@@ -155,7 +155,7 @@ export default function ItemHoverPreview({
               </div>
 
               {/* Справа: название + описание / статы оружия */}
-              <div className="min-w-0 flex-1 border-l border-black/[0.06] bg-white px-3 py-2.5">
+              <div className="min-w-0 flex-1 border-l border-black/[0.06] bg-white px-3 py-2.5 dark:border-white/[0.06] dark:bg-[hsl(var(--card))]">
                 <p className="text-[14px] font-semibold leading-snug text-foreground">
                   {name}
                 </p>
@@ -169,7 +169,7 @@ export default function ItemHoverPreview({
                     />
                   </div>
                 ) : loreText ? (
-                  <p className="mt-1.5 line-clamp-5 text-[13px] leading-relaxed text-[#4a5563]">
+                  <p className="mt-1.5 line-clamp-5 text-[13px] leading-relaxed text-foreground/75">
                     {loreText}
                   </p>
                 ) : null}

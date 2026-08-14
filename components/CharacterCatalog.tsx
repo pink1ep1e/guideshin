@@ -98,8 +98,8 @@ export default function CharacterCatalog({
                 onClick={() => setElement("ALL")}
                 className={`rounded-xl px-3.5 py-2 text-sm font-bold transition ${
                   element === "ALL"
-                    ? "bg-[#189b8e] text-white shadow-sm"
-                    : "bg-black/[0.03] text-foreground/70 ring-1 ring-black/[0.06] hover:bg-[#189b8e]/10 hover:text-[#189b8e] dark:bg-white/[0.06] dark:ring-white/10"
+                    ? "bg-[#189b8e] text-white shadow-sm dark:text-[#1b1b22]"
+                    : "bg-black/[0.03] text-foreground/70 hover:bg-[#189b8e]/10 hover:text-[#189b8e] dark:bg-white/[0.06]"
                 }`}
               >
                 Все
@@ -112,17 +112,17 @@ export default function CharacterCatalog({
                     key={key}
                     type="button"
                     onClick={() => setElement(active ? "ALL" : key)}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold transition ring-1 ${
+                    className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold transition ${
                       active
                         ? ""
-                        : "bg-black/[0.03] ring-black/[0.06] hover:bg-[#189b8e]/10 dark:bg-white/[0.06] dark:ring-white/10"
+                        : "bg-black/[0.03] hover:bg-[#189b8e]/10 dark:bg-white/[0.06]"
                     }`}
                     style={
                       active
                         ? {
                             backgroundColor: theme.solid,
-                            color: theme.onSolid,
-                            boxShadow: `0 0 0 1px ${theme.solid}`,
+                            color: "#ffffff",
+                            boxShadow: "none",
                             borderColor: "transparent",
                           }
                         : {
@@ -136,7 +136,9 @@ export default function CharacterCatalog({
                       alt=""
                       className={`h-4 w-4 ${active ? "brightness-0 invert drop-shadow-sm" : ""}`}
                     />
-                    {ELEMENT_LABEL[key]}
+                    <span className={active ? "text-white" : undefined}>
+                      {ELEMENT_LABEL[key]}
+                    </span>
                   </button>
                 );
               })}
@@ -162,8 +164,8 @@ export default function CharacterCatalog({
                     onClick={() => setRarity(value)}
                     className={`rounded-xl px-3.5 py-2 text-sm font-bold transition ${
                       rarity === value
-                        ? "bg-[#189b8e] text-white shadow-sm"
-                        : "bg-black/[0.03] text-foreground/70 ring-1 ring-black/[0.06] hover:bg-[#189b8e]/10 hover:text-[#189b8e] dark:bg-white/[0.06] dark:ring-white/10"
+                        ? "bg-[#189b8e] text-white shadow-sm dark:text-[#1b1b22]"
+                        : "bg-black/[0.03] text-foreground/70 hover:bg-[#189b8e]/10 hover:text-[#189b8e] dark:bg-white/[0.06]"
                     }`}
                   >
                     {label}

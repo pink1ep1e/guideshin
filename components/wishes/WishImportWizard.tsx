@@ -392,7 +392,7 @@ export default function WishImportWizard({
         )}
       </div>
 
-      <div className="mt-6 flex gap-1 border-b border-black/[0.06]">
+      <div className="mt-6 flex gap-1 border-b border-black/[0.06] dark:border-white/10">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -400,7 +400,7 @@ export default function WishImportWizard({
             onClick={() => setPlatform(t.id)}
             className={`-mb-px px-4 py-2.5 text-sm font-bold transition ${
               platform === t.id
-                ? "border-b-2 border-[#189b8e] text-[#189b8e]"
+                ? "border-b-2 border-[#189b8e] text-[#189b8e] dark:border-[#ece5d8] dark:text-[#ece5d8]"
                 : "text-foreground/45 hover:text-foreground/70"
             }`}
           >
@@ -429,12 +429,12 @@ export default function WishImportWizard({
                 type="button"
                 disabled={!oneLiner || blocked}
                 onClick={() => void copyScript()}
-                className="flex w-full items-center justify-between gap-3 rounded-2xl border border-black/[0.08] bg-muted/70 px-4 py-3.5 text-left transition hover:border-[#189b8e]/35 hover:bg-muted disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.08]"
+                className="flex w-full items-center justify-between gap-3 rounded-2xl bg-muted/70 px-4 py-3.5 text-left transition hover:bg-muted disabled:opacity-50 dark:bg-white/[0.04] dark:hover:bg-white/[0.08]"
               >
                 <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-foreground/80">
                   {oneLiner || "Загрузка команды…"}
                 </span>
-                <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-[#189b8e]">
+                <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-[#189b8e] dark:text-[#ece5d8]">
                   {copied ? (
                     <>
                       <Check className="h-4 w-4" /> Готово
@@ -519,7 +519,7 @@ export default function WishImportWizard({
                 type="button"
                 disabled={blocked}
                 onClick={() => fileRef.current?.click()}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3 text-sm font-bold text-white disabled:opacity-50 sm:w-fit"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#189b8e] px-5 py-3 text-sm font-bold text-white disabled:opacity-50 sm:w-fit dark:bg-[#ece5d8] dark:text-[#1b1b22]"
               >
                 <Upload className="h-4 w-4" />
                 Выбрать JSON-файл
@@ -537,7 +537,7 @@ export default function WishImportWizard({
                 type="button"
                 disabled={blocked || !driveUrl.trim()}
                 onClick={() => setReplaceConfirm({ kind: "drive" })}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-[#189b8e] px-5 py-3 text-sm font-bold text-[#189b8e] disabled:opacity-50 sm:w-fit"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#189b8e]/10 px-5 py-3 text-sm font-bold text-[#189b8e] disabled:opacity-50 sm:w-fit dark:bg-[rgb(236_229_216/0.12)] dark:text-[#ece5d8]"
               >
                 <Cloud className="h-4 w-4" />
                 Импорт с Drive
@@ -575,7 +575,7 @@ export default function WishImportWizard({
         )}
 
         {platform !== "paimon" && (
-          <div className="rounded-2xl border border-dashed border-black/[0.1] bg-muted/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="rounded-2xl bg-muted/70 p-4 dark:bg-white/[0.03]">
             <p className="text-sm font-bold text-foreground/70">
               Быстрый импорт по ссылке
             </p>
@@ -601,7 +601,7 @@ export default function WishImportWizard({
               <button
                 type="button"
                 disabled={blocked || !url.trim()}
-                className="rounded-2xl border border-[#189b8e] px-5 py-2.5 text-sm font-bold text-[#189b8e] disabled:opacity-50"
+                className="rounded-2xl bg-[#189b8e]/10 px-5 py-2.5 text-sm font-bold text-[#189b8e] disabled:opacity-50 dark:bg-[rgb(236_229_216/0.12)] dark:text-[#ece5d8]"
                 onClick={() => void importManualUrl()}
               >
                 Импортировать ссылку

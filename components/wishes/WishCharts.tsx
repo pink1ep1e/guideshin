@@ -32,7 +32,8 @@ function useChartInk() {
   const dark = resolvedTheme === "dark";
   return {
     dark,
-    brand: dark ? "#ece5d8" : TEAL,
+    brand: dark ? "#c4b194" : TEAL,
+    peak: dark ? "#d3bc8e" : "#147f74",
     tick: dark ? "#b8ae9c" : "#4b5563",
     tickStrong: dark ? "#ece5d8" : "#111111",
     grid: dark ? "rgba(236,229,216,0.08)" : "rgba(0,0,0,0.05)",
@@ -196,11 +197,11 @@ export function WishMonthlyPullChart({
                   key={row.monthKey}
                   fill={
                     peak && row.monthKey === peak.monthKey
-                      ? barColor
+                      ? ink.peak
                       : barColor
                   }
                   fillOpacity={
-                    peak && row.monthKey === peak.monthKey ? 1 : 0.72
+                    peak && row.monthKey === peak.monthKey ? 1 : 0.55
                   }
                 />
               ))}

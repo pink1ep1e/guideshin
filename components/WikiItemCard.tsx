@@ -81,7 +81,7 @@ export default function WikiItemCard({
   );
 
   const shell =
-    "group relative flex h-full flex-col overflow-hidden rounded-[16px] bg-card shadow-panel transition duration-300 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)] dark:shadow-none dark:hover:shadow-none";
+    "group relative flex h-full flex-col overflow-hidden rounded-[16px] bg-white shadow-soft transition duration-300 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)] dark:bg-[hsl(240_8%_22%)] dark:shadow-none dark:hover:shadow-none";
 
   const card = href ? (
     <Link

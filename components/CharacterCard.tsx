@@ -31,7 +31,7 @@ export default function CharacterCard({ character }: { character: CharacterCardD
   return (
     <Link
       href={`/wiki/characters/${character.slug}`}
-      className="group relative flex h-full w-full flex-col overflow-hidden rounded-[16px] bg-card shadow-panel transition duration-300 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)] dark:shadow-none dark:hover:shadow-none"
+      className="group relative flex h-full w-full flex-col overflow-hidden rounded-[16px] bg-white shadow-soft transition duration-300 hover:shadow-[0_10px_24px_-12px_rgba(11,31,68,0.28)] dark:bg-[hsl(240_8%_22%)] dark:shadow-none dark:hover:shadow-none"
     >
       <div
         className="relative aspect-square w-full overflow-hidden bg-cover bg-center"
