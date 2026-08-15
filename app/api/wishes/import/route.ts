@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { withPrisma } from "@/prisma/prisma-client";
 import {
+  countPullsByBanner,
   fetchAllWishesFromAuthUrl,
   parseWishImportPayload,
   planWishMerge,
@@ -234,13 +235,19 @@ export async function POST(req: Request) {
         data: { pullCount: inserted },
       });
 
-      return { batchId: batch.id, inserted, replaced: Boolean(replace) };
+      return {
+        batchId: batch.id,
+        inserted,
+        replaced: Boolean(replace),
+        byBanner: countPullsByBanner(pullsToSave),
+      };
     });
 
     return NextResponse.json({
       ok: true,
       totalParsed: pulls.length,
       inserted: result.inserted,
+      byBanner: result.byBanner,
       accountId: account.id,
       accountLabel: account.label,
       accountServer: account.server,

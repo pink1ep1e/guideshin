@@ -103,7 +103,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(t!=='light'&&d))document.documentElement.classList.add('dark');if(sessionStorage.getItem('guideshin-boot-loader')!=='1'&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('gs-loading')}catch(e){}})();`,
+            __html: `(function(){try{var m=localStorage.getItem('theme-mode');var t=localStorage.getItem('theme');var h=new Date().getHours();var byTime=h>=7&&h<19?'light':'dark';var resolved=(m==='light'||m==='dark')?m:(m==='auto'||!m)?byTime:(t==='dark'||t==='light'?t:byTime);if(resolved==='dark')document.documentElement.classList.add('dark');if(sessionStorage.getItem('guideshin-boot-loader')!=='1'&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('gs-loading')}catch(e){}})();`,
           }}
         />
         <script
@@ -116,6 +116,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           attribute="class"
           defaultTheme="light"
           enableSystem={false}
+          storageKey="theme"
           disableTransitionOnChange
         >
           <AuthSessionProvider>

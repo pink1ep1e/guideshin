@@ -41,6 +41,44 @@ export const BANNER_SHORT: Record<GachaBannerKey, string> = {
   novice: "Новичок",
 };
 
+/** Сколько молитв по каждому баннеру. */
+export function countPullsByBanner(
+  pulls: { gachaType: string }[],
+): Record<GachaBannerKey, number> {
+  const counts: Record<GachaBannerKey, number> = {
+    character: 0,
+    weapon: 0,
+    permanent: 0,
+    chronicled: 0,
+    novice: 0,
+  };
+  for (const p of pulls) {
+    counts[bannerKeyFromGachaType(p.gachaType)] += 1;
+  }
+  return counts;
+}
+
+/** «Персонажи — 12, Оружие — 3» (только ненулевые). */
+export function formatBannerPullCounts(
+  byBanner: Partial<Record<GachaBannerKey, number>> | null | undefined,
+): string {
+  if (!byBanner) return "";
+  const parts: string[] = [];
+  const order: GachaBannerKey[] = [
+    "character",
+    "weapon",
+    "permanent",
+    "chronicled",
+    "novice",
+  ];
+  for (const key of order) {
+    const n = byBanner[key] ?? 0;
+    if (n <= 0) continue;
+    parts.push(`${BANNER_LABELS[key]} — ${n.toLocaleString("ru-RU")}`);
+  }
+  return parts.join(", ");
+}
+
 export function bannerKeyFromGachaType(gachaType: string): GachaBannerKey {
   if (gachaType === GACHA_TYPES.weapon) return "weapon";
   if (gachaType === GACHA_TYPES.permanent) return "permanent";
@@ -169,7 +207,14 @@ function dedupeByContentKey<T extends WishPullLike>(pulls: T[]): T[] {
       out.push(p);
     }
   }
-  return out;
+  return out.sort((a, b) => {
+    const dt = wishTimeMs(a.wishTime) - wishTimeMs(b.wishTime);
+    if (dt !== 0) return dt;
+    const as = isSyntheticWishId(a.hoyoId) ? 1 : 0;
+    const bs = isSyntheticWishId(b.hoyoId) ? 1 : 0;
+    if (as !== bs) return as - bs;
+    return a.hoyoId.localeCompare(b.hoyoId);
+  });
 }
 
 /**

@@ -19,6 +19,7 @@ import {
   BANNER_SHORT,
   DASHBOARD_BANNERS,
   bannerKeyFromGachaType,
+  formatBannerPullCounts,
 } from "@/lib/wishes";
 import WishImportWizard from "@/components/wishes/WishImportWizard";
 import WishExtrasPanel, {
@@ -102,6 +103,31 @@ type WishDashboard = {
     image?: string | null;
   }[];
 };
+
+function formatImportDoneMessage(opts: {
+  accountName: string;
+  replaced?: boolean;
+  inserted?: number;
+  byBanner?: Partial<Record<GachaBannerKey, number>> | null;
+}): string {
+  const { accountName, replaced, inserted = 0, byBanner } = opts;
+  const breakdown = formatBannerPullCounts(byBanner);
+  const head = replaced
+    ? `Данные заменены для «${accountName}»`
+    : `Готово для «${accountName}»`;
+  if (breakdown) {
+    return replaced
+      ? `${head}: ${breakdown}`
+      : `${head}: добавлено ${inserted.toLocaleString("ru-RU")} (${breakdown})`;
+  }
+  if (!replaced && inserted === 0) {
+    return `${head}: новых молитв нет`;
+  }
+  if (!replaced && inserted > 0) {
+    return `${head}: добавлено ${inserted.toLocaleString("ru-RU")}`;
+  }
+  return head;
+}
 
 const bannerAccent: Record<GachaBannerKey, string> = {
   character: "#189b8e",
@@ -249,6 +275,19 @@ export default function WishCabinet({
     selectAccount(json.account.id);
   }, [newLabel, newServer, selectAccount]);
 
+  const finishImportProgress = useCallback(async (label: string) => {
+    setProgress({
+      phase: "done",
+      label,
+      step: 6,
+      steps: 6,
+      page: 0,
+      totalPulled: 0,
+    });
+    await new Promise((r) => window.setTimeout(r, 520));
+    setProgress(null);
+  }, []);
+
   const savePulls = useCallback(
     async (
       pulls: unknown,
@@ -281,14 +320,23 @@ export default function WishCabinet({
         totalParsed?: number;
         accountLabel?: string;
         replaced?: boolean;
+        byBanner?: Partial<Record<GachaBannerKey, number>>;
       };
       if (!res.ok) throw new Error(json.error || "Ошибка импорта");
+      const accountName =
+        json.accountLabel || data?.account.label || "аккаунт";
       setMessage(
-        `${json.replaced ? "Данные заменены" : "Готово"} для «${json.accountLabel || data?.account.label}»: разобрано ${json.totalParsed}, сохранено ${json.inserted}`,
+        formatImportDoneMessage({
+          accountName,
+          replaced: json.replaced,
+          inserted: json.inserted,
+          byBanner: json.byBanner,
+        }),
       );
       await load(accountId);
+      await finishImportProgress("Готово");
     },
-    [accountId, data?.account.label, load],
+    [accountId, data?.account.label, finishImportProgress, load],
   );
 
   const importFromPulls = useCallback(
@@ -303,9 +351,9 @@ export default function WishCabinet({
         await savePulls(pulls, opts);
       } catch (e) {
         setError(friendlyWishImportError(e));
+        setProgress(null);
       } finally {
         setBusy(false);
-        setProgress(null);
       }
     },
     [savePulls],
@@ -335,21 +383,29 @@ export default function WishCabinet({
           inserted?: number;
           totalParsed?: number;
           accountLabel?: string;
+          byBanner?: Partial<Record<GachaBannerKey, number>>;
         };
         if (!res.ok) throw new Error(json.error || "Не удалось импортировать");
         if (accountId) rememberAuthUrl(accountId, url);
+        const accountName =
+          json.accountLabel || data?.account.label || "аккаунт";
         setMessage(
-          `Готово для «${json.accountLabel || data?.account.label}»: разобрано ${json.totalParsed}, добавлено ${json.inserted}`,
+          formatImportDoneMessage({
+            accountName,
+            inserted: json.inserted,
+            byBanner: json.byBanner,
+          }),
         );
         await load(accountId);
+        await finishImportProgress("Готово");
       } catch (e) {
         setError(friendlyWishImportError(e));
+        setProgress(null);
       } finally {
         setBusy(false);
-        setProgress(null);
       }
     },
-    [accountId, data?.account.label, load],
+    [accountId, data?.account.label, finishImportProgress, load],
   );
 
   const importFromJson = useCallback(
@@ -386,20 +442,29 @@ export default function WishCabinet({
           totalParsed?: number;
           accountLabel?: string;
           replaced?: boolean;
+          byBanner?: Partial<Record<GachaBannerKey, number>>;
         };
         if (!res.ok) throw new Error(json.error || "Ошибка импорта");
+        const accountName =
+          json.accountLabel || data?.account.label || "аккаунт";
         setMessage(
-          `${json.replaced ? "Данные заменены" : "Готово"} для «${json.accountLabel || data?.account.label}»: разобрано ${json.totalParsed}, сохранено ${json.inserted}`,
+          formatImportDoneMessage({
+            accountName,
+            replaced: json.replaced,
+            inserted: json.inserted,
+            byBanner: json.byBanner,
+          }),
         );
         await load(accountId);
+        await finishImportProgress("Готово");
       } catch (e) {
         setError(friendlyWishImportError(e));
+        setProgress(null);
       } finally {
         setBusy(false);
-        setProgress(null);
       }
     },
-    [accountId, data?.account.label, load],
+    [accountId, data?.account.label, finishImportProgress, load],
   );
 
   const undoImport = useCallback(async () => {

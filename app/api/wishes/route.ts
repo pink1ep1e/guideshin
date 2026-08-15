@@ -208,19 +208,25 @@ export async function GET(req: Request) {
     };
   });
 
-  const recent = pullsForStats.slice(0, 40).map((p) => {
-    const meta = resolveGuideMeta(p.itemName, p.itemType, guideIndex);
-    return {
-      id: (p as { id?: string }).id || p.hoyoId,
-      itemName: meta?.name ?? localizeWishDisplayName(p.itemName),
-      itemType: p.itemType,
-      rankType: p.rankType,
-      gachaType: p.gachaType,
-      wishTime: new Date(p.wishTime).toISOString(),
-      guideHref: meta?.href ?? null,
-      image: meta?.image ?? null,
-    };
-  });
+  const recent = [...pullsForStats]
+    .sort(
+      (a, b) =>
+        new Date(b.wishTime).getTime() - new Date(a.wishTime).getTime(),
+    )
+    .slice(0, 40)
+    .map((p) => {
+      const meta = resolveGuideMeta(p.itemName, p.itemType, guideIndex);
+      return {
+        id: (p as { id?: string }).id || p.hoyoId,
+        itemName: meta?.name ?? localizeWishDisplayName(p.itemName),
+        itemType: p.itemType,
+        rankType: p.rankType,
+        gachaType: p.gachaType,
+        wishTime: new Date(p.wishTime).toISOString(),
+        guideHref: meta?.href ?? null,
+        image: meta?.image ?? null,
+      };
+    });
 
   return NextResponse.json({
     account: {

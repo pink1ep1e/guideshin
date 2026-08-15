@@ -338,29 +338,72 @@ export default function WishImportWizard({
 
   const feedbackError = localError || error;
   const blocked = busy || Boolean(progress);
-  const progressPct = (() => {
-    if (!progress) return busy ? 12 : 0;
-    if (progress.phase === "saving" || progress.phase === "done") {
-      return progress.totalPulled > 0 ? 96 : 88;
-    }
-    const approx = progress.totalApprox || 0;
-    if (approx > 0) {
+  const importActive = busy || Boolean(progress);
+
+  const progressTarget = (() => {
+    if (!importActive) return 0;
+    if (progress?.phase === "done") return 100;
+    if (progress?.phase === "saving") return 92;
+    const approx = progress?.totalApprox || 0;
+    if (approx > 0 && progress) {
       return Math.min(
-        90,
-        Math.round(8 + (progress.totalPulled / approx) * 82),
+        88,
+        Math.round(10 + (progress.totalPulled / approx) * 78),
       );
     }
-    if (progress.steps > 0) {
+    if (progress && progress.steps > 0 && progress.step > 0) {
       return Math.min(
-        90,
+        88,
         Math.round(
-          (progress.step / progress.steps) * 70 +
-            Math.min(20, (progress.totalPulled / 2000) * 20),
+          8 +
+            (progress.step / progress.steps) * 70 +
+            Math.min(12, (progress.totalPulled / 2000) * 12),
         ),
       );
     }
-    return busy ? 12 : 0;
+    // Серверный импорт без промежуточных апдейтов — целимся «в потолок» анимацией
+    return null;
   })();
+
+  const [barPct, setBarPct] = useState(0);
+  const barStartedAt = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!importActive) {
+      barStartedAt.current = null;
+      setBarPct(0);
+      return;
+    }
+
+    if (barStartedAt.current == null) {
+      barStartedAt.current = performance.now();
+      setBarPct(8);
+    }
+
+    let raf = 0;
+    const tick = (now: number) => {
+      const started = barStartedAt.current ?? now;
+      const elapsedSec = (now - started) / 1000;
+
+      setBarPct((prev) => {
+        if (progressTarget === 100) {
+          return Math.min(100, prev + (100 - prev) * 0.22 + 1.5);
+        }
+        if (progressTarget != null) {
+          const next = prev + (progressTarget - prev) * 0.12;
+          return next < progressTarget ? Math.min(progressTarget, next + 0.35) : next;
+        }
+        // Асимптота к ~86%, пока ждём ответ сервера
+        const simulated = 8 + 78 * (1 - Math.exp(-elapsedSec / 5.5));
+        return Math.max(prev, Math.min(86, simulated));
+      });
+
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [importActive, progressTarget]);
 
   const tabs: { id: Platform; label: string }[] = [
     { id: "pc", label: "PC" },
@@ -546,31 +589,23 @@ export default function WishImportWizard({
           </div>
         )}
 
-        {(busy || progress) && (
-          <div className="rounded-2xl bg-[#eef8f6] px-4 py-4">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-sm font-bold text-[#0f5c54]">
+        {importActive && (
+          <div className="rounded-2xl bg-[#eef8f6] px-4 py-4 dark:bg-white/[0.06]">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <p className="text-sm font-bold text-[#0f5c54] dark:text-[#ece5d8]">
                 {progress?.label || "Импортируем…"}
               </p>
-              <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[#189b8e]" />
+              <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[#189b8e] dark:text-[#d3bc8e]" />
             </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-white">
+            <div className="h-2 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/10">
               <div
-                className="h-full rounded-full bg-[#189b8e] transition-all duration-500"
-                style={{ width: `${Math.max(progressPct, 8)}%` }}
+                className="h-full rounded-full bg-[#189b8e] dark:bg-[#d3bc8e]"
+                style={{
+                  width: `${Math.min(100, Math.max(barPct, 6))}%`,
+                  transition: "width 80ms linear",
+                }}
               />
             </div>
-            {progress && (
-              <p className="mt-2 text-xs text-[#0f5c54]/80">
-                {progress.step > 0
-                  ? `Баннер ${progress.step}/${progress.steps}`
-                  : null}
-                {progress.page > 0 ? ` · стр. ${progress.page}` : null}
-                {progress.totalApprox && progress.totalApprox > 0
-                  ? ` · ${progress.totalPulled.toLocaleString("ru-RU")} / ${progress.totalApprox.toLocaleString("ru-RU")}`
-                  : ` · ${progress.totalPulled.toLocaleString("ru-RU")}`}
-              </p>
-            )}
           </div>
         )}
 
@@ -617,7 +652,7 @@ export default function WishImportWizard({
           </div>
         )}
         {message && !feedbackError && (
-          <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3.5 text-sm font-medium text-emerald-900 dark:border-emerald-400/30 dark:bg-emerald-500/15 dark:text-emerald-100">
+          <div className="rounded-2xl bg-[#eef8f6] px-4 py-3.5 text-sm font-medium text-[#0f5c54] dark:bg-[rgb(236_229_216/0.12)] dark:text-[#ece5d8]">
             {message}
           </div>
         )}
