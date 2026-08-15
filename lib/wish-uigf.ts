@@ -1,4 +1,7 @@
-import type { NormalizedWish } from "@/lib/wishes";
+import {
+  formatWishTimeApi,
+  type NormalizedWish,
+} from "@/lib/wishes";
 
 /** UIGF v3-совместимый экспорт для обмена с paimon.moe и др. */
 export function buildUigfExport(input: {
@@ -20,21 +23,7 @@ export function buildUigfExport(input: {
         new Date(a.wishTime).getTime() - new Date(b.wishTime).getTime(),
     )
     .map((p) => {
-      const t = new Date(p.wishTime);
-      // Asia/Shanghai как в клиенте игры
-      const parts = new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Asia/Shanghai",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      }).formatToParts(t);
-      const get = (type: string) =>
-        parts.find((x) => x.type === type)?.value || "00";
-      const time = `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}:${get("second")}`;
+      const time = formatWishTimeApi(p.wishTime);
       return {
         gacha_type: p.gachaType,
         uigf_gacha_type: p.gachaType === "400" ? "301" : p.gachaType,

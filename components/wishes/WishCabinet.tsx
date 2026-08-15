@@ -20,6 +20,7 @@ import {
   DASHBOARD_BANNERS,
   bannerKeyFromGachaType,
   formatBannerPullCounts,
+  formatWishTime,
 } from "@/lib/wishes";
 import WishImportWizard from "@/components/wishes/WishImportWizard";
 import WishExtrasPanel, {
@@ -857,7 +858,7 @@ export default function WishCabinet({
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {BANNER_LABELS[bannerKeyFromGachaType(pull.gachaType)]}{" "}
-                          · {new Date(pull.wishTime).toLocaleString("ru-RU")}
+                          · {formatWishTime(pull.wishTime)}
                         </p>
                       </div>
                     </div>

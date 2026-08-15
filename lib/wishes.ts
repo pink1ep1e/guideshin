@@ -41,6 +41,62 @@ export const BANNER_SHORT: Record<GachaBannerKey, string> = {
   novice: "Новичок",
 };
 
+/**
+ * Журнал молитв в игре и API Hoyoverse / UIGF — wall-clock Asia/Shanghai (UTC+8),
+ * без перевода в локальный часовой пояс игрока.
+ */
+export const WISH_TIME_ZONE = "Asia/Shanghai";
+
+/** Отображение как в журнале: `15.08.2026, 00:02:35` */
+export function formatWishTime(value: Date | string): string {
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString("ru-RU", {
+    timeZone: WISH_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+}
+
+/** Строка API / UIGF: `YYYY-MM-DD HH:mm:ss` в Asia/Shanghai */
+export function formatWishTimeApi(value: Date | string): string {
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: WISH_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(d);
+  const get = (type: string) =>
+    parts.find((x) => x.type === type)?.value || "00";
+  return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}:${get("second")}`;
+}
+
+/** Календарный месяц молитвы в TZ журнала: `YYYY-MM` */
+export function wishMonthKey(value: Date | string): string | null {
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: WISH_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(d);
+  const y = parts.find((x) => x.type === "year")?.value;
+  const m = parts.find((x) => x.type === "month")?.value;
+  if (!y || !m) return null;
+  return `${y}-${m}`;
+}
+
 /** Сколько молитв по каждому баннеру. */
 export function countPullsByBanner(
   pulls: { gachaType: string }[],
@@ -636,9 +692,8 @@ export function buildMonthlyPullChart(
   >();
 
   for (const p of dedupeWishPulls(pulls)) {
-    const d = new Date(p.wishTime);
-    if (Number.isNaN(d.getTime())) continue;
-    const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const monthKey = wishMonthKey(p.wishTime);
+    if (!monthKey) continue;
     let row = byMonth.get(monthKey);
     if (!row) {
       row = {
