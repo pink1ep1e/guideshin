@@ -3,17 +3,24 @@
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ClickSoundProvider from "@/components/ClickSoundProvider";
 
 export default function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuth = pathname === "/auth" || pathname.startsWith("/auth/");
 
   if (isAuth) {
-    return <div className="min-h-screen bg-background">{children}</div>;
+    return (
+      <div className="min-h-screen bg-background">
+        <ClickSoundProvider />
+        {children}
+      </div>
+    );
   }
 
   return (
     <>
+      <ClickSoundProvider />
       <Navbar />
       <main className="flex min-h-0 flex-1 flex-col">{children}</main>
       <Footer />
