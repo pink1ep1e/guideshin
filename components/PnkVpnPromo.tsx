@@ -25,7 +25,7 @@ export function PnkVpnPromo() {
           <img
             src={PNK_VPN_LOGO}
             alt="PNK VPN"
-            className="h-[72px] w-auto shrink-0 object-contain dark:invert"
+            className="h-[72px] w-auto shrink-0 object-contain brightness-0 dark:brightness-0 dark:invert"
           />
         </div>
 
