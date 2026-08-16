@@ -2,54 +2,79 @@
 
 import { useEffect } from "react";
 
-const SOUND_SRC = "/sounds/button.mp3";
+const SOUNDS = {
+  button: "/sounds/button.mp3",
+  talent: "/sounds/talant.mp3",
+  constellation: "/sounds/sozvezdie.mp3",
+} as const;
+
 const VOLUME = 0.4;
 
 const CLICKABLE =
   'button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"], summary';
 
-function isSoundTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof Element)) return false;
+type SoundKind = keyof typeof SOUNDS;
+
+function resolveClickable(target: EventTarget | null): Element | null {
+  if (!(target instanceof Element)) return null;
   const el = target.closest(CLICKABLE);
-  if (!el) return false;
-  if (el.closest("[data-no-sound]")) return false;
-  if (el.getAttribute("aria-disabled") === "true") return false;
-  if (el instanceof HTMLButtonElement && el.disabled) return false;
-  if (el instanceof HTMLInputElement && el.disabled) return false;
-  return true;
+  if (!el) return null;
+  if (el.closest("[data-no-sound]")) return null;
+  if (el.getAttribute("aria-disabled") === "true") return null;
+  if (el instanceof HTMLButtonElement && el.disabled) return null;
+  if (el instanceof HTMLInputElement && el.disabled) return null;
+  return el;
+}
+
+function soundFor(el: Element): SoundKind {
+  const custom = el.getAttribute("data-sound");
+  if (custom === "talent" || custom === "button" || custom === "constellation") {
+    return custom;
+  }
+  if (el.classList.contains("constellation-key") || el.closest(".constellation-key")) {
+    return "constellation";
+  }
+  if (el.classList.contains("talent-key") || el.closest(".talent-key")) {
+    return "talent";
+  }
+  return "button";
 }
 
 /**
- * Глобальный звук клика по кнопкам. На элемент: data-no-sound — без звука.
+ * Глобальный звук клика по кнопкам.
+ * data-no-sound — без звука; data-sound="talent"|"constellation" — отдельный звук.
+ * Круглые кнопки талантов / созвездий в гайдах играют свои mp3.
  */
 export default function ClickSoundProvider() {
   useEffect(() => {
-    let shared: HTMLAudioElement | null = null;
+    const cache = new Map<SoundKind, HTMLAudioElement>();
 
-    const ensure = () => {
-      if (!shared) {
-        shared = new Audio(SOUND_SRC);
-        shared.preload = "auto";
-        shared.volume = VOLUME;
+    const ensure = (kind: SoundKind) => {
+      let audio = cache.get(kind);
+      if (!audio) {
+        audio = new Audio(SOUNDS[kind]);
+        audio.preload = "auto";
+        audio.volume = VOLUME;
+        cache.set(kind, audio);
       }
-      return shared;
+      return audio;
     };
 
-    // Прогрев после первого жеста (политика автоплея браузера)
     const warm = () => {
-      const a = ensure();
-      a.load();
+      (Object.keys(SOUNDS) as SoundKind[]).forEach((kind) => {
+        ensure(kind).load();
+      });
       window.removeEventListener("pointerdown", warm, true);
     };
     window.addEventListener("pointerdown", warm, true);
 
     const onPointerDown = (event: PointerEvent) => {
       if (event.button !== 0) return;
-      if (!isSoundTarget(event.target)) return;
+      const el = resolveClickable(event.target);
+      if (!el) return;
 
       try {
-        const base = ensure();
-        const shot = base.cloneNode(true) as HTMLAudioElement;
+        const shot = ensure(soundFor(el)).cloneNode(true) as HTMLAudioElement;
         shot.volume = VOLUME;
         void shot.play().catch(() => {
           /* автоплей / прервано — игнор */
@@ -63,7 +88,7 @@ export default function ClickSoundProvider() {
     return () => {
       window.removeEventListener("pointerdown", warm, true);
       document.removeEventListener("pointerdown", onPointerDown, true);
-      shared = null;
+      cache.clear();
     };
   }, []);
 

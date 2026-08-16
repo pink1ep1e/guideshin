@@ -272,7 +272,7 @@ export function WishCabinetTour({ hasPulls, active, onActiveChange }: Props) {
             y="0"
             width={vw}
             height={vh}
-            fill="rgba(6, 35, 32, 0.72)"
+            fill="rgba(12, 12, 16, 0.72)"
             mask={`url(#${maskId})`}
           />
         </svg>
@@ -317,7 +317,7 @@ export function WishCabinetTour({ hasPulls, active, onActiveChange }: Props) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 6 }}
           transition={{ duration: 0.2 }}
-          className="pointer-events-auto absolute z-[101] w-[min(420px,calc(100vw-24px))] rounded-3xl bg-white p-5 shadow-[0_24px_60px_-28px_rgba(15,70,60,0.55)] dark:bg-[hsl(var(--card))] dark:shadow-none sm:p-6"
+          className="pointer-events-auto absolute z-[101] w-[min(420px,calc(100vw-24px))] rounded-3xl bg-white p-5 shadow-[0_24px_60px_-28px_rgba(15,15,20,0.45)] dark:bg-[hsl(var(--card))] dark:shadow-none sm:p-6"
           style={
             spot
               ? {

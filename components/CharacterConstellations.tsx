@@ -46,9 +46,10 @@ export default function CharacterConstellations({
               key={item.id}
               type="button"
               onClick={() => setActive(i)}
-              className={`talent-key group relative flex h-[80px] w-[80px] items-center justify-center rounded-full transition sm:h-[92px] sm:w-[92px] ${
+              className={`talent-key constellation-key group relative flex h-[80px] w-[80px] items-center justify-center rounded-full transition sm:h-[92px] sm:w-[92px] ${
                 on ? "talent-key--active" : "talent-key--idle"
               }`}
+              data-sound="constellation"
               style={elStyle}
               aria-pressed={on}
               title={`C${item.level}: ${item.name}`}

@@ -57,6 +57,7 @@ export default function CharacterTalents({ talents, element }: Props) {
               className={`talent-key group relative flex h-[80px] w-[80px] items-center justify-center rounded-full transition sm:h-[92px] sm:w-[92px] ${
                 on ? "talent-key--active" : "talent-key--idle"
               }`}
+              data-sound="talent"
               style={elStyle}
               aria-pressed={on}
               title={item.name}
