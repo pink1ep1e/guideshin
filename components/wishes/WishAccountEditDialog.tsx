@@ -144,8 +144,8 @@ export default function WishAccountEditDialog({
                       ?
                     </div>
                   )}
-                  <span className="absolute inset-0 flex items-center justify-center bg-[#189b8e]/75 opacity-0 transition group-hover:opacity-100 dark:bg-[rgb(236_229_216/0.78)]">
-                    <Pencil className="h-6 w-6 text-white dark:text-[#1b1b22]" />
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/35 opacity-0 transition group-hover:opacity-100 dark:bg-black/50">
+                    <Pencil className="h-6 w-6 text-white drop-shadow-sm dark:text-[#ece5d8]" />
                   </span>
                 </button>
                 <div className="min-w-0 flex-1">
@@ -205,7 +205,7 @@ export default function WishAccountEditDialog({
                   type="button"
                   disabled={saving}
                   onClick={onClose}
-                  className="flex-1 rounded-xl border border-black/[0.08] py-3 text-sm font-bold"
+                  className="flex-1 rounded-xl bg-black/[0.04] py-3 text-sm font-bold text-foreground/80 transition hover:bg-black/[0.07] dark:bg-white/[0.08] dark:text-[#ece5d8] dark:hover:bg-white/[0.12]"
                 >
                   Отмена
                 </button>
@@ -213,7 +213,7 @@ export default function WishAccountEditDialog({
                   type="button"
                   disabled={saving || busy}
                   onClick={() => void save()}
-                  className="flex-1 rounded-xl bg-[#189b8e] py-3 text-sm font-bold text-white disabled:opacity-60"
+                  className="flex-1 rounded-xl bg-[#189b8e] py-3 text-sm font-bold text-white disabled:opacity-60 dark:bg-[#ece5d8] dark:text-[#1b1b22]"
                 >
                   {saving ? "Сохраняем…" : "Сохранить"}
                 </button>

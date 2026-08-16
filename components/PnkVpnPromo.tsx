@@ -11,7 +11,7 @@ export function PnkVpnPromo() {
       <div className="p-5">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
-            <h2 className="font-genshin text-[1.25rem] tracking-wide text-foreground">
+            <h2 className="font-display text-[1.25rem] font-semibold tracking-wide text-foreground">
               PNK VPN
             </h2>
             <p className="mt-1.5 text-[13px] font-medium leading-snug text-muted-foreground">
@@ -25,7 +25,7 @@ export function PnkVpnPromo() {
           <img
             src={PNK_VPN_LOGO}
             alt="PNK VPN"
-            className="h-[72px] w-auto shrink-0 object-contain invert"
+            className="h-[72px] w-auto shrink-0 object-contain dark:invert"
           />
         </div>
 

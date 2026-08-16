@@ -23,9 +23,7 @@ import {
   formatWishTime,
 } from "@/lib/wishes";
 import WishImportWizard from "@/components/wishes/WishImportWizard";
-import WishExtrasPanel, {
-  rememberAuthUrl,
-} from "@/components/wishes/WishExtrasPanel";
+import { setSavedAuthUrl as rememberAuthUrl } from "@/lib/wish-cabinet-extras";
 import {
   WishCabinetTour,
   WishTourTrigger,
@@ -620,7 +618,7 @@ export default function WishCabinet({
                     )}
                     <span
                       className={`absolute inset-0 flex items-center justify-center opacity-0 transition group-hover/avatar:opacity-100 ${
-                        active ? "bg-black/35" : "bg-[#0a2a26]/45 dark:bg-black/45"
+                        active ? "bg-black/35" : "bg-black/40 dark:bg-black/50"
                       }`}
                     >
                       <Pencil className="h-4 w-4 text-white drop-shadow" />
@@ -769,12 +767,6 @@ export default function WishCabinet({
                 </p>
               </section>
             </div>
-
-            <WishExtrasPanel
-              stats={DASHBOARD_BANNERS.map((key) => statsByKey.get(key)!).filter(
-                Boolean,
-              )}
-            />
 
             <WishAchievementsPanel
               luck={data?.luck ?? null}

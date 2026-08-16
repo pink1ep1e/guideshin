@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTheme } from "next-themes";
 import { BookOpen, ChevronLeft, ChevronRight, X } from "lucide-react";
 
 const TOUR_STORAGE_KEY = "guideshin-wish-tour-v2";
@@ -132,11 +133,16 @@ type Props = {
 };
 
 export function WishCabinetTour({ hasPulls, active, onActiveChange }: Props) {
+  const { resolvedTheme } = useTheme();
   const [stepIndex, setStepIndex] = useState(0);
   const [spot, setSpot] = useState<Spot | null>(null);
   const [mounted, setMounted] = useState(false);
   const [available, setAvailable] = useState<WishTourStep[]>([]);
   const maskId = "wish-tour-mask";
+  const scrimFill =
+    resolvedTheme === "dark"
+      ? "rgba(12, 12, 16, 0.92)"
+      : "rgba(15, 18, 28, 0.55)";
 
   useEffect(() => {
     setMounted(true);
@@ -272,7 +278,7 @@ export function WishCabinetTour({ hasPulls, active, onActiveChange }: Props) {
             y="0"
             width={vw}
             height={vh}
-            fill="rgba(12, 12, 16, 0.72)"
+            fill={scrimFill}
             mask={`url(#${maskId})`}
           />
         </svg>
